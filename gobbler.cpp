@@ -1,10 +1,43 @@
 #include "gobbler.h"
 
-Gobbler::Gobbler(QQuickItem *parent) : Shape(parent)
+//![0]
+Gobbler::Gobbler(QQuickItem *parent) : QQuickPaintedItem(parent), Shape()
 {
 
 }
+//![0]
 
+QString Gobbler::name() const
+{
+    return m_name;
+}
+
+void Gobbler::setName(const QString &name)
+{
+    m_name = name;
+}
+
+QColor Gobbler::color() const
+{
+    return m_color;
+}
+
+void Gobbler::setColor(const QColor &color)
+{
+    m_color = color;
+}
+
+//![1]
+void Gobbler::paint(QPainter *painter)
+{
+    QPen pen(m_color, 2);
+    painter->setPen(pen);
+    painter->setBrush(Qt::green);
+    painter->setRenderHints(QPainter::Antialiasing, true);
+
+    Shape::paint(painter);
+}
+//![1]
 
 /*
 function Pawn(matrix, x, y, z, h, d, size, isTurn, n) {

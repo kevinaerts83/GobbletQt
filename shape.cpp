@@ -2,61 +2,36 @@
 #include <QPainter>
 
 //![0]
-Shape::Shape(QQuickItem *parent)
-    : QQuickPaintedItem(parent)
+Shape::Shape()
 {
 }
 //![0]
 
-QString Shape::name() const
-{
-    return m_name;
-}
-
-void Shape::setName(const QString &name)
-{
-    m_name = name;
-}
-
-QColor Shape::color() const
-{
-    return m_color;
-}
-
-void Shape::setColor(const QColor &color)
-{
-    m_color = color;
-}
-
 //![1]
 void Shape::paint(QPainter *painter)
 {
-    QPen pen(m_color, 2);
-    painter->setPen(pen);
-    painter->setRenderHints(QPainter::Antialiasing, true);
-    painter->drawPie(boundingRect().adjusted(1, 1, -1, -1), 90 * 16, 290 * 16);
-
-    /*
-     * new gobbler3d and draw gobbler (move call to gobbler class)
-    for (i = 0, l = this.shape3D.faces.length; i < l; i+=1) {
-        face = this.shape3D.faces[i];
-
-        face[3] = this.dotProduct(face, this.points_2d) ? 1 : 0;
-        if(face[3] === 1) {
-            ctx.fillStyle = this.facesColour[i > colourLength ? colourLength : i];
-            ctx.beginPath();
-            ctx.moveTo(this.points_2d[face[0]][0],this.points_2d[face[0]][1]);
-            ctx.lineTo(this.points_2d[face[1]][0],this.points_2d[face[1]][1]);
-            ctx.lineTo(this.points_2d[face[2]][0],this.points_2d[face[2]][1]);
-            ctx.stroke();
-
-            ctx.fill();
-        }
-    }*/
+    paintPolygon(painter, 50.0, 110.0, 50.0, 50.0, 50.0, 150.0);
+    paintPolygon(painter, 110.0, 50.0, 110.0, 50.0, 150.0, 150.0);
+    paintPolygon(painter, 50.0, 30.0, 50.0, 50.0, 30.0, 150.0);
+    paintPolygon(painter, 30.0, 30.0, 50.0, 30.0, 130.0, 150.0);
+    paintPolygon(painter, 50.0, 30.0, 110.0, 50.0, 30.0, 50.0);
+    paintPolygon(painter, 30.0, 80.0, 110.0, 30.0, 30.0, 50.0);
 }
 //![1]
 
+void Shape::paintPolygon(QPainter *painter, qreal x1, qreal x2, qreal x3, qreal y1, qreal y2, qreal y3)
+{
+    QPointF points[3] = {
+        QPointF(x1, y1),
+        QPointF(x2, y2),
+        QPointF(x3, y3)
+    };
+
+    painter->drawPolygon(points, 3);
+}
+
 /*
+
 Shape.prototype.translateAndProject = function() {
     this.points_2d = [];
     var i, l, translation,

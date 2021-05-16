@@ -73,20 +73,21 @@ Window {
        }
     }
 
-    Shape {
-        id: gobble
-        x: 100; y: 100
-        width: 100; height: 100
-        name: "A simple pie chart"
+    Gobbler {
+        id: gobbler
+        x: 0; y: 0
+        width: 120
+        height: 150
+        name: "pawn"
         property bool isBlue: true
         color: isBlue ? "blue" : "red"
 
         MouseArea {
            anchors.fill: parent
            onClicked: {
-               gobble.isBlue = !gobble.isBlue
+               gobbler.isBlue = !gobbler.isBlue
            }
-           drag.target: gobble
+           drag.target: gobbler
            drag.axis: Drag.XAndYAxis
            drag.minimumX: 0
            drag.minimumY: 0
