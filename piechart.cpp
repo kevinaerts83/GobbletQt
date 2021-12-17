@@ -35,5 +35,15 @@ void PieChart::paint(QPainter *painter)
     painter->setPen(pen);
     painter->setRenderHints(QPainter::Antialiasing, true);
     painter->drawPie(boundingRect().adjusted(1, 1, -1, -1), 90 * 16, 290 * 16);
+
+
+    /*
+     paintPolygon(painter, 50.0, 50.0, 110.0, 50.0, 50.0, 150.0);
+     paintPolygon(painter, 110.0, 50.0, 50.0, 150.0, 110.0, 150.0);
+     paintPolygon(painter, 50.0, 50.0, 30.0, 30.0, 50.0, 150.0);
+     paintPolygon(painter, 30.0, 30.0, 30.0, 130.0, 50.0, 150.0);
+     paintPolygon(painter, 50.0, 50.0, 30.0, 30.0, 110.0, 50.0);
+     paintPolygon(painter, 30.0, 30.0, 80.0, 30.0, 110.0, 50.0);
+     */
 }
 //![1]

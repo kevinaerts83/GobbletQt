@@ -7,27 +7,15 @@ Shape3d::Shape3d(double width, double height)
     this->matrix = *new Matrix(width, height);
 }
 
-void Shape3d::Rotate(double rotationMatrix[4][4]) {
-    int length = sizeof(this->points);
+void Shape3d::Rotate(double xangle, double yangle, double scale) {
 
-    for (int i = 0; i < length; i++) {
-        double rotatedPoints [length];
-        this->matrix.MultiplyPointAndMatrix(this->points[i], rotationMatrix, rotatedPoints);
-        for (int j = 0; j < 4; j++) {
-            this->cache[i][j] = rotatedPoints[j];
-        }
-    }
-};
+    this->Zoom(scale);
 
-void Shape3d::Zoom(double scalingMatrix[4][4]) {
-    int length = sizeof(this->points);
+    double rotationMatrix [4][4];
+    this->matrix.getRotationMatrix(xangle, yangle, rotationMatrix);
 
-    for (int i = 0; i < length; i++) {
-        double scaledPoints [length];
-        this->matrix.MultiplyPointAndMatrix(this->points[i], scalingMatrix, scaledPoints);
-        for (int j = 0; j < 4; j++) {
-            this->cache[i][j] = scaledPoints[j];
-        }
+    for (int i = 0; i < 8; i++) {
+        this->cache[i] = this->matrix.MultiplyPointAndMatrix(this->points[i], rotationMatrix);
     }
 };
 
@@ -38,3 +26,12 @@ int Shape3d::PowerOfTwo(int x) {
     15:4096, 16:8192, 17:16384, 18:32768*/
     return pow(2, x - x / 5);
 }
+
+void Shape3d::Zoom(double scale) {
+    double scalingMatrix [4][4];
+    this->matrix.getScalingMatrix(scale, scalingMatrix);
+    this->cache.empty();
+    for (int i = 0; i < this->points.size(); i++) {
+        this->cache.append(this->matrix.MultiplyPointAndMatrix(this->points[i], scalingMatrix));
+    }
+};

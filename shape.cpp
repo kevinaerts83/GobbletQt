@@ -8,18 +8,35 @@ Shape::Shape()
 //![0]
 
 //![1]
-void Shape::paint(QPainter *painter)
+void Shape::paint(QVector<QVector<double>> points, QVector<QVector<int>> faces, QPainter *painter)
 {
-    paintPolygon(painter, 50.0, 110.0, 50.0, 50.0, 50.0, 150.0);
-    paintPolygon(painter, 110.0, 50.0, 110.0, 50.0, 150.0, 150.0);
-    paintPolygon(painter, 50.0, 30.0, 50.0, 50.0, 30.0, 150.0);
-    paintPolygon(painter, 30.0, 30.0, 50.0, 30.0, 130.0, 150.0);
-    paintPolygon(painter, 50.0, 30.0, 110.0, 50.0, 30.0, 50.0);
-    paintPolygon(painter, 30.0, 80.0, 110.0, 30.0, 30.0, 50.0);
+    for (int i = 0; i < faces.size(); i++) {
+        if(dotProduct(points, faces[i])) {
+            paintPolygon(painter,
+                    points[faces[i][0]][0],
+                    points[faces[i][0]][1],
+
+                    points[faces[i][1]][0],
+                    points[faces[i][1]][1],
+
+                    points[faces[i][2]][0],
+                    points[faces[i][2]][1]);
+        }
+    }
 }
 //![1]
 
-void Shape::paintPolygon(QPainter *painter, qreal x1, qreal x2, qreal x3, qreal y1, qreal y2, qreal y3)
+bool Shape::dotProduct(QVector<QVector<double>> points, QVector<int> face) {
+    double a1 = points[face[1]][0] - points[face[0]][0];
+    double a2 = points[face[1]][1] - points[face[0]][1];
+    double b1 = points[face[2]][0] - points[face[0]][0];
+    double b2 = points[face[2]][1] - points[face[0]][1];
+
+    face[3] = (a1*b2 - a2*b1) < 0 ? 1 : 0;
+    return face[3] == 1;
+};
+
+void Shape::paintPolygon(QPainter *painter, qreal x1, qreal y1, qreal x2, qreal y2, qreal x3, qreal y3)
 {
     QPointF points[3] = {
         QPointF(x1, y1),
@@ -78,15 +95,6 @@ Shape.prototype.draw = function(ctx, isSelection) {
             }
         }
     }
-};
-
-Shape.prototype.dotProduct = function(face, p) {
-    var a1 = p[face[1]][0] - p[face[0]][0],
-        a2 = p[face[1]][1] - p[face[0]][1],
-        b1 = p[face[2]][0] - p[face[0]][0],
-        b2 = p[face[2]][1] - p[face[0]][1];
-
-    return (a1*b2 - a2*b1) < 0;
 };
 
 Shape.prototype.setBoundaries = function(point2d, first) {

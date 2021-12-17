@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQuick.Shapes 1.12
+import QtQuick.Controls 2.15
 
 import Charts 1.0
 
@@ -8,9 +9,47 @@ Window {
     visible: true
     width: 640
     height: 480
-    title: qsTr("Hello World")
+    color: "#006400"
+    title: qsTr("Gobblet")
 
-    Rectangle {
+    Gobbler {
+        id: gobbler
+        x: 100
+        y: 100
+        width: 640
+        height: 480
+        name: "pawn"
+        property bool isBlack: true
+        color: isBlack ? "saddlebrown" : "ivory"
+        xangle : 0
+        yangle : 0
+        zoom : 1
+
+        MouseArea {
+           anchors.fill: parent
+           onClicked: {
+               gobbler.isBlack = !gobbler.isBlack;
+               update();
+           }
+           drag.target: gobbler
+           drag.axis: Drag.XAndYAxis
+           drag.minimumX: 0
+           drag.minimumY: 0
+       }
+    }
+
+    /*Board {
+        id: board
+        x: 0
+        y: 0
+        width: 640
+        height: 480
+        xangle : 0
+        yangle : 0
+        zoom : 1
+    }*/
+
+    /*Rectangle {
         id: rect
         width: 100
         height: 100
@@ -30,7 +69,7 @@ Window {
            drag.minimumX: 0
            drag.minimumY: 0
        }
-    }
+    }*/
 
     /*Shape {
         id: tri2
@@ -53,10 +92,12 @@ Window {
         }
     }*/
 
-    PieChart {
+    /*PieChart {
         id: pie
-        x: 100; y: 100
-        width: 100; height: 100
+        x: 100
+        y: 100
+        width: 100
+        height: 100
         name: "A simple pie chart"
         property bool isBlue: true
         color: isBlue ? "blue" : "red"
@@ -71,26 +112,57 @@ Window {
            drag.minimumX: 0
            drag.minimumY: 0
        }
+    }*/
+
+    // turns around y-axis
+    Slider {
+        x : 30
+        y : 0
+        value: 0
+        from: -90
+        to: 90
+        stepSize: 1
+        onValueChanged: {
+            gobbler.yangle = value;
+        }
     }
 
-    Gobbler {
-        id: gobbler
-        x: 0; y: 0
-        width: 120
-        height: 150
-        name: "pawn"
-        property bool isBlue: true
-        color: isBlue ? "blue" : "red"
-
-        MouseArea {
-           anchors.fill: parent
-           onClicked: {
-               gobbler.isBlue = !gobbler.isBlue
-           }
-           drag.target: gobbler
-           drag.axis: Drag.XAndYAxis
-           drag.minimumX: 0
-           drag.minimumY: 0
-       }
+    // turns around x-axis
+    Slider {
+        x: 0
+        y : 30
+        value: 0
+        from: 90
+        to: 0
+        stepSize: 1
+        orientation: "Vertical"
+        onValueChanged: {
+            gobbler.xangle = value;
+        }
     }
+
+    Slider {
+        x : 600
+        y : 20
+        from: 1.5
+        value: 1
+        to: 0.2
+        stepSize: 0.1
+        orientation: "Vertical"
+        onValueChanged: {
+            gobbler.zoom = value;
+        }
+    }
+
+    /*Label {
+        x: 0
+        y: 200
+        id: labelxaxis
+    }
+
+    Label {
+        x : 200
+        y: 0
+        id: labelyaxis
+    }*/
 }

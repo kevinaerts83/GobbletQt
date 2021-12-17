@@ -3,7 +3,7 @@
 //![0]
 Gobbler::Gobbler(QQuickItem *parent) : QQuickPaintedItem(parent), Shape()
 {
-
+    this->model = *new gobbler3d();
 }
 //![0]
 
@@ -27,16 +27,69 @@ void Gobbler::setColor(const QColor &color)
     m_color = color;
 }
 
+double Gobbler::xangle() const
+{
+    return m_xangle;
+}
+
+void Gobbler::setXangle(const double &xangle)
+{
+    m_xangle = xangle;
+    emit xangleChanged(xangle);
+    model.Rotate(m_xangle, m_yangle, m_zoom);
+    update();
+}
+
+double Gobbler::yangle() const
+{
+    return m_yangle;
+}
+
+void Gobbler::setYangle(const double &yangle)
+{
+    m_yangle = yangle;
+    emit yangleChanged(yangle);
+    model.Rotate(m_xangle, m_yangle, m_zoom);
+    update();
+}
+
+double Gobbler::zoom() const
+{
+    return m_zoom;
+}
+
+void Gobbler::setZoom(const double &zoom)
+{
+    m_zoom = zoom;
+    emit zoomChanged(zoom);
+    model.Rotate(m_xangle, m_yangle, m_zoom);
+    update();
+}
+
 //![1]
 void Gobbler::paint(QPainter *painter)
 {
-    QPen pen(m_color, 2);
-    painter->setPen(pen);
-    painter->setBrush(Qt::green);
+    //QPen pen(m_color, 1);
+    //painter->setPen(pen);
+    painter->setBrush(m_color);
     painter->setRenderHints(QPainter::Antialiasing, true);
 
-    Shape::paint(painter);
+    QVector<QVector<double>> points2d;
+
+    double translation [4][4];
+    model.matrix.getTranslationMatrix(100, 100, 100, translation);
+
+    for (int i = 0; i < 8; i++) {
+        points2d.append(model.matrix.ProjectPoint(model.matrix.MultiplyPointAndMatrix(model.cache[i], translation)));
+    }
+    Shape::paint(points2d, model.faces, painter);
 }
+/*
+void Gobbler::on_clicked(){
+    this->setXangle(this->xangle() + 10);
+    this->setColor(QColor("red"));
+    //paint(painter);
+}*/
 //![1]
 
 /*

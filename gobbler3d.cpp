@@ -1,8 +1,8 @@
 #include "gobbler3d.h"
 
-gobbler3d::gobbler3d() : Shape3d(800.0, 600.0)
+gobbler3d::gobbler3d() : Shape3d(400.0, 300.0)
 {
-    double tileSize = 50;
+    double tileSize = 100;
     double w = (tileSize - 5.0) / 2;
     double h = (tileSize * 1.3) / 2;
     double d = w;
@@ -24,7 +24,7 @@ gobbler3d::gobbler3d() : Shape3d(800.0, 600.0)
      *       	  ##      -#
      *       	   3#######2
     */
-    double tempPoints [8][4] = {
+    this->points = {
         {w, h, d, 1},
         {-w, h, d, 1},
         {-w, h, -d, 1},
@@ -34,12 +34,6 @@ gobbler3d::gobbler3d() : Shape3d(800.0, 600.0)
         {-w/2, -h, -d/2, 1},
         {w/2, -h, -d/2, 1}
     };
-
-    for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 4; j++) {
-            this->points[i][j] = tempPoints[i][j];
-        }
-    }
 
     /**
      * matrix constructed with the center of the cube
@@ -63,7 +57,7 @@ gobbler3d::gobbler3d() : Shape3d(800.0, 600.0)
      * Now the right hand rule says (vector1 = index finger, vector2 = middle finger; dot product = thumb)
      * With the front face the thumb points away from the center, and with the back face the thumb points to the center.
      */
-    int tempFaces [10][4] = {
+    this->faces = {
         {1, 0, 4, 0}, // face0_b1
         {4, 5, 1, 0}, // face1_b2
 
@@ -79,10 +73,4 @@ gobbler3d::gobbler3d() : Shape3d(800.0, 600.0)
         {3, 2, 6, 1}, // face10_f1
         {6, 7, 3, 1} // face11_f2
     };
-
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 4; j++) {
-            this->faces[i][j] = tempFaces[i][j];
-        }
-    }
 }

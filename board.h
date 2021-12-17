@@ -1,29 +1,21 @@
-#ifndef GOBBLER_H
-#define GOBBLER_H
+#ifndef BOARD_H
+#define BOARD_H
 
 #include <QtQuick/QQuickPaintedItem>
 #include "shape.h"
-#include "gobbler3d.h"
+#include "board3d.h"
 
-class Gobbler : public QQuickPaintedItem, public Shape
+class Board : public QQuickPaintedItem, public Shape
 {
     Q_OBJECT
-    Q_PROPERTY(QString name READ name WRITE setName)
-    Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(double xangle READ xangle WRITE setXangle NOTIFY xangleChanged)
     Q_PROPERTY(double yangle READ xangle WRITE setYangle NOTIFY yangleChanged)
     Q_PROPERTY(double zoom READ zoom WRITE setZoom NOTIFY zoomChanged)
     QML_ELEMENT
 
 public:
-    Gobbler(QQuickItem *parent = 0);
-    gobbler3d model;
-
-    QString name() const;
-    void setName(const QString &name);
-
-    QColor color() const;
-    void setColor(const QColor &color);
+    Board(QQuickItem *parent = 0);
+    board3d model;
 
     double xangle() const;
     void setXangle(const double &xangle);
@@ -36,8 +28,6 @@ public:
 
     void paint(QPainter *painter);
 private:
-    QString m_name;
-    QColor m_color;
     double m_xangle;
     double m_yangle;
     double m_zoom;
@@ -47,4 +37,4 @@ signals:
     void zoomChanged(double zoom);
 };
 
-#endif // GOBBLER_H
+#endif // BOARD_H
