@@ -7,6 +7,7 @@ Gobbler::Gobbler(QQuickItem *parent) : QQuickPaintedItem(parent), Shape()
 }
 //![0]
 
+//![1]
 QString Gobbler::name() const
 {
     return m_name;
@@ -66,24 +67,56 @@ void Gobbler::setZoom(const double &zoom)
     update();
 }
 
-//![1]
+double Gobbler::tx() const
+{
+    return m_tx;
+}
+
+void Gobbler::setTx(const double &tx)
+{
+    m_tx = tx;
+}
+
+double Gobbler::ty() const
+{
+    return m_ty;
+}
+
+void Gobbler::setTy(const double &ty)
+{
+    m_ty = ty;
+}
+
+double Gobbler::tz() const
+{
+    return m_tz;
+}
+
+void Gobbler::setTz(const double &tz)
+{
+    m_tz = tz;
+}
+
+double Gobbler::getX() {
+    return m_tx;
+}
+
+double Gobbler::getY() {
+    return m_ty;
+}
+
+double Gobbler::getZ() {
+    return m_tz;
+}
+
 void Gobbler::paint(QPainter *painter)
 {
     //QPen pen(m_color, 1);
     //painter->setPen(pen);
     painter->setBrush(m_color);
-    painter->setRenderHints(QPainter::Antialiasing, true);
-
-    QVector<QVector<double>> points2d;
-
-    double translation [4][4];
-    model.matrix.getTranslationMatrix(100, 100, 100, translation);
-
-    for (int i = 0; i < 8; i++) {
-        points2d.append(model.matrix.ProjectPoint(model.matrix.MultiplyPointAndMatrix(model.cache[i], translation)));
-    }
-    Shape::paint(points2d, model.faces, painter);
+    Shape::paint(model, painter);
 }
+
 /*
 void Gobbler::on_clicked(){
     this->setXangle(this->xangle() + 10);

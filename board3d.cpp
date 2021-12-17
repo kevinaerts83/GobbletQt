@@ -7,7 +7,7 @@ board3d::board3d() : Shape3d(400.0, 300.0)
      * @property matrix
      * @type object
      */
-    double s = 20;
+    double s = 80;
     this->matrix = matrix;
     this->points = {{-2*s,0,-2*s,1}, {-s,0,-2*s,1}, {0,0,-2*s,1}, {s,0,-2*s,1}, {2*s,0,-2*s,1},
                     {-2*s,0,-s,1}, {-s,0,-s,1}, {0,0,-s,1}, {s,0,-s,1}, {2*s,0,-s,1},

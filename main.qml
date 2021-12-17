@@ -6,9 +6,12 @@ import QtQuick.Controls 2.15
 import Charts 1.0
 
 Window {
+    readonly property int w: 1024
+    readonly property int h: 768
+
     visible: true
-    width: 640
-    height: 480
+    width: w
+    height: h
     color: "#006400"
     title: qsTr("Gobblet")
 
@@ -24,16 +27,19 @@ Window {
 
     Gobbler {
         id: gobbler
-        x: 100
-        y: 100
-        width: 640
-        height: 480
+        x: 0
+        y: 0
+        width: w
+        height: h
         name: "pawn"
         property bool isBlack: true
         color: isBlack ? "saddlebrown" : "ivory"
-        xangle : 0
+        xangle : 45
         yangle : 0
         zoom : 1
+        tx : 500
+        ty : 500
+        tz : 0
 
         MouseArea {
            anchors.fill: parent
@@ -48,15 +54,47 @@ Window {
        }
     }
 
+    Gobbler {
+        id: gobbler2
+        x: 0
+        y: 0
+        width: w
+        height: h
+        name: "pawn2"
+        property bool isBlack: false
+        color: isBlack ? "saddlebrown" : "ivory"
+        xangle : 45
+        yangle : 0
+        zoom : 1
+        tx : 100
+        ty : 400
+        tz : 50
+
+        MouseArea {
+           anchors.fill: parent
+           onClicked: {
+               gobbler2.isBlack = !gobbler2.isBlack;
+               update();
+           }
+           drag.target: gobbler2
+           drag.axis: Drag.XAndYAxis
+           drag.minimumX: 0
+           drag.minimumY: 0
+       }
+    }
+
     Board {
         id: board
         x: 0
         y: 0
-        width: 640
-        height: 480
-        xangle : 0
+        width: w
+        height: h
+        xangle : 45
         yangle : 0
         zoom : 1
+        tx : 450
+        ty : 350
+        tz : 0
     }
 
     /*Rectangle {
@@ -134,6 +172,7 @@ Window {
         stepSize: 1
         onValueChanged: {
             gobbler.yangle = value;
+            gobbler2.yangle = value;
             board.yangle = value;
         }
     }
@@ -142,19 +181,20 @@ Window {
     Slider {
         x: 0
         y : 30
-        value: 0
+        value: 45
         from: 90
         to: 0
         stepSize: 1
         orientation: "Vertical"
         onValueChanged: {
             gobbler.xangle = value;
+            gobbler2.xangle = value;
             board.xangle = value;
         }
     }
 
     Slider {
-        x : 600
+        x : w-50
         y : 20
         from: 1.5
         value: 1
@@ -163,6 +203,7 @@ Window {
         orientation: "Vertical"
         onValueChanged: {
             gobbler.zoom = value;
+            gobbler2.zoom = value;
             board.zoom = value;
         }
     }

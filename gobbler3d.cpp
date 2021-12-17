@@ -2,7 +2,7 @@
 
 gobbler3d::gobbler3d() : Shape3d(400.0, 300.0)
 {
-    double tileSize = 100;
+    double tileSize = 80;
     double w = (tileSize - 5.0) / 2;
     double h = (tileSize * 1.3) / 2;
     double d = w;

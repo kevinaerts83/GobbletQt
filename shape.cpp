@@ -1,4 +1,5 @@
 #include "shape.h"
+#include "shape3d.h"
 #include <QPainter>
 
 //![0]
@@ -8,19 +9,30 @@ Shape::Shape()
 //![0]
 
 //![1]
-void Shape::paint(QVector<QVector<double>> points, QVector<QVector<int>> faces, QPainter *painter)
+void Shape::paint(Shape3d model, QPainter *painter)
 {
-    for (int i = 0; i < faces.size(); i++) {
-        if(dotProduct(points, faces[i])) {
+    painter->setRenderHints(QPainter::Antialiasing, true);
+
+    QVector<QVector<double>> points2d;
+
+    double translation [4][4];
+    model.matrix.getTranslationMatrix(getX(), getY(), getZ(), translation);
+
+    for (int i = 0; i < model.cache.size(); i++) {
+        points2d.append(model.matrix.ProjectPoint(model.matrix.MultiplyPointAndMatrix(model.cache[i], translation)));
+    }
+
+    for (int i = 0; i < model.faces.size(); i++) {
+        if(dotProduct(points2d, model.faces[i])) {
             paintPolygon(painter,
-                    points[faces[i][0]][0],
-                    points[faces[i][0]][1],
+                    points2d[model.faces[i][0]][0],
+                    points2d[model.faces[i][0]][1],
 
-                    points[faces[i][1]][0],
-                    points[faces[i][1]][1],
+                    points2d[model.faces[i][1]][0],
+                    points2d[model.faces[i][1]][1],
 
-                    points[faces[i][2]][0],
-                    points[faces[i][2]][1]);
+                    points2d[model.faces[i][2]][0],
+                    points2d[model.faces[i][2]][1]);
         }
     }
 }

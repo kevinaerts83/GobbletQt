@@ -3,13 +3,18 @@
 #include <QColor>
 #include <QPainter>
 #include <QVector>
+#include "shape3d.h"
 
 class Shape
 {
 public:
     Shape();
 
-    void paint(QVector<QVector<double>> points, QVector<QVector<int>> faces, QPainter *painter);
+    virtual double getX() = 0;
+    virtual double getY() = 0;
+    virtual double getZ() = 0;
+
+    void paint(Shape3d model, QPainter *painter);
 private:
     bool dotProduct(QVector<QVector<double>> points, QVector<int> face);
     void paintPolygon(QPainter *painter, qreal x1, qreal x2, qreal x3, qreal y1, qreal y2, qreal y3);
