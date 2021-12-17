@@ -12,6 +12,16 @@ Window {
     color: "#006400"
     title: qsTr("Gobblet")
 
+    /*Rectangle
+    {
+        anchors.fill: parent
+        gradient: Gradient
+        {
+            GradientStop {position: 0.500;color: Qt.rgba(0, 0.5, 0, 1);}
+            GradientStop {position: 1.000;color: Qt.rgba(0, 0.2, 0, 1);}
+        }
+    }*/
+
     Gobbler {
         id: gobbler
         x: 100
@@ -38,7 +48,7 @@ Window {
        }
     }
 
-    /*Board {
+    Board {
         id: board
         x: 0
         y: 0
@@ -47,7 +57,7 @@ Window {
         xangle : 0
         yangle : 0
         zoom : 1
-    }*/
+    }
 
     /*Rectangle {
         id: rect
@@ -124,6 +134,7 @@ Window {
         stepSize: 1
         onValueChanged: {
             gobbler.yangle = value;
+            board.yangle = value;
         }
     }
 
@@ -138,6 +149,7 @@ Window {
         orientation: "Vertical"
         onValueChanged: {
             gobbler.xangle = value;
+            board.xangle = value;
         }
     }
 
@@ -151,6 +163,7 @@ Window {
         orientation: "Vertical"
         onValueChanged: {
             gobbler.zoom = value;
+            board.zoom = value;
         }
     }
 

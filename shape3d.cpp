@@ -9,13 +9,15 @@ Shape3d::Shape3d(double width, double height)
 
 void Shape3d::Rotate(double xangle, double yangle, double scale) {
 
+    // fill cache
     this->Zoom(scale);
 
     double rotationMatrix [4][4];
     this->matrix.getRotationMatrix(xangle, yangle, rotationMatrix);
 
-    for (int i = 0; i < 8; i++) {
-        this->cache[i] = this->matrix.MultiplyPointAndMatrix(this->points[i], rotationMatrix);
+    // rotate the cached values
+    for (int i = 0; i < this->cache.size(); i++) {
+        this->cache[i] = this->matrix.MultiplyPointAndMatrix(this->cache[i], rotationMatrix);
     }
 };
 
@@ -30,7 +32,7 @@ int Shape3d::PowerOfTwo(int x) {
 void Shape3d::Zoom(double scale) {
     double scalingMatrix [4][4];
     this->matrix.getScalingMatrix(scale, scalingMatrix);
-    this->cache.empty();
+    this->cache.clear();
     for (int i = 0; i < this->points.size(); i++) {
         this->cache.append(this->matrix.MultiplyPointAndMatrix(this->points[i], scalingMatrix));
     }

@@ -56,7 +56,7 @@ void Board::paint(QPainter *painter)
     model.matrix.getTranslationMatrix(100, 100, 100, translation);
 
     for (int i = 0; i < 29; i++) {
-        points2d[i] = model.matrix.ProjectPoint(model.matrix.MultiplyPointAndMatrix(model.cache[i], translation));
+        points2d.append(model.matrix.ProjectPoint(model.matrix.MultiplyPointAndMatrix(model.cache[i], translation)));
     }
     Shape::paint(points2d, model.faces, painter);
 }
