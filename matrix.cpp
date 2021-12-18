@@ -42,13 +42,11 @@ QVector<double> Matrix::MultiplyPointAndMatrix(QVector<double> point, double mat
 
 QVector<double> Matrix::ProjectPoint(QVector<double> podouble)
 {
-    QVector<double> p = {0, 0, 0, 1};
-    p = this->MultiplyPointAndMatrix(podouble, this->m_translation);
-
+    QVector<double> p = this->MultiplyPointAndMatrix(podouble, this->m_translation);
     double x = p[0],
     y = p[1],
     z = p[2],
-    f = -1/2000,
+    f = -1.0/1000.0,
     s = 1;
 
     QVector<double> p2 = {x / ((z * f) + s), y / ((z * f) + s), 0, 1};

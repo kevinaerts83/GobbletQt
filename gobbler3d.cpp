@@ -1,6 +1,6 @@
 #include "gobbler3d.h"
 
-gobbler3d::gobbler3d() : Shape3d(400.0, 300.0)
+gobbler3d::gobbler3d() : Shape3d(1024.0, 768.0)
 {
     double tileSize = 80;
     double w = (tileSize - 5.0) / 2;

@@ -66,9 +66,9 @@ Window {
         xangle : 45
         yangle : 0
         zoom : 1
-        tx : 100
-        ty : 400
-        tz : 50
+        tx : 500
+        ty : 500
+        tz : -500
 
         MouseArea {
            anchors.fill: parent

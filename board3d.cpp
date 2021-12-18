@@ -1,13 +1,13 @@
 #include "board3d.h"
 
-board3d::board3d() : Shape3d(400.0, 300.0)
+board3d::board3d() : Shape3d(1024.0, 768.0)
 {
     /**
      * matrix constructed with the center of the board
      * @property matrix
      * @type object
      */
-    double s = 80;
+    double s = 200;
     this->matrix = matrix;
     this->points = {{-2*s,0,-2*s,1}, {-s,0,-2*s,1}, {0,0,-2*s,1}, {s,0,-2*s,1}, {2*s,0,-2*s,1},
                     {-2*s,0,-s,1}, {-s,0,-s,1}, {0,0,-s,1}, {s,0,-s,1}, {2*s,0,-s,1},
