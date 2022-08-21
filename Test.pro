@@ -48,5 +48,5 @@ HEADERS += \
     shape3d.h
 
 CONFIG += qmltypes
-QML_IMPORT_NAME = Charts
+QML_IMPORT_NAME = Gobbler
 QML_IMPORT_MAJOR_VERSION = 1

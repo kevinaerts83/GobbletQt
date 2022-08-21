@@ -2,13 +2,11 @@
 #include "cmath"
 
 //constructor
-Matrix::Matrix()
+Matrix::Matrix(QQuickItem *parent) : QQuickItem(parent)
 {
-    Matrix(400.0, 300.0);
-}
+    double width = 1024;
+    double height = 768;
 
-Matrix::Matrix(double width, double height)
-{
     double centerX = width/ 2;
     double centerY = height / 2;
     double centerZ = 0;
@@ -76,9 +74,9 @@ void Matrix::getTranslationMatrix(double x, double y, double z, double result [4
     }
 }
 
-void Matrix::getScalingMatrix(double scale, double result [4][4])
+void Matrix::getScalingMatrix(double result [4][4])
 {
-    double init [4][4] = {{scale, 0, 0, 0}, {0, scale, 0, 0}, {0, 0, scale, 0}, {0, 0, 0, 1.0}};
+    double init [4][4] = {{m_zoom, 0, 0, 0}, {0, m_zoom, 0, 0}, {0, 0, m_zoom, 0}, {0, 0, 0, 1.0}};
     for(int i = 0; i < 4; i += 1) {
         for(int j = 0; j < 4; j += 1) {
             result[i][j] = init[i][j];
@@ -86,10 +84,10 @@ void Matrix::getScalingMatrix(double scale, double result [4][4])
     }
 }
 
-void Matrix::getRotationMatrix(double x, double y, double result [4][4])
+void Matrix::getRotationMatrix(double result [4][4])
 {
-    double angleX = x * M_PI / 180,
-        angleY = y * M_PI / 180,
+    double angleX = m_xangle * M_PI / 180,
+        angleY = m_yangle * M_PI / 180,
         cosx = cos(angleX),
         sinx = -sin(angleX),
         cosy = cos(angleY),
@@ -98,4 +96,26 @@ void Matrix::getRotationMatrix(double x, double y, double result [4][4])
     double yFacesMatrix [4][4] = {{cosy, 0, siny, 0}, {0, 1.0, 0, 0}, {-siny, 0, cosy, 0}, {0, 0, 0, 1.0}};
 
     this->MultiplyMatrixAndMatrix(xFacesMatrix, yFacesMatrix, result);
+}
+
+double Matrix::xangle() const { return m_xangle; }
+double Matrix::yangle() const { return m_yangle; }
+double Matrix::zoom() const { return m_zoom; }
+
+void Matrix::setXangle(const double &xangle)
+{
+    m_xangle = xangle;
+    emit xangleChanged(xangle);
+}
+
+void Matrix::setYangle(const double &yangle)
+{
+    m_yangle = yangle;
+    emit yangleChanged(yangle);
+}
+
+void Matrix::setZoom(const double &zoom)
+{
+    m_zoom = zoom;
+    emit zoomChanged(zoom);
 }

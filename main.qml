@@ -3,7 +3,7 @@ import QtQuick.Window 2.15
 import QtQuick.Shapes 1.12
 import QtQuick.Controls 2.15
 
-import Charts 1.0
+import Gobbler 1.0
 
 Window {
     readonly property int w: 1024
@@ -12,8 +12,11 @@ Window {
     visible: true
     width: w
     height: h
-    color: "#006400"
+    //color: "#006400"
     title: qsTr("Gobblet")
+
+    //property alias dropEnabled: acceptDropCB.checked
+    //color: dropArea.containsDrag ? "#CFC" : "#EEE"
 
     /*Rectangle
     {
@@ -25,79 +28,51 @@ Window {
         }
     }*/
 
+    Matrix {
+        id:matrix
+    }
+
     Gobbler {
         id: gobbler
         x: 0
         y: 0
+        matrix: matrix
         width: w
         height: h
         name: "pawn"
-        property bool isBlack: true
-        color: isBlack ? "saddlebrown" : "ivory"
-        xangle : 45
-        yangle : 0
-        zoom : 1
-        tx : 500
-        ty : 500
-        tz : 0
-
-        MouseArea {
-           anchors.fill: parent
-           onClicked: {
-               gobbler.isBlack = !gobbler.isBlack;
-               update();
-           }
-           drag.target: gobbler
-           drag.axis: Drag.XAndYAxis
-           drag.minimumX: 0
-           drag.minimumY: 0
-       }
+        color: "saddlebrown"
+        tx : 400
+        ty : 300
+        tz : 150
     }
 
     Gobbler {
         id: gobbler2
         x: 0
         y: 0
+        matrix: matrix
         width: w
         height: h
         name: "pawn2"
-        property bool isBlack: false
-        color: isBlack ? "saddlebrown" : "ivory"
-        xangle : 45
-        yangle : 0
-        zoom : 1
-        tx : 500
-        ty : 500
-        tz : -500
-
-        MouseArea {
-           anchors.fill: parent
-           onClicked: {
-               gobbler2.isBlack = !gobbler2.isBlack;
-               update();
-           }
-           drag.target: gobbler2
-           drag.axis: Drag.XAndYAxis
-           drag.minimumX: 0
-           drag.minimumY: 0
-       }
+        color: "ivory"
+        tx : 600
+        ty : 300
+        tz : 300
     }
 
     Board {
         id: board
         x: 0
         y: 0
+        matrix: matrix
         width: w
         height: h
-        xangle : 45
-        yangle : 0
-        zoom : 1
         tx : 450
-        ty : 350
-        tz : 0
+        ty : 300
+        tz : 300
     }
 
-    /*Rectangle {
+    Rectangle {
         id: rect
         width: 100
         height: 100
@@ -117,7 +92,7 @@ Window {
            drag.minimumX: 0
            drag.minimumY: 0
        }
-    }*/
+    }
 
     /*Shape {
         id: tri2
@@ -171,9 +146,10 @@ Window {
         to: 90
         stepSize: 1
         onValueChanged: {
-            gobbler.yangle = value;
-            gobbler2.yangle = value;
-            board.yangle = value;
+            matrix.yangle = value;
+            board.update();
+            gobbler.update();
+            gobbler2.update();
         }
     }
 
@@ -187,9 +163,10 @@ Window {
         stepSize: 1
         orientation: "Vertical"
         onValueChanged: {
-            gobbler.xangle = value;
-            gobbler2.xangle = value;
-            board.xangle = value;
+            matrix.xangle = value;
+            board.update();
+            gobbler.update();
+            gobbler2.update();
         }
     }
 
@@ -202,9 +179,11 @@ Window {
         stepSize: 0.1
         orientation: "Vertical"
         onValueChanged: {
-            gobbler.zoom = value;
-            gobbler2.zoom = value;
-            board.zoom = value;
+            matrix.zoom = value;
+            board.update();
+
+            gobbler.update();
+            gobbler2.update();
         }
     }
 

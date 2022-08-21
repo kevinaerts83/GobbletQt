@@ -12,9 +12,7 @@ class Gobbler : public QQuickPaintedItem, public Shape
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QColor color READ color WRITE setColor)
-    Q_PROPERTY(double xangle READ xangle WRITE setXangle NOTIFY xangleChanged)
-    Q_PROPERTY(double yangle READ xangle WRITE setYangle NOTIFY yangleChanged)
-    Q_PROPERTY(double zoom READ zoom WRITE setZoom NOTIFY zoomChanged)
+    Q_PROPERTY(Matrix* matrix MEMBER m_matrix)
 
     Q_PROPERTY(double tx READ tx WRITE setTx)
     Q_PROPERTY(double ty READ ty WRITE setTy)
@@ -24,21 +22,13 @@ class Gobbler : public QQuickPaintedItem, public Shape
 public:
     Gobbler(QQuickItem *parent = 0);
     gobbler3d model;
+    Matrix* m_matrix;
 
     QString name() const;
     void setName(const QString &name);
 
     QColor color() const;
     void setColor(const QColor &color);
-
-    double xangle() const;
-    void setXangle(const double &xangle);
-
-    double yangle() const;
-    void setYangle(const double &yangle);
-
-    double zoom() const;
-    void setZoom(const double &zoom);
 
     double tx() const;
     void setTx(const double &tx);
@@ -55,16 +45,10 @@ public:
 private:
     QString m_name;
     QColor m_color;
-    double m_xangle;
-    double m_yangle;
-    double m_zoom;
+
     double m_tx;
     double m_ty;
     double m_tz;
-signals:
-    void xangleChanged(double xangle);
-    void yangleChanged(double yangle);
-    void zoomChanged(double zoom);
 };
 
 #endif // GOBBLER_H

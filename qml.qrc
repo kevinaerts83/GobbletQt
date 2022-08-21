@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>remove.js</file>
+        <file>example</file>
     </qresource>
 </RCC>

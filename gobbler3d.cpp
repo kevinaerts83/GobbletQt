@@ -1,6 +1,6 @@
 #include "gobbler3d.h"
 
-gobbler3d::gobbler3d() : Shape3d(1024.0, 768.0)
+gobbler3d::gobbler3d() : Shape3d()
 {
     double tileSize = 80;
     double w = (tileSize - 5.0) / 2;
@@ -34,13 +34,6 @@ gobbler3d::gobbler3d() : Shape3d(1024.0, 768.0)
         {-w/2, -h, -d/2, 1},
         {w/2, -h, -d/2, 1}
     };
-
-    /**
-     * matrix constructed with the center of the cube
-     * @property matrix
-     * @type object
-     */
-    this->matrix = matrix;
 
     /*
      * Combine all points with triangles faces so a cube will be formed.

@@ -9,13 +9,13 @@ public:
     QVector<QVector<double>> points;
     QVector<QVector<int>> faces;
     QVector<QVector<double>> cache;
-    Matrix matrix;
 
-    Shape3d(double width, double height);
-    void Rotate(double xangle, double yangle, double scale);
+    Shape3d() {};
+
+    void Rotate(Matrix* matrix);
     int PowerOfTwo(int x);
 private:
-    void Zoom(double scale);
+    void Zoom(Matrix* matrix);
 };
 
 #endif // SHAPE3D_H

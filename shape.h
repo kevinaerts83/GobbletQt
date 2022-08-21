@@ -14,7 +14,7 @@ public:
     virtual double getY() = 0;
     virtual double getZ() = 0;
 
-    void paint(Shape3d model, QPainter *painter);
+    void paint(Matrix *matrix, Shape3d model, QPainter *painter);
 private:
     bool dotProduct(QVector<QVector<double>> points, QVector<int> face);
     void paintPolygon(QPainter *painter, qreal x1, qreal x2, qreal x3, qreal y1, qreal y2, qreal y3);

@@ -28,45 +28,6 @@ void Gobbler::setColor(const QColor &color)
     m_color = color;
 }
 
-double Gobbler::xangle() const
-{
-    return m_xangle;
-}
-
-void Gobbler::setXangle(const double &xangle)
-{
-    m_xangle = xangle;
-    emit xangleChanged(xangle);
-    model.Rotate(m_xangle, m_yangle, m_zoom);
-    update();
-}
-
-double Gobbler::yangle() const
-{
-    return m_yangle;
-}
-
-void Gobbler::setYangle(const double &yangle)
-{
-    m_yangle = yangle;
-    emit yangleChanged(yangle);
-    model.Rotate(m_xangle, m_yangle, m_zoom);
-    update();
-}
-
-double Gobbler::zoom() const
-{
-    return m_zoom;
-}
-
-void Gobbler::setZoom(const double &zoom)
-{
-    m_zoom = zoom;
-    emit zoomChanged(zoom);
-    model.Rotate(m_xangle, m_yangle, m_zoom);
-    update();
-}
-
 double Gobbler::tx() const
 {
     return m_tx;
@@ -113,8 +74,9 @@ void Gobbler::paint(QPainter *painter)
 {
     //QPen pen(m_color, 1);
     //painter->setPen(pen);
+    model.Rotate(m_matrix);
     painter->setBrush(m_color);
-    Shape::paint(model, painter);
+    Shape::paint(m_matrix, model, painter);
 }
 
 /*

@@ -9,17 +9,17 @@ Shape::Shape()
 //![0]
 
 //![1]
-void Shape::paint(Shape3d model, QPainter *painter)
+void Shape::paint(Matrix *matrix, Shape3d model, QPainter *painter)
 {
     painter->setRenderHints(QPainter::Antialiasing, true);
 
     QVector<QVector<double>> points2d;
 
     double translation [4][4];
-    model.matrix.getTranslationMatrix(getX(), getY(), getZ(), translation);
+    matrix->getTranslationMatrix(getX(), getY(), getZ(), translation);
 
     for (int i = 0; i < model.cache.size(); i++) {
-        points2d.append(model.matrix.ProjectPoint(model.matrix.MultiplyPointAndMatrix(model.cache[i], translation)));
+        points2d.append(matrix->ProjectPoint(matrix->MultiplyPointAndMatrix(model.cache[i], translation)));
     }
 
     for (int i = 0; i < model.faces.size(); i++) {

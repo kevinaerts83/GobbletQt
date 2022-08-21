@@ -2,22 +2,17 @@
 #include "matrix.h"
 #include "math.h"
 
-Shape3d::Shape3d(double width, double height)
-{
-    this->matrix = *new Matrix(width, height);
-}
-
-void Shape3d::Rotate(double xangle, double yangle, double scale) {
+void Shape3d::Rotate(Matrix* matrix) {
 
     // fill cache
-    this->Zoom(scale);
+    this->Zoom(matrix);
 
     double rotationMatrix [4][4];
-    this->matrix.getRotationMatrix(xangle, yangle, rotationMatrix);
+    matrix->getRotationMatrix(rotationMatrix);
 
     // rotate the cached values
     for (int i = 0; i < this->cache.size(); i++) {
-        this->cache[i] = this->matrix.MultiplyPointAndMatrix(this->cache[i], rotationMatrix);
+        this->cache[i] = matrix->MultiplyPointAndMatrix(this->cache[i], rotationMatrix);
     }
 };
 
@@ -29,11 +24,11 @@ int Shape3d::PowerOfTwo(int x) {
     return pow(2, x - x / 5);
 }
 
-void Shape3d::Zoom(double scale) {
+void Shape3d::Zoom(Matrix* matrix) {
     double scalingMatrix [4][4];
-    this->matrix.getScalingMatrix(scale, scalingMatrix);
+    matrix->getScalingMatrix(scalingMatrix);
     this->cache.clear();
     for (int i = 0; i < this->points.size(); i++) {
-        this->cache.append(this->matrix.MultiplyPointAndMatrix(this->points[i], scalingMatrix));
+        this->cache.append(matrix->MultiplyPointAndMatrix(this->points[i], scalingMatrix));
     }
 };
