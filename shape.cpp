@@ -15,13 +15,34 @@ void Shape::paint(Matrix *matrix, Shape3d model, QPainter *painter)
 
     QVector<QVector<double>> points2d;
 
-    double translation [4][4];
-    matrix->getTranslationMatrix(getX(), getY(), getZ(), translation);
+    QVector<double> center = {getX(), getY(), getZ(), 1};
 
+    // TRANSLATE TO 0,0
+    double toZero [4][4];
+    matrix->getTranslationMatrix(-512, -384, 0, toZero);
+    QVector<double> centerAtZero = matrix->MultiplyPointAndMatrix(center, toZero);
+
+    // ROTATE THE CENTER
+    double rotationMatrix [4][4];
+    matrix->getRotationMatrix(rotationMatrix);
+    // rotate the cached values
+    QVector<double> centerRotated =  matrix->MultiplyPointAndMatrix(centerAtZero, rotationMatrix);
+
+    // TRANSLATE TO CENTER
+    double moveBack [4][4];
+    matrix->getTranslationMatrix(512, 384, 0, moveBack);
+    QVector<double> newCenter = matrix->MultiplyPointAndMatrix(centerRotated, moveBack);
+
+    // TRANSLATE THE 2D PICTURE
+    double translation [4][4];
+    matrix->getTranslationMatrix(newCenter[0], newCenter[1], newCenter[2], translation);
+
+    // PROJECT 2D FIGURE
     for (int i = 0; i < model.cache.size(); i++) {
         points2d.append(matrix->ProjectPoint(matrix->MultiplyPointAndMatrix(model.cache[i], translation)));
     }
 
+    // PAINTER
     for (int i = 0; i < model.faces.size(); i++) {
         if(dotProduct(points2d, model.faces[i])) {
             paintPolygon(painter,
@@ -48,15 +69,29 @@ bool Shape::dotProduct(QVector<QVector<double>> points, QVector<int> face) {
     return face[3] == 1;
 };
 
-void Shape::paintPolygon(QPainter *painter, qreal x1, qreal y1, qreal x2, qreal y2, qreal x3, qreal y3)
-{
-    QPointF points[3] = {
-        QPointF(x1, y1),
-        QPointF(x2, y2),
-        QPointF(x3, y3)
-    };
+void Shape::paintPolygon(QPainter *painter, qreal x1, qreal y1, qreal x2, qreal y2, qreal x3, qreal y3) {
+    painter->setPen(Qt::NoPen);    // Set no border pen
+    // Define the triangle points
+    QPoint point1(x1, y1);
+    QPoint point2(x2, y2);
+    QPoint point3(x3, y3);
 
-    painter->drawPolygon(points, 3);
+    QPolygon triangle;
+    triangle << point1 << point2 << point3;
+
+    painter->drawPolygon(triangle);  // Draw the filled triangle
+
+    // Draw the two borders
+    painter->setPen(Qt::black);      // Set the border color
+
+    painter->drawLine(point1, point2);  // Draw border 1
+    painter->drawLine(point2, point3);  // Draw border 2
+
+    QColor brushColor = painter->brush().color();
+    if (brushColor != Qt::black) {
+        painter->setPen(brushColor);
+        painter->drawLine(point3, point1);
+    }
 }
 
 /*

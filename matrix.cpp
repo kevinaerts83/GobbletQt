@@ -44,7 +44,7 @@ QVector<double> Matrix::ProjectPoint(QVector<double> podouble)
     double x = p[0],
     y = p[1],
     z = p[2],
-    f = -1.0/1000.0,
+    f = -1.0/900.0,
     s = 1;
 
     QVector<double> p2 = {x / ((z * f) + s), y / ((z * f) + s), 0, 1};

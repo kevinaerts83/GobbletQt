@@ -33,7 +33,7 @@ Window {
     }
 
     Gobbler {
-        id: gobbler
+        id: gobblerBlack10
         x: 0
         y: 0
         matrix: matrix
@@ -41,13 +41,74 @@ Window {
         height: h
         name: "pawn"
         color: "saddlebrown"
-        tx : 400
-        ty : 300
-        tz : 150
+        tx : 100
+        ty : 100
+        tz : 0
+
+        MouseArea {
+            anchors.fill: parent
+            drag.target: gobblerBlack10
+            drag.axis: Drag.XAndYAxis
+            drag.minimumX: 0
+            drag.minimumY: 0
+            onPositionChanged: {
+                console.log('Moved', mouseX, mouseY)
+            }
+        }
     }
 
     Gobbler {
-        id: gobbler2
+        id: gobblerBlack20 // 21 22 23 (smallest)
+        x: 0
+        y: 0
+        matrix: matrix
+        width: w
+        height: h
+        name: "pawn"
+        color: "saddlebrown"
+        tx : 100
+        ty : 200
+        tz : 0
+
+        MouseArea {
+            anchors.fill: parent
+            drag.target: gobblerBlack20
+            drag.axis: Drag.XAndYAxis
+            drag.minimumX: 0
+            drag.minimumY: 0
+            onPositionChanged: {
+                console.log('Moved', mouseX, mouseY)
+            }
+        }
+    }
+
+    Gobbler {
+        id: gobblerBlack30
+        x: 0
+        y: 0
+        matrix: matrix
+        width: w
+        height: h
+        name: "pawn"
+        color: "saddlebrown"
+        tx : 100
+        ty : 300
+        tz : 0
+
+        MouseArea {
+            anchors.fill: parent
+            drag.target: gobblerBlack30
+            drag.axis: Drag.XAndYAxis
+            drag.minimumX: 0
+            drag.minimumY: 0
+            onPositionChanged: {
+                console.log('Moved', mouseX, mouseY)
+            }
+        }
+    }
+
+    Gobbler {
+        id: gobblerWhite10
         x: 0
         y: 0
         matrix: matrix
@@ -55,9 +116,20 @@ Window {
         height: h
         name: "pawn2"
         color: "ivory"
-        tx : 600
+        tx : 900
         ty : 300
-        tz : 300
+        tz : 0
+
+        MouseArea {
+            anchors.fill: parent
+            drag.target: gobblerWhite10
+            drag.axis: Drag.XAndYAxis
+            drag.minimumX: 0
+            drag.minimumY: 0
+            onPositionChanged: {
+                console.log('Moved', mouseX, mouseY)
+            }
+        }
     }
 
     Board {
@@ -67,9 +139,9 @@ Window {
         matrix: matrix
         width: w
         height: h
-        tx : 450
-        ty : 300
-        tz : 300
+        tx : 512
+        ty : 384
+        tz : 0
     }
 
     Rectangle {
@@ -148,8 +220,10 @@ Window {
         onValueChanged: {
             matrix.yangle = value;
             board.update();
-            gobbler.update();
-            gobbler2.update();
+            gobblerWhite10.update();
+            gobblerBlack10.update();
+            gobblerBlack20.update();
+            gobblerBlack30.update();
         }
     }
 
@@ -165,8 +239,10 @@ Window {
         onValueChanged: {
             matrix.xangle = value;
             board.update();
-            gobbler.update();
-            gobbler2.update();
+            gobblerWhite10.update();
+            gobblerBlack10.update();
+            gobblerBlack20.update();
+            gobblerBlack30.update();
         }
     }
 
@@ -182,8 +258,10 @@ Window {
             matrix.zoom = value;
             board.update();
 
-            gobbler.update();
-            gobbler2.update();
+            gobblerWhite10.update();
+            gobblerBlack10.update();
+            gobblerBlack20.update();
+            gobblerBlack30.update();
         }
     }
 
