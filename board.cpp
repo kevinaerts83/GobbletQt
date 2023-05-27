@@ -52,7 +52,7 @@ double Board::getZ() {
 //![1]
 void Board::paint(QPainter *painter)
 {
-    model.Rotate(m_matrix);
+    model.Rotate(m_matrix, getX(), getY(), getZ());
     Shape::paint(m_matrix, model, painter);
 }
 //![1]

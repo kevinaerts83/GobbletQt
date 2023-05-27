@@ -41,8 +41,8 @@ Window {
         height: h
         name: "pawn"
         color: "saddlebrown"
-        tx : 100
-        ty : 100
+        tx : -100
+        ty : 0
         tz : 0
 
         MouseArea {
@@ -66,9 +66,9 @@ Window {
         height: h
         name: "pawn"
         color: "saddlebrown"
-        tx : 100
-        ty : 200
-        tz : 0
+        tx : -100
+        ty : 0
+        tz : 100
 
         MouseArea {
             anchors.fill: parent
@@ -91,9 +91,9 @@ Window {
         height: h
         name: "pawn"
         color: "saddlebrown"
-        tx : 100
-        ty : 300
-        tz : 0
+        tx : -100
+        ty : 0
+        tz : -100
 
         MouseArea {
             anchors.fill: parent
@@ -116,8 +116,8 @@ Window {
         height: h
         name: "pawn2"
         color: "ivory"
-        tx : 900
-        ty : 300
+        tx : 100
+        ty : 0
         tz : 0
 
         MouseArea {
@@ -139,8 +139,8 @@ Window {
         matrix: matrix
         width: w
         height: h
-        tx : 512
-        ty : 384
+        tx : 0
+        ty : 0
         tz : 0
     }
 

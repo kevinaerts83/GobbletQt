@@ -74,7 +74,7 @@ void Gobbler::paint(QPainter *painter)
 {
     //QPen pen(m_color, 1);
     //painter->setPen(pen);
-    model.Rotate(m_matrix);
+    model.Rotate(m_matrix, getX(), getY(), getZ());
     painter->setBrush(m_color);
     Shape::paint(m_matrix, model, painter);
 }

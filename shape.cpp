@@ -15,27 +15,11 @@ void Shape::paint(Matrix *matrix, Shape3d model, QPainter *painter)
 
     QVector<QVector<double>> points2d;
 
-    QVector<double> center = {getX(), getY(), getZ(), 1};
-
-    // TRANSLATE TO 0,0
-    double toZero [4][4];
-    matrix->getTranslationMatrix(-512, -384, 0, toZero);
-    QVector<double> centerAtZero = matrix->MultiplyPointAndMatrix(center, toZero);
-
-    // ROTATE THE CENTER
-    double rotationMatrix [4][4];
-    matrix->getRotationMatrix(rotationMatrix);
-    // rotate the cached values
-    QVector<double> centerRotated =  matrix->MultiplyPointAndMatrix(centerAtZero, rotationMatrix);
-
-    // TRANSLATE TO CENTER
-    double moveBack [4][4];
-    matrix->getTranslationMatrix(512, 384, 0, moveBack);
-    QVector<double> newCenter = matrix->MultiplyPointAndMatrix(centerRotated, moveBack);
+    QVector<double> center = {512, 384, 0, 1};
 
     // TRANSLATE THE 2D PICTURE
     double translation [4][4];
-    matrix->getTranslationMatrix(newCenter[0], newCenter[1], newCenter[2], translation);
+    matrix->getTranslationMatrix(center[0], center[1], center[2], translation);
 
     // PROJECT 2D FIGURE
     for (int i = 0; i < model.cache.size(); i++) {
