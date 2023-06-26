@@ -10,10 +10,6 @@ class Shape
 public:
     Shape();
 
-    virtual double getX() = 0;
-    virtual double getY() = 0;
-    virtual double getZ() = 0;
-
     void paint(Matrix *matrix, Shape3d model, QPainter *painter);
 private:
     bool dotProduct(QVector<QVector<double>> points, QVector<int> face);

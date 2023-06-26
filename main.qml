@@ -41,9 +41,9 @@ Window {
         height: h
         name: "pawn"
         color: "saddlebrown"
-        tx : -100
-        ty : 0
-        tz : 0
+        x3d : -100
+        y3d : -52
+        z3d : 0
 
         MouseArea {
             anchors.fill: parent
@@ -66,9 +66,9 @@ Window {
         height: h
         name: "pawn"
         color: "saddlebrown"
-        tx : -100
-        ty : 0
-        tz : 100
+        x3d : -100
+        y3d : -52
+        z3d : 100
 
         MouseArea {
             anchors.fill: parent
@@ -91,9 +91,9 @@ Window {
         height: h
         name: "pawn"
         color: "saddlebrown"
-        tx : -100
-        ty : 0
-        tz : -100
+        x3d : -100
+        y3d : -52
+        z3d : -100
 
         MouseArea {
             anchors.fill: parent
@@ -116,9 +116,9 @@ Window {
         height: h
         name: "pawn2"
         color: "ivory"
-        tx : 100
-        ty : 0
-        tz : 0
+        x3d : 100
+        y3d : -52
+        z3d : 0
 
         MouseArea {
             anchors.fill: parent
@@ -127,7 +127,8 @@ Window {
             drag.minimumX: 0
             drag.minimumY: 0
             onPositionChanged: {
-                console.log('Moved', mouseX, mouseY)
+                parent.mousex = mouseX
+                parent.mousey = mouseY
             }
         }
     }
@@ -139,9 +140,9 @@ Window {
         matrix: matrix
         width: w
         height: h
-        tx : 0
-        ty : 0
-        tz : 0
+        x3d : 0
+        y3d : 0
+        z3d : 0
     }
 
     Rectangle {

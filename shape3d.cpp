@@ -6,33 +6,12 @@ void Shape3d::Rotate(Matrix* matrix, double x, double y, double z) {
 
     this->cache.clear();
 
-    QVector<double> center = {x, y, z, 1};
-
     double translation [4][4];
-    matrix->getTranslationMatrix(center[0], center[1], center[2], translation);
+    matrix->getTranslationMatrix(x, y, z, translation);
 
     for (int i = 0; i < this->points.size(); i++) {
         this->cache.append(matrix->MultiplyPointAndMatrix(this->points[i], translation));
     }
-
-    /*
-        // TRANSLATE TO 0,0
-        double toZero [4][4];
-        matrix->getTranslationMatrix(-512, -384, 0, toZero);
-        QVector<double> centerAtZero = matrix->MultiplyPointAndMatrix(center, toZero);
-
-        // ROTATE THE CENTER
-        double rotationMatrix [4][4];
-        matrix->getRotationMatrix(rotationMatrix);
-        // rotate the cached values
-        QVector<double> centerRotated =  matrix->MultiplyPointAndMatrix(centerAtZero, rotationMatrix);
-
-        // TRANSLATE TO CENTER
-        double moveBack [4][4];
-        matrix->getTranslationMatrix(512, 384, 0, moveBack);
-        QVector<double> newCenter = matrix->MultiplyPointAndMatrix(centerRotated, moveBack);
-    */
-
 
     // fill cache
     this->Zoom(matrix);

@@ -28,53 +28,88 @@ void Gobbler::setColor(const QColor &color)
     m_color = color;
 }
 
-double Gobbler::tx() const
+double Gobbler::x3d() const
 {
-    return m_tx;
+    return m_x3d;
 }
 
-void Gobbler::setTx(const double &tx)
+void Gobbler::setX3d(const double &x3d)
 {
-    m_tx = tx;
+    m_x3d = x3d;
 }
 
-double Gobbler::ty() const
+double Gobbler::y3d() const
 {
-    return m_ty;
+    return m_y3d;
 }
 
-void Gobbler::setTy(const double &ty)
+void Gobbler::setY3d(const double &y3d)
 {
-    m_ty = ty;
+    m_y3d = y3d;
 }
 
-double Gobbler::tz() const
+double Gobbler::z3d() const
 {
-    return m_tz;
+    return m_z3d;
 }
 
-void Gobbler::setTz(const double &tz)
+void Gobbler::setZ3d(const double &z3d)
 {
-    m_tz = tz;
+    m_z3d = z3d;
 }
 
-double Gobbler::getX() {
-    return m_tx;
+double Gobbler::x2d() const
+{
+    return m_x2d;
 }
 
-double Gobbler::getY() {
-    return m_ty;
+void Gobbler::setX2d(const double &x2d)
+{
+    m_x2d = x2d;
 }
 
-double Gobbler::getZ() {
-    return m_tz;
+double Gobbler::y2d() const
+{
+    return m_y2d;
+}
+
+void Gobbler::setY2d(const double &y2d)
+{
+    m_y2d = y2d;
+}
+
+double Gobbler::mousex() const
+{
+    return m_mousex;
+}
+
+void Gobbler::setMousex(const double &mousex)
+{
+    m_mousex = mousex;
+}
+
+double Gobbler::mousey() const
+{
+    return m_mousey;
+}
+
+void Gobbler::setMousey(const double &mousey)
+{
+    m_mousey = mousey;
 }
 
 void Gobbler::paint(QPainter *painter)
 {
-    //QPen pen(m_color, 1);
-    //painter->setPen(pen);
-    model.Rotate(m_matrix, getX(), getY(), getZ());
+    //setMousex(this->mousex() - this->x());
+    //setMousey(this->mousey() - this->y());
+
+    //m_x3d = m_x3d + this->mousex();
+    //m_z3d = m_y3d + this->mousey();
+
+    //this->setX(0);
+    //this->setY(0);
+
+    model.Rotate(m_matrix, m_x3d, m_y3d, m_z3d);
     painter->setBrush(m_color);
     Shape::paint(m_matrix, model, painter);
 }
@@ -85,6 +120,7 @@ void Gobbler::on_clicked(){
     this->setColor(QColor("red"));
     //paint(painter);
 }*/
+
 //![1]
 
 /*

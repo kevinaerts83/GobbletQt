@@ -14,9 +14,15 @@ class Gobbler : public QQuickPaintedItem, public Shape
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(Matrix* matrix MEMBER m_matrix)
 
-    Q_PROPERTY(double tx READ tx WRITE setTx)
-    Q_PROPERTY(double ty READ ty WRITE setTy)
-    Q_PROPERTY(double tz READ tz WRITE setTz)
+    Q_PROPERTY(double x3d READ x3d WRITE setX3d)
+    Q_PROPERTY(double y3d READ y3d WRITE setY3d)
+    Q_PROPERTY(double z3d READ z3d WRITE setZ3d)
+
+    Q_PROPERTY(double x2d READ x2d WRITE setX2d)
+    Q_PROPERTY(double y2d READ y2d WRITE setY2d)
+
+    Q_PROPERTY(double mousex READ mousex WRITE setMousex)
+    Q_PROPERTY(double mousey READ mousey WRITE setMousey)
     QML_ELEMENT
 
 public:
@@ -30,25 +36,38 @@ public:
     QColor color() const;
     void setColor(const QColor &color);
 
-    double tx() const;
-    void setTx(const double &tx);
-    double ty() const;
-    void setTy(const double &ty);
-    double tz() const;
-    void setTz(const double &tz);
+    double x3d() const;
+    void setX3d(const double &x3d);
+    double y3d() const;
+    void setY3d(const double &y3d);
+    double z3d() const;
+    void setZ3d(const double &z3d);
 
-    double getX();
-    double getY();
-    double getZ();
+    double x2d() const;
+    void setX2d(const double &x2d);
+    double y2d() const;
+    void setY2d(const double &y2d);
+
+    double mousex() const;
+    void setMousex(const double &mousex);
+    double mousey() const;
+    void setMousey(const double &mousey);
 
     void paint(QPainter *painter);
+
 private:
     QString m_name;
     QColor m_color;
 
-    double m_tx;
-    double m_ty;
-    double m_tz;
+    double m_x3d;
+    double m_y3d;
+    double m_z3d;
+
+    double m_x2d;
+    double m_y2d;
+
+    double m_mousex;
+    double m_mousey;
 };
 
 #endif // GOBBLER_H

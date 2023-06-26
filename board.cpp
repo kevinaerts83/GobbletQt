@@ -7,52 +7,40 @@ Board::Board(QQuickItem *parent) : QQuickPaintedItem(parent), Shape()
 }
 
 //![0]
-double Board::tx() const
+double Board::x3d() const
 {
-    return m_tx;
+    return m_x3d;
 }
 
-void Board::setTx(const double &tx)
+void Board::setX3d(const double &x3d)
 {
-    m_tx = tx;
+    m_x3d = x3d;
 }
 
-double Board::ty() const
+double Board::y3d() const
 {
-    return m_ty;
+    return m_y3d;
 }
 
-void Board::setTy(const double &ty)
+void Board::setY3d(const double &y3d)
 {
-    m_ty = ty;
+    m_y3d = y3d;
 }
 
-double Board::tz() const
+double Board::z3d() const
 {
-    return m_tz;
+    return m_z3d;
 }
 
-void Board::setTz(const double &tz)
+void Board::setZ3d(const double &z3d)
 {
-    m_tz = tz;
-}
-
-double Board::getX() {
-    return m_tx;
-}
-
-double Board::getY() {
-    return m_ty;
-}
-
-double Board::getZ() {
-    return m_tz;
+    m_z3d = z3d;
 }
 
 //![1]
 void Board::paint(QPainter *painter)
 {
-    model.Rotate(m_matrix, getX(), getY(), getZ());
+    model.Rotate(m_matrix, x3d(), y3d(), z3d());
     Shape::paint(m_matrix, model, painter);
 }
 //![1]
