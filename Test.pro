@@ -20,6 +20,7 @@ SOURCES += \
         gobbler3d.cpp \
         main.cpp \
         matrix.cpp \
+        mediator.cpp \
         piechart.cpp \
         shape.cpp \
         shape3d.cpp
@@ -43,6 +44,7 @@ HEADERS += \
     gobbler.h \
     gobbler3d.h \
     matrix.h \
+    mediator.h \
     piechart.h \
     shape.h \
     shape3d.h

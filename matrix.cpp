@@ -7,7 +7,7 @@ Matrix::Matrix(QQuickItem *parent) : QQuickItem(parent)
     double width = 1024;
     double height = 768;
 
-    double centerX = width/ 2;
+    double centerX = width / 2;
     double centerY = height / 2;
     double centerZ = 0;
 

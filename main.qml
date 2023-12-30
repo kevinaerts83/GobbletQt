@@ -18,20 +18,30 @@ Window {
     //property alias dropEnabled: acceptDropCB.checked
     //color: dropArea.containsDrag ? "#CFC" : "#EEE"
 
-    /*Rectangle
+    Rectangle
     {
         anchors.fill: parent
-        gradient: Gradient
-        {
-            GradientStop {position: 0.500;color: Qt.rgba(0, 0.5, 0, 1);}
-            GradientStop {position: 1.000;color: Qt.rgba(0, 0.2, 0, 1);}
+        id : clickArea
+        property bool isBlue: true
+        color: isBlue ? "blue" : "red"
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                clickArea.isBlue = !clickArea.isBlue
+            }
         }
-    }*/
+    }
+
+    Mediator {
+        id:mediator
+    }
 
     Matrix {
         id:matrix
     }
 
+    /*
     Gobbler {
         id: gobblerBlack10
         x: 0
@@ -105,12 +115,12 @@ Window {
                 console.log('Moved', mouseX, mouseY)
             }
         }
-    }
+    }*/
 
     Gobbler {
         id: gobblerWhite10
-        x: 0
-        y: 0
+        x: 50
+        y: 50
         matrix: matrix
         width: w
         height: h
@@ -120,16 +130,8 @@ Window {
         y3d : -52
         z3d : 0
 
-        MouseArea {
-            anchors.fill: parent
-            drag.target: gobblerWhite10
-            drag.axis: Drag.XAndYAxis
-            drag.minimumX: 0
-            drag.minimumY: 0
-            onPositionChanged: {
-                parent.mousex = mouseX
-                parent.mousey = mouseY
-            }
+        Component.onCompleted: {
+            mediator.addItem(this);
         }
     }
 
@@ -140,31 +142,6 @@ Window {
         matrix: matrix
         width: w
         height: h
-        x3d : 0
-        y3d : 0
-        z3d : 0
-    }
-
-    Rectangle {
-        id: rect
-        width: 100
-        height: 100
-        property bool isBlue: true
-        color: isBlue ? "blue" : "red"
-        border.color: "black"
-        border.width: 5
-        radius: 10
-
-        MouseArea {
-           anchors.fill: parent
-           onClicked: {
-               rect.isBlue = !rect.isBlue
-           }
-           drag.target: rect
-           drag.axis: Drag.XAndYAxis
-           drag.minimumX: 0
-           drag.minimumY: 0
-       }
     }
 
     /*Shape {
@@ -188,28 +165,6 @@ Window {
         }
     }*/
 
-    /*PieChart {
-        id: pie
-        x: 100
-        y: 100
-        width: 100
-        height: 100
-        name: "A simple pie chart"
-        property bool isBlue: true
-        color: isBlue ? "blue" : "red"
-
-        MouseArea {
-           anchors.fill: parent
-           onClicked: {
-               pie.isBlue = !pie.isBlue
-           }
-           drag.target: pie
-           drag.axis: Drag.XAndYAxis
-           drag.minimumX: 0
-           drag.minimumY: 0
-       }
-    }*/
-
     // turns around y-axis
     Slider {
         x : 30
@@ -221,10 +176,7 @@ Window {
         onValueChanged: {
             matrix.yangle = value;
             board.update();
-            gobblerWhite10.update();
-            gobblerBlack10.update();
-            gobblerBlack20.update();
-            gobblerBlack30.update();
+            mediator.repaint();
         }
     }
 
@@ -240,10 +192,7 @@ Window {
         onValueChanged: {
             matrix.xangle = value;
             board.update();
-            gobblerWhite10.update();
-            gobblerBlack10.update();
-            gobblerBlack20.update();
-            gobblerBlack30.update();
+            mediator.repaint();
         }
     }
 
@@ -258,11 +207,27 @@ Window {
         onValueChanged: {
             matrix.zoom = value;
             board.update();
+            mediator.repaint();
+        }
+    }
 
-            gobblerWhite10.update();
-            gobblerBlack10.update();
-            gobblerBlack20.update();
-            gobblerBlack30.update();
+    Button {
+        x : w-100
+        y : 100
+        text: "rigth"
+        onClicked: {
+            gobblerWhite10.x3d += 30;
+            mediator.repaint();
+        }
+    }
+
+    Button {
+        x : w-150
+        y : 100
+        text: "left"
+        onClicked: {
+            gobblerWhite10.x3d -= 30;
+            mediator.repaint();
         }
     }
 
