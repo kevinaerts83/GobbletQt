@@ -32,8 +32,10 @@ public:
     void MultiplyMatrixAndMatrix(double matrix1 [4][4], double matrix2 [4][4], double result [4][4]);
 
     void getTranslationMatrix(double x, double y, double z, double result [4][4]);
+    void getInverseTranslationMatrix(double result [4][4]);
     void getScalingMatrix(double result [4][4]);
     void getRotationMatrix(double result [4][4]);
+    void get3dPoint(double result [4], const double x, const double y);
 
     double xangle() const;
     void setXangle(const double &xangle);

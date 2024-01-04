@@ -18,27 +18,28 @@ Window {
     //property alias dropEnabled: acceptDropCB.checked
     //color: dropArea.containsDrag ? "#CFC" : "#EEE"
 
-    Rectangle
-    {
-        anchors.fill: parent
-        id : clickArea
-        property bool isBlue: true
-        color: isBlue ? "blue" : "red"
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                clickArea.isBlue = !clickArea.isBlue
-            }
-        }
+    Matrix {
+        id:matrix
     }
 
     Mediator {
         id:mediator
     }
 
-    Matrix {
-        id:matrix
+    Rectangle
+    {
+        anchors.fill: parent
+        id : clickArea
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+
+            }
+            onPressed: (mouse)=> {
+                mediator.onClick(matrix, mouse.x, mouse.y);
+            }
+        }
     }
 
     /*
@@ -216,7 +217,9 @@ Window {
         y : 100
         text: "rigth"
         onClicked: {
-            gobblerWhite10.x3d += 30;
+            gobblerWhite10.x3d = 100;
+            gobblerWhite10.y3d = -52;
+            gobblerWhite10.z3d = 0;
             mediator.repaint();
         }
     }

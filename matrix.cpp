@@ -1,5 +1,6 @@
 #include "matrix.h"
 #include "cmath"
+#include <iostream>
 
 //constructor
 Matrix::Matrix(QQuickItem *parent) : QQuickItem(parent)
@@ -64,6 +65,15 @@ void Matrix::MultiplyMatrixAndMatrix(double matrix1 [4][4], double matrix2 [4][4
     }
 }
 
+void Matrix::getInverseTranslationMatrix(double result [4][4])
+{
+    for(int i = 0; i < 4; i += 1) {
+        for(int j = 0; j < 4; j += 1) {
+            result[i][j] = this->m_inverseTranslation[i][j];
+        }
+    }
+}
+
 void Matrix::getTranslationMatrix(double x, double y, double z, double result [4][4])
 {
     double init [4][4] = {{1.0, 0, 0, x}, {0, 1.0, 0, y}, {0, 0, 1.0, z}, {0, 0, 0, 1.0}};
@@ -96,6 +106,48 @@ void Matrix::getRotationMatrix(double result [4][4])
     double yFacesMatrix [4][4] = {{cosy, 0, siny, 0}, {0, 1.0, 0, 0}, {-siny, 0, cosy, 0}, {0, 0, 0, 1.0}};
 
     this->MultiplyMatrixAndMatrix(xFacesMatrix, yFacesMatrix, result);
+}
+
+void Matrix::get3dPoint(double result [4], const double x, const double y) {
+
+    double tx = x + this->m_translation[0][3];
+    double tz = y + this->m_translation[1][3];
+    double ty = tz * sin(90 - this->xangle()) / sin(this->xangle());
+
+    double f = -1.0/900.0;
+    double s = 1;
+
+    std::cout << tx << std::endl;
+    std::cout << ty << std::endl;
+
+    tx = tx * ((tz * f) + s);
+    ty = ty * ((tz * f) + s);
+
+    std::cout << tx << std::endl;
+    std::cout << ty << std::endl;
+
+    QVector<double> point = {tx, ty, tz, 1};
+
+    this->setZoom(this->zoom() * -1);
+    double scalingMatrix [4][4];
+    this->getScalingMatrix(scalingMatrix);
+    // scale the cached values
+    this->MultiplyPointAndMatrix(point, scalingMatrix);
+    this->setZoom(this->zoom() * -1);
+
+    this->setXangle(this->m_xangle * -1);
+    this->setYangle(this->m_yangle * -1);
+
+    double rotationMatrix [4][4];
+    this->getRotationMatrix(rotationMatrix);
+    this->MultiplyPointAndMatrix(point, scalingMatrix);
+
+    this->setXangle(this->m_xangle * -1);
+    this->setYangle(this->m_yangle * -1);
+
+    for(int i = 0; i < 4; i += 1) {
+        result[i] = point[i];
+    }
 }
 
 double Matrix::xangle() const { return m_xangle; }

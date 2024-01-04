@@ -20,6 +20,8 @@ public:
 public slots:
     void addItem(Gobbler *gobbler);
     void repaint();
+    void onClick(Matrix *matrix, const double x, const double y);
+
 signals:
     void itemListChanged();
 

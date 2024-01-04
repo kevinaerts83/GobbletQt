@@ -7,7 +7,6 @@ void Shape3d::Rotate(Matrix* matrix, double x, double y, double z) {
     this->cache.clear();
 
     double translation [4][4];
-
     matrix->getTranslationMatrix(x, y, z, translation);
 
     for (int i = 0; i < this->points.size(); i++) {

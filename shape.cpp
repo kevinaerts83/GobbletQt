@@ -15,11 +15,9 @@ void Shape::paint(Matrix *matrix, Shape3d model, QPainter *painter)
 
     QVector<QVector<double>> points2d;
 
-    QVector<double> center = {512, 384, 0, 1};
-
     // TRANSLATE THE 2D PICTURE
     double translation [4][4];
-    matrix->getTranslationMatrix(center[0], center[1], center[2], translation);
+    matrix->getInverseTranslationMatrix(translation);
 
     // PROJECT 2D FIGURE
     for (int i = 0; i < model.cache.size(); i++) {
