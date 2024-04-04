@@ -4,7 +4,7 @@ gobbler3d::gobbler3d() : Shape3d()
 {
     double tileSize = 80;
     double w = (tileSize - 5.0) / 2;
-    double h = (tileSize * 1.3) / 2;
+    double h = (tileSize * 1.3);
     double d = w;
 
     /**
@@ -19,16 +19,16 @@ gobbler3d::gobbler3d() : Shape3d()
      *       	#  #    -  #
      *       	#  #    -  #
      *       	#  #    -  #
-     *       	0--#----1  #
+     *       	2--#----3  #
      *       	 # #     - #
      *       	  ##      -#
-     *       	   3#######2
+     *       	   1#######0
     */
     this->points = {
-        {w, h, d, 1},
-        {-w, h, d, 1},
-        {-w, h, -d, 1},
-        {w, h, -d, 1},
+        {w, 0, d, 1},
+        {-w, 0, d, 1},
+        {-w, 0, -d, 1},
+        {w, 0, -d, 1},
         {w/2, -h, d/2, 1},
         {-w/2, -h, d/2, 1},
         {-w/2, -h, -d/2, 1},

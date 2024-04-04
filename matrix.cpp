@@ -110,40 +110,34 @@ void Matrix::getRotationMatrix(double result [4][4])
 
 void Matrix::get3dPoint(double result [4], const double x, const double y) {
 
+    // double f = -1.0/900.0;
+    // double s = 1;
+    // * ((y * f) + s)
     double tx = x + this->m_translation[0][3];
     double tz = y + this->m_translation[1][3];
     double ty = tz * sin(90 - this->xangle()) / sin(this->xangle());
 
-    double f = -1.0/900.0;
-    double s = 1;
-
-    std::cout << tx << std::endl;
-    std::cout << ty << std::endl;
-
-    tx = tx * ((tz * f) + s);
-    ty = ty * ((tz * f) + s);
-
-    std::cout << tx << std::endl;
+    std::cout << tx << ' ';
+    std::cout << tz << ' ';
     std::cout << ty << std::endl;
 
     QVector<double> point = {tx, ty, tz, 1};
 
-    this->setZoom(this->zoom() * -1);
+    double zoom = m_zoom;
+    m_zoom = 1 / zoom;
     double scalingMatrix [4][4];
     this->getScalingMatrix(scalingMatrix);
     // scale the cached values
-    this->MultiplyPointAndMatrix(point, scalingMatrix);
-    this->setZoom(this->zoom() * -1);
+    point = this->MultiplyPointAndMatrix(point, scalingMatrix);
+    m_zoom = zoom;
 
-    this->setXangle(this->m_xangle * -1);
-    this->setYangle(this->m_yangle * -1);
-
+    /*m_xangle *= -1;
+    m_yangle *= -1;
     double rotationMatrix [4][4];
     this->getRotationMatrix(rotationMatrix);
-    this->MultiplyPointAndMatrix(point, scalingMatrix);
-
-    this->setXangle(this->m_xangle * -1);
-    this->setYangle(this->m_yangle * -1);
+    point = this->MultiplyPointAndMatrix(point, rotationMatrix);
+    m_xangle *= -1;
+    m_yangle *= -1;*/
 
     for(int i = 0; i < 4; i += 1) {
         result[i] = point[i];

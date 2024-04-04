@@ -120,15 +120,15 @@ Window {
 
     Gobbler {
         id: gobblerWhite10
-        x: 50
-        y: 50
+        x: 0
+        y: 0
         matrix: matrix
         width: w
         height: h
         name: "pawn2"
         color: "ivory"
-        x3d : 100
-        y3d : -52
+        x3d : 0
+        y3d : 0
         z3d : 0
 
         Component.onCompleted: {
@@ -185,7 +185,7 @@ Window {
     Slider {
         x: 0
         y : 30
-        value: 45
+        value: 90
         from: 90
         to: 0
         stepSize: 1
