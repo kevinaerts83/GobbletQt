@@ -1,6 +1,8 @@
 #include "matrix.h"
 #include "cmath"
 #include <iostream>
+#include <cmath>
+using namespace std;
 
 //constructor
 Matrix::Matrix(QQuickItem *parent) : QQuickItem(parent)
@@ -108,40 +110,66 @@ void Matrix::getRotationMatrix(double result [4][4])
     this->MultiplyMatrixAndMatrix(xFacesMatrix, yFacesMatrix, result);
 }
 
+void Matrix::getTransposedMatrix(double matrix [4][4], double result [4][4]) {
+    for(int i = 0; i < 4; i += 1) {
+        for(int j = 0; j < 4; j += 1) {
+            result[i][j] = matrix[j][i];
+        }
+    }
+}
+
 void Matrix::get3dPoint(double result [4], const double x, const double y) {
 
-    // double f = -1.0/900.0;
-    // double s = 1;
-    // * ((y * f) + s)
-    double tx = x + this->m_translation[0][3];
-    double tz = y + this->m_translation[1][3];
-    double ty = tz * sin(90 - this->xangle()) / sin(this->xangle());
+    // reverse translate
+    double rtx = x + this->m_translation[0][3];
+    double rty = y + this->m_translation[1][3];
+    double rtz = 0;
 
-    std::cout << tx << ' ';
-    std::cout << tz << ' ';
-    std::cout << ty << std::endl;
+    QVector<double> point = {rtx, rty, rtz, 1};
 
-    QVector<double> point = {tx, ty, tz, 1};
-
+    // reverse zoom
     double zoom = m_zoom;
     m_zoom = 1 / zoom;
     double scalingMatrix [4][4];
     this->getScalingMatrix(scalingMatrix);
-    // scale the cached values
     point = this->MultiplyPointAndMatrix(point, scalingMatrix);
     m_zoom = zoom;
 
-    /*m_xangle *= -1;
-    m_yangle *= -1;
+    // reverse rotation
     double rotationMatrix [4][4];
     this->getRotationMatrix(rotationMatrix);
-    point = this->MultiplyPointAndMatrix(point, rotationMatrix);
-    m_xangle *= -1;
-    m_yangle *= -1;*/
+    double transposedMatrix [4][4];
+    getTransposedMatrix(rotationMatrix, transposedMatrix);
+    point = this->MultiplyPointAndMatrix(point, transposedMatrix);
 
-    for(int i = 0; i < 4; i += 1) {
-        result[i] = point[i];
-    }
+
+    // project the point on the model
+    double prx = point[0];
+    // double prz = sqrt(pow(point[1], 2) + pow(point[2], 2));
+    double prz = point[2] / sin(this->xangle() * 0.0174533);
+
+    std::cout << "dept: " << point[1] << ' ';
+    std::cout << "height: " << point[2] << ' ';
+    std::cout << "new side: " << prz << ' ';
+    std::cout << "cosinus: " << sin(this->xangle() * 0.0174533) << ' ';
+    std::cout << "x angle: " << m_xangle << std::endl;
+
+    // double f = -1.0/900.0;
+    // double s = 1;
+    // * ((y * f) + s)
+    // double tx = prx; // - x * yt * f
+    // double ty = pry; // / cos(90 - this->xangle())
+    // double tz = prz;
+    //  yt * cos(90 - this->yangle()) sin(90 - this->xangle()) / sin(this->xangle())
+
+    std::cout << "model x: " << prx << ' ';
+    std::cout << "model y: " << prz << std::endl;
+
+    // finish method
+    result[0] = prx;
+    result[1] = 0;
+    result[2] = prz;
+    result[3] = 0;
 }
 
 double Matrix::xangle() const { return m_xangle; }

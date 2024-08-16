@@ -120,8 +120,6 @@ Window {
 
     Gobbler {
         id: gobblerWhite10
-        x: 0
-        y: 0
         matrix: matrix
         width: w
         height: h
@@ -187,7 +185,7 @@ Window {
         y : 30
         value: 90
         from: 90
-        to: 0
+        to: 10
         stepSize: 1
         orientation: "Vertical"
         onValueChanged: {
@@ -213,23 +211,23 @@ Window {
     }
 
     Button {
-        x : w-100
-        y : 100
-        text: "rigth"
+        x : w-80
+        y : 200
+        text: "right"
         onClicked: {
-            gobblerWhite10.x3d = 100;
-            gobblerWhite10.y3d = -52;
-            gobblerWhite10.z3d = 0;
+            matrix.xangle -= 10;
+            board.update();
             mediator.repaint();
         }
     }
 
     Button {
-        x : w-150
-        y : 100
+        x : w-180
+        y : 200
         text: "left"
         onClicked: {
-            gobblerWhite10.x3d -= 30;
+            matrix.xangle += 10;
+            board.update();
             mediator.repaint();
         }
     }
