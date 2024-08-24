@@ -1,8 +1,5 @@
 #include "matrix.h"
-#include "cmath"
-#include <iostream>
 #include <cmath>
-using namespace std;
 
 //constructor
 Matrix::Matrix(QQuickItem *parent) : QQuickItem(parent)
@@ -45,12 +42,10 @@ QVector<double> Matrix::ProjectPoint(QVector<double> podouble)
 {
     QVector<double> p = this->MultiplyPointAndMatrix(podouble, this->m_translation);
     double x = p[0],
-    y = p[1],
-    z = p[2],
-    f = -1.0/900.0,
-    s = 1;
+        y = p[1],
+        fishEye = (p[2] * -1.0/900.0) + 1;
 
-    QVector<double> p2 = {x / ((z * f) + s), y / ((z * f) + s), 0, 1};
+    QVector<double> p2 = {x / fishEye, y / fishEye, 0, 1};
 
     return this->MultiplyPointAndMatrix(p2, this->m_inverseTranslation);
 }
@@ -123,7 +118,12 @@ void Matrix::get3dPoint(double result [4], const double x, const double y) {
     // reverse translate
     double rtx = x + this->m_translation[0][3];
     double rty = y + this->m_translation[1][3];
-    double rtz = 0;
+    double rtz = rty * sin(qDegreesToRadians(90 - this->xangle()));
+
+    // undo fish eye projection
+    double fishEye = (rtz * -1.0/900.0) + 1;
+    rtx = rtx * fishEye;
+    rty = rty * fishEye;
 
     QVector<double> point = {rtx, rty, rtz, 1};
 
@@ -142,33 +142,15 @@ void Matrix::get3dPoint(double result [4], const double x, const double y) {
     getTransposedMatrix(rotationMatrix, transposedMatrix);
     point = this->MultiplyPointAndMatrix(point, transposedMatrix);
 
-
-    // project the point on the model
-    double prx = point[0];
-    // double prz = sqrt(pow(point[1], 2) + pow(point[2], 2));
-    double prz = point[2] / sin(this->xangle() * 0.0174533);
-
-    std::cout << "dept: " << point[1] << ' ';
-    std::cout << "height: " << point[2] << ' ';
-    std::cout << "new side: " << prz << ' ';
-    std::cout << "cosinus: " << sin(this->xangle() * 0.0174533) << ' ';
-    std::cout << "x angle: " << m_xangle << std::endl;
-
-    // double f = -1.0/900.0;
-    // double s = 1;
-    // * ((y * f) + s)
-    // double tx = prx; // - x * yt * f
-    // double ty = pry; // / cos(90 - this->xangle())
-    // double tz = prz;
-    //  yt * cos(90 - this->yangle()) sin(90 - this->xangle()) / sin(this->xangle())
-
-    std::cout << "model x: " << prx << ' ';
-    std::cout << "model y: " << prz << std::endl;
+    // project point to base level (z = 0)
+    // because we revert the rotation are point has in/de-creased on the z-axis.
+    point[0] = point[0] + point[1] * sin(qDegreesToRadians(this->yangle()));
+    point[2] = point[2] + point[1] * cos(qDegreesToRadians(this->yangle()));
 
     // finish method
-    result[0] = prx;
+    result[0] = point[0];
     result[1] = 0;
-    result[2] = prz;
+    result[2] = point[2];
     result[3] = 0;
 }
 

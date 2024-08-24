@@ -185,7 +185,7 @@ Window {
         y : 30
         value: 90
         from: 90
-        to: 10
+        to: 35
         stepSize: 1
         orientation: "Vertical"
         onValueChanged: {
@@ -215,7 +215,7 @@ Window {
         y : 200
         text: "right"
         onClicked: {
-            matrix.xangle -= 10;
+            matrix.xangle = 45;
             board.update();
             mediator.repaint();
         }

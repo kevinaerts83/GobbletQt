@@ -16,16 +16,6 @@ class Matrix : public QQuickItem
 
 public:
     Matrix(QQuickItem *parent = 0);
-    //virtual ~Matrix() {}
-    //Matrix(double width, double height);
-
-    /*static Matrix & instance(double width, double height) {
-        static Matrix * _instance = 0;
-        if ( _instance == 0 ) {
-            _instance = new Matrix(width, height);
-        }
-        return *_instance;
-    }*/
 
     QVector<double> MultiplyPointAndMatrix(QVector<double> point, double matrix [4][4]);
     QVector<double> ProjectPoint(QVector<double> point);

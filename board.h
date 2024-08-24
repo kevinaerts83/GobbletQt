@@ -21,7 +21,6 @@ public:
     Matrix* m_matrix;
 
     void paint(QPainter *painter);
-private:
 };
 
 #endif // BOARD_H
