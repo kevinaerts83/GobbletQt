@@ -14,6 +14,7 @@ class Gobbler : public QQuickPaintedItem, public Shape
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(Matrix* matrix MEMBER m_matrix)
 
+    Q_PROPERTY(bool visible READ visible WRITE setVisible)
     Q_PROPERTY(double x3d READ x3d WRITE setX3d)
     Q_PROPERTY(double y3d READ y3d WRITE setY3d)
     Q_PROPERTY(double z3d READ z3d WRITE setZ3d)
@@ -31,6 +32,9 @@ public:
     QColor color() const;
     void setColor(const QColor &color);
 
+    bool visible() const;
+    void setVisible(const double &visible);
+
     double x3d() const;
     void setX3d(const double &x3d);
     double y3d() const;
@@ -44,6 +48,7 @@ private:
     QString m_name;
     QColor m_color;
 
+    bool m_visible;
     double m_x3d;
     double m_y3d;
     double m_z3d;

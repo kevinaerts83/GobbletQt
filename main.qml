@@ -15,9 +15,6 @@ Window {
     //color: "#006400"
     title: qsTr("Gobblet")
 
-    //property alias dropEnabled: acceptDropCB.checked
-    //color: dropArea.containsDrag ? "#CFC" : "#EEE"
-
     Matrix {
         id:matrix
     }
@@ -42,71 +39,25 @@ Window {
         }
     }
 
-    /*
     Gobbler {
-        id: gobblerBlack10
+        id: b10
         x: 0
         y: 0
         matrix: matrix
         width: w
         height: h
-        name: "pawn"
+        name: "10"
         color: "saddlebrown"
+        visible: true
         x3d : -100
         y3d : -52
         z3d : 0
 
-        MouseArea {
-            anchors.fill: parent
-            drag.target: gobblerBlack10
-            drag.axis: Drag.XAndYAxis
-            drag.minimumX: 0
-            drag.minimumY: 0
-            onPositionChanged: {
-                console.log('Moved', mouseX, mouseY)
-            }
+        Component.onCompleted: {
+            mediator.addBlackItem(this);
         }
-    }
 
-    Gobbler {
-        id: gobblerBlack20 // 21 22 23 (smallest)
-        x: 0
-        y: 0
-        matrix: matrix
-        width: w
-        height: h
-        name: "pawn"
-        color: "saddlebrown"
-        x3d : -100
-        y3d : -52
-        z3d : 100
-
-        MouseArea {
-            anchors.fill: parent
-            drag.target: gobblerBlack20
-            drag.axis: Drag.XAndYAxis
-            drag.minimumX: 0
-            drag.minimumY: 0
-            onPositionChanged: {
-                console.log('Moved', mouseX, mouseY)
-            }
-        }
-    }
-
-    Gobbler {
-        id: gobblerBlack30
-        x: 0
-        y: 0
-        matrix: matrix
-        width: w
-        height: h
-        name: "pawn"
-        color: "saddlebrown"
-        x3d : -100
-        y3d : -52
-        z3d : -100
-
-        MouseArea {
+        /*MouseArea {
             anchors.fill: parent
             drag.target: gobblerBlack30
             drag.axis: Drag.XAndYAxis
@@ -115,8 +66,68 @@ Window {
             onPositionChanged: {
                 console.log('Moved', mouseX, mouseY)
             }
+        }*/
+    }
+
+    Gobbler {
+        id: b20 // 21 22 23 (smallest)
+        x: 0
+        y: 0
+        matrix: matrix
+        width: w
+        height: h
+        name: "20"
+        color: "saddlebrown"
+        visible: true
+        x3d : -100
+        y3d : -52
+        z3d : 100
+
+        Component.onCompleted: {
+            mediator.addBlackItem(this);
         }
-    }*/
+
+        /*MouseArea {
+            anchors.fill: parent
+            drag.target: gobblerBlack30
+            drag.axis: Drag.XAndYAxis
+            drag.minimumX: 0
+            drag.minimumY: 0
+            onPositionChanged: {
+                console.log('Moved', mouseX, mouseY)
+            }
+        }*/
+    }
+
+    Gobbler {
+        id: b30
+        x: 0
+        y: 0
+        matrix: matrix
+        width: w
+        height: h
+        name: "30"
+        color: "saddlebrown"
+        visible: true
+        x3d : -100
+        y3d : -52
+        z3d : -100
+
+        Component.onCompleted: {
+            mediator.addBlackItem(this);
+        }
+
+        /*MouseArea {
+            anchors.fill: parent
+            drag.target: gobblerBlack30
+            drag.axis: Drag.XAndYAxis
+            drag.minimumX: 0
+            drag.minimumY: 0
+            onPositionChanged: {
+                console.log('Moved', mouseX, mouseY)
+            }
+        }*/
+    }
 
     Gobbler {
         id: gobblerWhite10
@@ -125,12 +136,13 @@ Window {
         height: h
         name: "pawn2"
         color: "ivory"
+        visible: true
         x3d : 0
         y3d : 0
         z3d : 0
 
         Component.onCompleted: {
-            mediator.addItem(this);
+            mediator.addWhiteItem(this);
         }
     }
 
@@ -141,6 +153,10 @@ Window {
         matrix: matrix
         width: w
         height: h
+
+        Component.onCompleted: {
+            mediator.setBoard(this);
+        }
     }
 
     /*Shape {
@@ -174,7 +190,6 @@ Window {
         stepSize: 1
         onValueChanged: {
             matrix.yangle = value;
-            board.update();
             mediator.repaint();
         }
     }
@@ -190,7 +205,6 @@ Window {
         orientation: "Vertical"
         onValueChanged: {
             matrix.xangle = value;
-            board.update();
             mediator.repaint();
         }
     }
@@ -205,7 +219,6 @@ Window {
         orientation: "Vertical"
         onValueChanged: {
             matrix.zoom = value;
-            board.update();
             mediator.repaint();
         }
     }
@@ -216,7 +229,6 @@ Window {
         text: "right"
         onClicked: {
             matrix.xangle = 45;
-            board.update();
             mediator.repaint();
         }
     }
@@ -227,7 +239,6 @@ Window {
         text: "left"
         onClicked: {
             matrix.xangle += 10;
-            board.update();
             mediator.repaint();
         }
     }

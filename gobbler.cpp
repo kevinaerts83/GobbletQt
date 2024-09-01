@@ -28,6 +28,16 @@ void Gobbler::setColor(const QColor &color)
     m_color = color;
 }
 
+bool Gobbler::visible() const
+{
+    return m_visible;
+}
+
+void Gobbler::setVisible(const double &visible)
+{
+    m_visible = visible;
+}
+
 double Gobbler::x3d() const
 {
     return m_x3d;
