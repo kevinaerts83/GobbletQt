@@ -1,5 +1,9 @@
 #include "mediator.h"
 #include <QQmlEngine>
+#include <iostream>
+#include <ostream>
+
+#include "gobbler.h"
 
 Mediator::Mediator(QQuickItem *parent) : QQuickItem(parent)
 {
@@ -15,29 +19,16 @@ Mediator::Mediator(QQuickItem *parent) : QQuickItem(parent)
  * ...
  * */
 
-QList<Gobbler*> Mediator::getWhiteList() const
+QList<Gobbler*> Mediator::getList() const
 {
-    return m_whiteList;
+    return m_list;
 }
 
-void Mediator::addWhiteItem(Gobbler *gobbler)
+void Mediator::addItem(Gobbler *gobbler)
 {
     if (gobbler) {
-        m_whiteList.append(gobbler);
-        emit whiteListChanged();
-    }
-}
-
-QList<Gobbler*> Mediator::getBlackList() const
-{
-    return m_blackList;
-}
-
-void Mediator::addBlackItem(Gobbler *gobbler)
-{
-    if (gobbler) {
-        m_blackList.append(gobbler);
-        emit blackListChanged();
+        m_list.append(gobbler);
+        emit listChanged();
     }
 }
 
@@ -73,13 +64,17 @@ void Mediator::setBoard(Board* board)
 
 void Mediator::repaint()
 {
-    for (const auto& item : getWhiteList()) {
-        item -> update();
+    getBoard()->update();
+
+    std::sort(m_list.begin(), m_list.end(), Gobbler::compareByZindex);
+    for (int i = 0; i < m_list.size(); i++) {
+        m_list[i]->setZ(i);
     }
-    for (const auto& item : getBlackList()) {
-        item -> update();
+    for (const auto& item : m_list) {
+        if (item->depth() == 0) {
+            item->update();
+        }
     }
-    getBoard() -> update();
 }
 
 void Mediator::onClick(Matrix *matrix, const double x, const double y)
@@ -87,32 +82,39 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y)
     double coord [4];
     matrix -> get3dPoint(coord, x, y);
 
+    int roundX = ceil(coord[0] / 150) * 150 - 75;
+    int roundZ = ceil(coord[2] / 150) * 150 - 75;
+    int borderZ = (abs(roundX) > 225) ? ((coord[2] > 75) ? 150 : ((coord[2] < -75) ? -150 : 0)) : roundZ;
+
     if (getSelection() != NULL) {
-        getSelection()->setX3d(coord[0]);
+
+        for (const auto& item : getList()) {
+            if (item->depth() == (getSelection()->depth() + 1)
+                && item->x3d() == getSelection()->x3d()
+                && item->z3d() == getSelection()->z3d()) {
+
+                item->setDepth(item->depth() - 1);
+            }
+
+            if (item->x3d() == roundX && item->z3d() == roundZ) {
+                item->setDepth(item->depth() + 1);
+            }
+        }
+
+        getSelection()->setX3d(roundX);
         getSelection()->setY3d(coord[1]);
-        getSelection()->setZ3d(coord[2]);
+        getSelection()->setZ3d(roundZ);
 
         setSelection(NULL);
-    }
-
-    for (const auto& item : getWhiteList()) {
-
-        if (item->x3d() > coord[0] - 50 && item->x3d() < coord[0] + 50 &&
-            item->y3d() > coord[1] - 50 && item->y3d() < coord[1] + 50) {
-
-            setSelection(item);
+    } else {
+        for (const auto& item : getList()) {
+            if (item->depth() == 0 && item->x3d() == roundX && item->z3d() == borderZ) {
+                setSelection(item);
+            }
         }
-        item -> update();
     }
-
-    for (const auto& item : getBlackList()) {
-
-        if (item->x3d() > coord[0] - 50 && item->x3d() < coord[0] + 50 &&
-            item->y3d() > coord[1] - 50 && item->y3d() < coord[1] + 50) {
-
-            setSelection(item);
-        }
-        item -> update();
+    if (m_selection == NULL) {
+        repaint();
     }
 }
 

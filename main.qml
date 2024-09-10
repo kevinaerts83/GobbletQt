@@ -47,26 +47,15 @@ Window {
         width: w
         height: h
         name: "10"
-        color: "saddlebrown"
-        visible: true
-        x3d : -100
-        y3d : -52
-        z3d : 0
+        isWhite: false
+        depth: 0
+        x3d : 375
+        y3d : 0
+        z3d : -150
 
         Component.onCompleted: {
-            mediator.addBlackItem(this);
+            mediator.addItem(this);
         }
-
-        /*MouseArea {
-            anchors.fill: parent
-            drag.target: gobblerBlack30
-            drag.axis: Drag.XAndYAxis
-            drag.minimumX: 0
-            drag.minimumY: 0
-            onPositionChanged: {
-                console.log('Moved', mouseX, mouseY)
-            }
-        }*/
     }
 
     Gobbler {
@@ -77,26 +66,15 @@ Window {
         width: w
         height: h
         name: "20"
-        color: "saddlebrown"
-        visible: true
-        x3d : -100
-        y3d : -52
-        z3d : 100
+        isWhite: false
+        depth: 0
+        x3d : 375
+        y3d : 0
+        z3d : 0
 
         Component.onCompleted: {
-            mediator.addBlackItem(this);
+            mediator.addItem(this);
         }
-
-        /*MouseArea {
-            anchors.fill: parent
-            drag.target: gobblerBlack30
-            drag.axis: Drag.XAndYAxis
-            drag.minimumX: 0
-            drag.minimumY: 0
-            onPositionChanged: {
-                console.log('Moved', mouseX, mouseY)
-            }
-        }*/
     }
 
     Gobbler {
@@ -107,42 +85,82 @@ Window {
         width: w
         height: h
         name: "30"
-        color: "saddlebrown"
-        visible: true
-        x3d : -100
-        y3d : -52
-        z3d : -100
+        isWhite: false
+        depth: 0
+        x3d : 375
+        y3d : 0
+        z3d : 150
 
         Component.onCompleted: {
-            mediator.addBlackItem(this);
+            mediator.addItem(this);
         }
-
-        /*MouseArea {
-            anchors.fill: parent
-            drag.target: gobblerBlack30
-            drag.axis: Drag.XAndYAxis
-            drag.minimumX: 0
-            drag.minimumY: 0
-            onPositionChanged: {
-                console.log('Moved', mouseX, mouseY)
-            }
-        }*/
     }
 
     Gobbler {
-        id: gobblerWhite10
+        id: w10
         matrix: matrix
         width: w
         height: h
-        name: "pawn2"
-        color: "ivory"
-        visible: true
-        x3d : 0
+        name: "w10"
+        isWhite: true
+        depth: 0
+        x3d : -375
+        y3d : 0
+        z3d : -150
+
+        Component.onCompleted: {
+            mediator.addItem(this);
+        }
+    }
+
+    Gobbler {
+        id: w20
+        matrix: matrix
+        width: w
+        height: h
+        name: "w20"
+        isWhite: true
+        depth: 0
+        x3d : -375
         y3d : 0
         z3d : 0
 
         Component.onCompleted: {
-            mediator.addWhiteItem(this);
+            mediator.addItem(this);
+        }
+    }
+
+    Gobbler {
+        id: w30
+        matrix: matrix
+        width: w
+        height: h
+        name: "w30"
+        isWhite: true
+        depth: 0
+        x3d : -375
+        y3d : 0
+        z3d : 150
+
+        Component.onCompleted: {
+            mediator.addItem(this);
+        }
+    }
+
+    Gobbler {
+        id: w31
+        matrix: matrix
+        width: w
+        height: h
+        name: "w31"
+        isWhite: true
+        depth: 1
+        x3d : -375
+        y3d : 0
+        z3d : 150
+
+        Component.onCompleted: {
+            mediator.addItem(this);
         }
     }
 
@@ -158,27 +176,6 @@ Window {
             mediator.setBoard(this);
         }
     }
-
-    /*Shape {
-        id: tri2
-        anchors.fill: parent
-        ShapePath {
-            strokeColor: "red"
-            strokeWidth: 4
-            fillColor: "red"
-
-            startX: 10; startY: 10
-            PathLine { x: tri2.width - 10; y: tri2.height - 10 }
-            PathLine { x: 10; y: tri2.height - 10 }
-            PathLine { x: 10; y: 10 }
-        }
-
-        SequentialAnimation on scale {
-            running: tri2.visible
-            NumberAnimation { from: 1; to: 4; duration: 2000; easing.type: Easing.InOutBounce }
-            NumberAnimation { from: 4; to: 1; duration: 2000; easing.type: Easing.OutBack }
-        }
-    }*/
 
     // turns around y-axis
     Slider {

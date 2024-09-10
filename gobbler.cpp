@@ -18,24 +18,24 @@ void Gobbler::setName(const QString &name)
     m_name = name;
 }
 
-QColor Gobbler::color() const
+bool Gobbler::isWhite() const
 {
-    return m_color;
+    return m_isWhite;
 }
 
-void Gobbler::setColor(const QColor &color)
+void Gobbler::setWhite(const bool &isWhite)
 {
-    m_color = color;
+    m_isWhite = isWhite;
 }
 
-bool Gobbler::visible() const
+int Gobbler::depth() const
 {
-    return m_visible;
+    return m_depth;
 }
 
-void Gobbler::setVisible(const double &visible)
+void Gobbler::setDepth(const int &depth)
 {
-    m_visible = visible;
+    m_depth = depth;
 }
 
 double Gobbler::x3d() const
@@ -70,17 +70,18 @@ void Gobbler::setZ3d(const double &z3d)
 
 void Gobbler::paint(QPainter *painter)
 {
-    model.Rotate(m_matrix, m_x3d, m_y3d, m_z3d);
-    painter->setBrush(m_color);
-    Shape::paint(m_matrix, model, painter);
+    if (this->depth() == 0) {
+        model.Rotate(m_matrix, m_x3d, m_y3d, m_z3d);
+        QColor color = m_isWhite ? QColor(QColorConstants::Svg::ivory) : QColor(QColorConstants::Svg::saddlebrown);
+        painter->setBrush(color);
+        Shape::paint(m_matrix, model, painter);
+    }
 }
 
-/*
-void Gobbler::on_clicked(){
-    this->setXangle(this->xangle() + 10);
-    this->setColor(QColor("red"));
-    //paint(painter);
-}*/
+// Static comparator function to sort by z-index (ascending)
+bool Gobbler::compareByZindex(const Gobbler* a, const Gobbler* b) {
+    return a->z3d() < b->z3d();
+}
 
 //![1]
 

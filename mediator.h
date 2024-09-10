@@ -11,8 +11,7 @@
 class Mediator : public QQuickItem
 {
     Q_OBJECT
-    Q_PROPERTY(QList<Gobbler*> whiteList READ getWhiteList NOTIFY whiteListChanged)
-    Q_PROPERTY(QList<Gobbler*> blackList READ getBlackList NOTIFY blackListChanged)
+    Q_PROPERTY(QList<Gobbler*> list READ getList NOTIFY listChanged)
     Q_PROPERTY(bool blackTurn READ isBlackTurn NOTIFY blackTurnChanged)
     Q_PROPERTY(Gobbler* selection READ getSelection NOTIFY selectionChanged)
     Q_PROPERTY(Board* board READ getBoard CONSTANT)
@@ -20,15 +19,13 @@ class Mediator : public QQuickItem
 
 public:
     Mediator(QQuickItem *parent = 0);
-    QList<Gobbler*> getWhiteList() const;
-    QList<Gobbler*> getBlackList() const;
+    QList<Gobbler*> getList() const;
     bool isBlackTurn() const;
     Gobbler* getSelection() const;
     Board* getBoard() const;
 
 public slots:
-    void addWhiteItem(Gobbler *gobbler);
-    void addBlackItem(Gobbler *gobbler);
+    void addItem(Gobbler *gobbler);
     void toggleBlackTurn();
     void setSelection(Gobbler* gobbler);
     void setBoard(Board* board);
@@ -37,14 +34,12 @@ public slots:
     void onClick(Matrix *matrix, const double x, const double y);
 
 signals:
-    void whiteListChanged();
-    void blackListChanged();
+    void listChanged();
     void blackTurnChanged();
     void selectionChanged();
 
 private:
-    QList<Gobbler*> m_whiteList;
-    QList<Gobbler*> m_blackList;
+    QList<Gobbler*> m_list;
     bool m_blackTurn;
     Gobbler* m_selection;
     Board* m_board;
