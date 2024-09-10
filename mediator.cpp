@@ -89,7 +89,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y)
     if (getSelection() != NULL) {
 
         for (const auto& item : getList()) {
-            if (item->depth() == (getSelection()->depth() + 1)
+            if (item->depth() > getSelection()->depth()
                 && item->x3d() == getSelection()->x3d()
                 && item->z3d() == getSelection()->z3d()) {
 
