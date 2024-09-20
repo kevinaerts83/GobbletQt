@@ -2,7 +2,7 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>remove.js</file>
-        <file>example</file>
         <file>OldStateCode</file>
+        <file>gobbler.qml</file>
     </qresource>
 </RCC>

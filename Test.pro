@@ -21,7 +21,6 @@ SOURCES += \
         main.cpp \
         matrix.cpp \
         mediator.cpp \
-        piechart.cpp \
         shape.cpp \
         shape3d.cpp
 
@@ -45,10 +44,11 @@ HEADERS += \
     gobbler3d.h \
     matrix.h \
     mediator.h \
-    piechart.h \
     shape.h \
     shape3d.h
 
 CONFIG += qmltypes
 QML_IMPORT_NAME = Gobbler
 QML_IMPORT_MAJOR_VERSION = 1
+
+DISTFILES +=

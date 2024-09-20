@@ -1,8 +1,8 @@
 #include "gobbler3d.h"
 
-gobbler3d::gobbler3d() : Shape3d()
+Gobbler3d::Gobbler3d(double size) : Shape3d()
 {
-    double tileSize = 80;
+    double tileSize = size;
     double w = (tileSize - 5.0) / 2;
     double h = (tileSize * 1.3);
     double d = w;

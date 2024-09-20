@@ -1,6 +1,6 @@
 #include "board3d.h"
 
-board3d::board3d() : Shape3d()
+Board3d::Board3d() : Shape3d()
 {
     /**
      * matrix constructed with the center of the board
@@ -25,82 +25,4 @@ board3d::board3d() : Shape3d()
         {11, 12, 7, 1}, {7, 6, 11, 1}, {13, 14, 9, 1}, {9, 8, 13, 1},
         {15, 16, 11, 1}, {11, 10, 15, 1}, {17, 18, 13, 1}, {13, 12, 17, 1},
         {21, 22, 17, 1}, {17, 16, 21, 1}, {23, 24, 19, 1}, {19, 18, 23, 1}};//up
-
-    //this.tileSize = s;
-    //this.tileCenters = [];
-    double tileCenters[19][4] = {{-1.5*s,0,-1.5*s,1}, {-0.5*s,0,-1.5*s,1}, {0.5*s,0,-1.5*s,1}, {1.5*s,0,-1.5*s,1},
-        {-1.5*s,0,-0.5*s,1}, {-0.5*s,0,-0.5*s,1}, {0.5*s,0,-0.5*s,1}, {1.5*s,0,-0.5*s,1},
-        {-1.5*s,0,0.5*s,1}, {-0.5*s,0,0.5*s,1}, {0.5*s,0,0.5*s,1}, {1.5*s,0,0.5*s,1},
-        {-1.5*s,0,1.5*s,1}, {-0.5*s,0,1.5*s,1}, {0.5*s,0,1.5*s,1}, {1.5*s,0,1.5*s,1}};
-
-    /*this.facesColour = new Array(41);
-    for(int i = 0; i < 8; i+=1) {
-        this.facesColour[i] = 'white';//'black';
-    }
-    this.facesColour[8] ='#00aaaa';//'tan';
-    this.facesColour[9] ='#00aaaa';//'tan';
-    for(int i = 10; i < 26; i+=1) {
-        this.facesColour[i] = '#004848';//'saddlebrown';
-    }*/
 }
-
-/*
-isValidPosition = function(x, y) {
-    var p, padding, padding2, xBoard, dBoard,
-        i = 0,
-        j = 0;
-
-    if(x > this.points[4][0]) {
-        return -1;
-    }
-
-    if( x > this.points[3][0]) {
-        i = 3;
-    }
-    else if( x > this.points[2][0]) {
-        i = 2;
-    }
-    else if( x > this.points[1][0]) {
-        i = 1;
-    }
-    else if( x > this.points[0][0]) {
-        i = 0;
-    }
-    else {
-        return -1;
-    }
-
-    if(y > this.points[20][2]) {
-        return -1;
-    }
-
-    if(y > this.points[15][2]) {
-        j = 15;
-    }
-    else if(y > this.points[10][2]) {
-        j = 10;
-    }
-    else if(y > this.points[5][2]) {
-        j = 5;
-    }
-    else if(y > this.points[0][2]) {
-        j = 0;
-    }
-    else {
-        return -1;
-    }
-    p = i + j;
-    padding = this.tileSize / 4;
-    padding2 = this.tileSize - padding;
-    xBoard = this.points[p][0];
-    dBoard = this.points[p][2];
-
-    if(x < (xBoard + padding) || y < (dBoard + padding)) {
-        return -1;
-    }
-    if(x > (xBoard + padding2) || y > (dBoard + padding2)) {
-        return -1;
-    }
-    return p;
-};*/
-

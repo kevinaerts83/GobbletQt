@@ -1,9 +1,16 @@
 #include "gobbler.h"
 
 //![0]
-Gobbler::Gobbler(QQuickItem *parent) : QQuickPaintedItem(parent), Shape()
-{
-    this->model = *new gobbler3d();
+Gobbler::Gobbler(QQuickItem *parent, Shape *shape, Gobbler3d model) : QQuickPaintedItem(parent), model(*new Gobbler3d(150)), m_shape(shape) {
+
+    //if (model) {
+    // model = *new Gobbler3d(150);
+    //}
+
+    if (!m_shape) {
+        m_shape = new Shape();
+    }
+
 }
 //![0]
 
@@ -74,7 +81,7 @@ void Gobbler::paint(QPainter *painter)
         model.Rotate(m_matrix, m_x3d, m_y3d, m_z3d);
         QColor color = m_isWhite ? QColor(QColorConstants::Svg::ivory) : QColor(QColorConstants::Svg::saddlebrown);
         painter->setBrush(color);
-        Shape::paint(m_matrix, model, painter);
+        m_shape->paint(m_matrix, model, painter);
     }
 }
 

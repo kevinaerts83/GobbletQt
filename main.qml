@@ -20,7 +20,7 @@ Window {
     }
 
     Mediator {
-        id:mediator
+        id: mediator
     }
 
     Rectangle
@@ -39,10 +39,9 @@ Window {
         }
     }
 
+
     Gobbler {
         id: b10
-        x: 0
-        y: 0
         matrix: matrix
         width: w
         height: h
@@ -57,7 +56,7 @@ Window {
             mediator.addItem(this);
         }
     }
-
+    /*
     Gobbler {
         id: b20 // 21 22 23 (smallest)
         x: 0
@@ -163,7 +162,7 @@ Window {
             mediator.addItem(this);
         }
     }
-
+*/
     Board {
         id: board
         x: 0

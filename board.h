@@ -17,7 +17,7 @@ class Board : public QQuickPaintedItem, public Shape
 
 public:
     Board(QQuickItem *parent = 0);
-    board3d model;
+    Board3d model;
     Matrix* m_matrix;
 
     void paint(QPainter *painter);

@@ -3,7 +3,7 @@
 //![0]
 Board::Board(QQuickItem *parent) : QQuickPaintedItem(parent), Shape()
 {
-    this->model = *new board3d();
+    this->model = *new Board3d();
 }
 
 //![1]

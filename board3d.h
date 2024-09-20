@@ -2,10 +2,10 @@
 #define BOARD3D_H
 #include "shape3d.h"
 
-class board3d : public Shape3d
+class Board3d : public Shape3d
 {
 public:
-    board3d();
+    Board3d();
 };
 
 #endif // BOARD3D_H

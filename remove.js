@@ -1,682 +1,682 @@
 /**
- * Shape3D class
- * @class Shape3D
+ * AI class
+ * @class AI
  * @constructor
  * @namespace GOBBLET
  */
-function Shape3D() {
-    this.points = [];
-    //cached points are rotated and scaled
-    this.cache = [];
-    this.aHashMap = { 0:1, 1:2, 2:4, 3:8, 5:16, 6:32, 7:64, 8:128, 10:256, 11:512, 12:1024, 13:2048, 15:4096, 16:8192, 17:16384, 18:32768};
+GOBBLET.AI = function () {
+    this.nextMove = -1;
+    this.pawn = {};
+    this.level = 0;
+    this.tiles = [0, 1, 2, 3, 5, 6, 7, 8, 10, 11, 12, 13, 15, 16, 17, 18];
+    this.mask = [61440, 3840, 240, 15, 34952, 17476, 8738, 4369, 33825, 4680];
+    /*1111 0000 0000 0000
+      0000 1111 0000 0000
+      0000 0000 1111 0000
+      0000 0000 0000 1111
+      1000 1000 1000 1000
+      0100 0100 0100 0100
+      0010 0010 0010 0010
+      0001 0001 0001 0001
+      1000 0100 0010 0001
+      0001 0010 0100 1000*/
+    this.visibleWhite = 0;
+    this.visibleBlack = 0;
+    this.visibleWhiteRows = [];
+    this.visibleBlackRows = [];
+    this.moving = false;
+    this.rowsWith3BlackPawns = [];
+    this.report = -1; //test framework
+    this.crossings = 38505; //parseInt('1001011001101001', 2); tiles that occur in 3 masks
+    this.randomMaskSequence = this.shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]); //don't loop in sequence else the moves are predictable
 };
 
 /**
- * Rotate all the points of the shape
- * @method rotate
- * @namespace GOBBLET
- * @param {array} rotationMatrix to rotate points
- */
-Shape3D.prototype.rotate = function(rotationMatrix) {
-    var i, l, rotatedPoints = [];
-    for (i = 0, l = this.points.length; i < l; i+=1) {
-        rotatedPoints[i] = this.matrix.multiplyPointAndMatrix(this.points[i], rotationMatrix);
-    }
-    this.cache[0] = rotatedPoints;
-};
-
-/**
- * Make smaller cubes
- * @method zoom
- * @namespace GOBBLET
- * @param {array} scalingMatrix to zoom points
- */
-Shape3D.prototype.zoom = function(scalingMatrix, size) {
-    var i, l, scaledPoints = [];
-    for (i = 0, l = this.points.length; i < l; i+=1) {
-        scaledPoints[i] = this.matrix.multiplyPointAndMatrix(this.cache[(size ? size - 1: 0)][i], scalingMatrix);
-    }
-    this.cache[size] = scaledPoints;
-};
-
-/**
- * Cube class
- * @class Cube
- * @namespace GOBBLET
- * @param {int} s tileSize size of one board tile
- * @param {array} matrix Our matrix object with defined center
- */
-function Board3D(s, matrix) {
-    this.matrix = matrix;
-    this.tileSize = s;
-    this.tileCenters = [];
-    /*this.w = s*4;
-    this.h = 10;*/
-
-    /**
-     * define points of the board
-     * @property points
-     * @type array
-    */
-    this.points[0] = [-2*s,0,-2*s,1];
-    this.points[1] = [-s,0,-2*s,1];
-    this.points[2] = [0,0,-2*s,1];
-    this.points[3] = [s,0,-2*s,1];
-    this.points[4] = [2*s,0,-2*s,1];
-
-    this.points[5] = [-2*s,0,-s,1];
-    this.points[6] = [-s,0,-s,1];
-    this.points[7] = [0,0,-s,1];
-    this.points[8] = [s,0,-s,1];
-    this.points[9] = [2*s,0,-s,1];
-
-    this.points[10] = [-2*s,0,0,1];
-    this.points[11] = [-s,0,0,1];
-    this.points[12] = [0,0,0,1];
-    this.points[13] = [s,0,0,1];
-    this.points[14] = [2*s,0,0,1];
-
-    this.points[15] = [-2*s,0,s,1];
-    this.points[16] = [-s,0,s,1];
-    this.points[17] = [0,0,s,1];
-    this.points[18] = [s,0,s,1];
-    this.points[19] = [2*s,0,s,1];
-
-    this.points[20] = [-2*s,0,2*s,1];
-    this.points[21] = [-s,0,2*s,1];
-    this.points[22] = [0,0,2*s,1];
-    this.points[23] = [s,0,2*s,1];
-    this.points[24] = [2*s,0,2*s,1];
-
-    this.points[25] = [-2*s,10,-2*s,1];
-    this.points[26] = [2*s,10,-2*s,1];
-    this.points[27] = [-2*s,10,2*s,1];
-    this.points[28] = [2*s,10,2*s,1];
-
-    /**
-     * define 12 faces of the cube
-     * @property faces
-     * @type array
-     */
-    this.faces = [];
-
-    //back
-    this.faces[0] = [4, 26, 25, 0];
-    this.faces[1] = [25, 0, 4, 0];
-    //right
-    this.faces[2] = [28, 26, 4, 0];
-    this.faces[3] = [4, 24, 28, 0];
-    //left
-    this.faces[4] = [0, 25, 27, 0];
-    this.faces[5] = [27, 20, 0, 0];
-    //front
-    this.faces[6] = [24, 20, 27, 0];
-    this.faces[7] = [27, 28, 24, 0];
-    //down
-    /*this.faces[36] = [28, 24, 23];
-    this.faces[37] = [23, 27, 28];*/
-
-    //up
-    this.faces[8] = [20, 24, 4, 1];
-    this.faces[9] = [4, 0, 20, 1];
-
-    this.faces[10] = [5 ,6, 1, 1];
-    this.faces[11] = [1, 0, 5, 1];
-    this.faces[12] = [7, 8, 3, 1];
-    this.faces[13] = [3, 2, 7, 1];
-
-    this.faces[14] = [11, 12, 7, 1];
-    this.faces[15] = [7, 6, 11, 1];
-    this.faces[16] = [13, 14, 9, 1];
-    this.faces[17] = [9, 8, 13, 1];
-
-    this.faces[18] = [15, 16, 11, 1];
-    this.faces[19] = [11, 10, 15, 1];
-    this.faces[20] = [17, 18, 13, 1];
-    this.faces[21] = [13, 12, 17, 1];
-
-    this.faces[22] = [21, 22, 17, 1];
-    this.faces[23] = [17, 16, 21, 1];
-    this.faces[24] = [23, 24, 19, 1];
-    this.faces[25] = [19, 18, 23, 1];
-
-    /**
-     * store tileCenters to position pawns
-     * @property tileCenters
-     * @type array
-     */
-    this.tileCenters[0] = [-1.5*s,0,-1.5*s,1];
-    this.tileCenters[1] = [-0.5*s,0,-1.5*s,1];
-    this.tileCenters[2] = [0.5*s,0,-1.5*s,1];
-    this.tileCenters[3] = [1.5*s,0,-1.5*s,1];
-
-    this.tileCenters[5] = [-1.5*s,0,-0.5*s,1];
-    this.tileCenters[6] = [-0.5*s,0,-0.5*s,1];
-    this.tileCenters[7] = [0.5*s,0,-0.5*s,1];
-    this.tileCenters[8] = [1.5*s,0,-0.5*s,1];
-
-    this.tileCenters[10] = [-1.5*s,0,0.5*s,1];
-    this.tileCenters[11] = [-0.5*s,0,0.5*s,1];
-    this.tileCenters[12] = [0.5*s,0,0.5*s,1];
-    this.tileCenters[13] = [1.5*s,0,0.5*s,1];
-
-    this.tileCenters[15] = [-1.5*s,0,1.5*s,1];
-    this.tileCenters[16] = [-0.5*s,0,1.5*s,1];
-    this.tileCenters[17] = [0.5*s,0,1.5*s,1];
-    this.tileCenters[18] = [1.5*s,0,1.5*s,1];
-
-    /**
-     * define a colour for every face
-     * @property facesColour
-     * @type array
-     */
-    var i = 0;
-    this.facesColour = new Array(41);
-    for(i = 0; i < 8; i+=1) {
-        this.facesColour[i] = 'white';//'black';
-    }
-    this.facesColour[8] ='#00aaaa';//'tan';
-    this.facesColour[9] ='#00aaaa';//'tan';
-    for(i = 10; i < 26; i+=1) {
-        this.facesColour[i] = '#004848';//'saddlebrown';
-    }
-};
-
-/**
- * inherit from Shape3D class
- * @method prototype
- */
-Board3D.prototype = new Shape3D();
-
-/**
-* Pawn wants to move to a new position on the board
-* check if this is a valid position
-* @method isValidPosition
-* @return the index of the chosen board box
+* Calculate visible pawns
+* @method cache
 */
-Board3D.prototype.isValidPosition = function(x, y) {
-    var p, padding, padding2, xBoard, dBoard,
-        i = 0,
-        j = 0;
-    /*
-    #0##1##2##3 ##4
-    ########### ###
-    #5##6##7##8 ##9
-    ########### ###
-    10#11#12#13 #14
-    ########### ###
-    15#16#17#18 #19
+GOBBLET.AI.prototype.cache = function (isWhite, bState) {
+    var t, foo = bState[isWhite], bar = bState[2], temp = [];
 
-    ########### ###
-    20#21#22#23 #24
-    */
-    if(x > this.points[4][0]) {
-        return -1;
-    }
+    temp[0] = foo[0];
+    temp[1] = (foo[1] ^ bar[0]) & foo[1];
+    temp[2] = (foo[2] ^ (bar[0] | bar[1])) & foo[2];
+    temp[3] = (foo[3] ^ (bar[0] | bar[1] | bar[2])) & foo[3];
+    t = temp[0] | temp[1] | temp[2] | temp[3];
 
-    if( x > this.points[3][0]) {
-        i = 3;
+    if (isWhite) {
+        this.visibleWhite = t;
+        this.visibleWhiteRows[0] = temp[0];
+        this.visibleWhiteRows[1] = temp[1];
+        this.visibleWhiteRows[2] = temp[2];
+        this.visibleWhiteRows[3] = temp[3];
+    } else {
+        this.visibleBlack = t;
+        this.visibleBlackRows[0] = temp[0];
+        this.visibleBlackRows[1] = temp[1];
+        this.visibleBlackRows[2] = temp[2];
+        this.visibleBlackRows[3] = temp[3];
     }
-    else if( x > this.points[2][0]) {
-        i = 2;
-    }
-    else if( x > this.points[1][0]) {
-        i = 1;
-    }
-    else if( x > this.points[0][0]) {
-        i = 0;
-    }
-    else {
-        return -1;
-    }
-
-    if(y > this.points[20][2]) {
-        return -1;
-    }
-
-    if(y > this.points[15][2]) {
-        j = 15;
-    }
-    else if(y > this.points[10][2]) {
-        j = 10;
-    }
-    else if(y > this.points[5][2]) {
-        j = 5;
-    }
-    else if(y > this.points[0][2]) {
-        j = 0;
-    }
-    else {
-        return -1;
-    }
-    p = i + j;
-    padding = this.tileSize / 4;
-    padding2 = this.tileSize - padding;
-    xBoard = this.points[p][0];
-    dBoard = this.points[p][2];
-
-    if(x < (xBoard + padding) || y < (dBoard + padding)) {
-        return -1;
-    }
-    if(x > (xBoard + padding2) || y > (dBoard + padding2)) {
-        return -1;
-    }
-    return p;
 };
 
 /**
- * Cube class
- * @class Cube
- * @param {int} tileSize size of one board plane
- * @param {array} matrix Our matrix object with defined center
- */
-function Cube(tileSize, matrix) {
-    var face0_b1, face1_b2, face4_r1, face5_r2, face6_u1, face7_u2, face8_l1, face9_l2, face10_f1, face11_f2;
-    var w = (((tileSize - 5) / 2) >> 0), h = (((tileSize * 1.3) / 2) >> 0), d = w;
-
-    this.w = w;
-    this.h = h;
-    this.d = d;
-
-    /**
-     * define 8 points of the cube
-     * @property points
-     * @type array
-     *
-     *       	4#######5
-     *       	##      -#
-     *       	# #     - #
-     *       	#  7#######6
-     *       	#  #    -  #
-     *       	#  #    -  #
-     *       	#  #    -  #
-     *       	0--#----1  #
-     *       	 # #     - #
-     *       	  ##      -#
-     *       	   3#######2
-    */
-    this.points[0] = [w,h,d,1];
-    this.points[1] = [-w,h,d,1];
-    this.points[2] = [-w,h,-d,1];
-    this.points[3] = [w,h,-d,1];
-    this.points[4] = [w/2,-h,d/2,1];
-    this.points[5] = [-w/2,-h,d/2,1];
-    this.points[6] = [-w/2,-h,-d/2,1];
-    this.points[7] = [w/2,-h,-d/2,1];
-
-    /**
-     * matrix constructed with the center of the cube
-     * @property matrix
-     * @type object
-     */
-    this.matrix = matrix;
-
-    /*
-     * Combine all points with triangles faces so a cube will be formed.
-     * If the dot product of the 2 vectors of this triangular is smaller than zero
-     * (points away from the center) the face is visible.
-     * To make this work:
-     * - Move around the shape and look at triangular when it is visible.
-     * - Now add the points to the array of the shape counterclockwise.
-     * - To calculate the dot vector take point 0 of the triangular and draw a vector to point 1
-     *   this vector will point counterclockwise. The second vector is from point 0 to point 2 and will point clockwise.
-     * EXAMPLE:
-     * the front face: points 2 - 7 - 3 (counterclockwise). vector1= 2-7; vector2 = 2-3
-     * the back face: points 1 - 0 - 4 (counterclockwise) look at it from the back. vector1= 1-0; vector2 = 1-4
-     * Now the right hand rule says (vector1 = index finger, vector2 = middle finger; dot product = thumb)
-     * With the front face the thumb points away from the center, and with the back face the thumb points to the center.
-     */
-    //back
-    face0_b1 = [1, 0, 4, 0];
-    face1_b2 = [4, 5, 1, 0];
-    //down
-    //  var face2_d1 = [2, 3, 0];
-    //  var face3_d2 = [0, 1, 2];
-    //right
-    face4_r1 = [2, 1, 5, 0];
-    face5_r2 = [5, 6, 2, 0];
-    //up
-    face6_u1 = [7, 6, 5, 0];
-    face7_u2 = [5, 4, 7, 0];
-    //left
-    face8_l1 = [0, 3, 7, 0];
-    face9_l2 = [7, 4, 0, 0];
-    //front
-    face10_f1 = [3, 2, 6, 1];
-    face11_f2 = [6, 7, 3, 1];
-
-    this.faces = [face0_b1, face1_b2, face4_r1, face5_r2, face6_u1, face7_u2, face8_l1, face9_l2, face10_f1, face11_f2];//, face2_d1, face3_d2
-};
-
-/**
- * inherit from Shape3D class
- * @method prototype
- */
-Cube.prototype = new Shape3D();
-
-/**
- * Shape class
- * @class Shape
- * @constructor
- * @namespace GOBBLET
- */
-function Shape() {
-    this.percent = 0;
-};
-
-/**
-* Translate 3d shape to it's 2d position and shape
-* @method translate
+* Property RowsWith3BlackPawns
+* @method getRowsWith3BlackPawns
 */
-Shape.prototype.translateAndProject = function() {
-    this.points_2d = [];
-    var i, l, translation,
-        isPawn = false,
-        c = 0;
-    if(this.size !== undefined) {
-        isPawn = true;
-        c = this.size;
+GOBBLET.AI.prototype.getRowsWith3BlackPawns = function () {
+    if (this.rowsWith3BlackPawns === undefined) {
+        this.rowsWith3BlackPawns = this.rowCheck(false, 3, [], false);
     }
-    if(!isPawn || this.visible === true) {
-        translation = this.matrix.getTranslation(this.centerPoint2D[0], this.centerPoint2D[1], this.centerPoint2D[2]);
-        for (i = 0, l = this.shape3D.cache[c].length; i < l; i+=1) {
-            this.points_2d[i] = this.matrix.projectPoint(this.matrix.multiplyPointAndMatrix(this.shape3D.cache[c][i], translation));
-            if(isPawn) {
-                this.setBoundaries(this.points_2d[i], i===0);
+    return this.rowsWith3BlackPawns;
+};
+
+GOBBLET.AI.prototype.writeLog = function (bState) {
+    var one = (65536 + bState[0][0]).toString(2).slice(1, 17), two = (65536 + bState[0][1]).toString(2).slice(1, 17), three = (65536 + bState[0][2]).toString(2).slice(1, 17), four = (65536 + bState[0][3]).toString(2).slice(1, 17);
+    console.log('black');
+    console.log(one.slice(0, 4) + ' ' + one.slice(4, 8) + ' ' + one.slice(8, 12) + ' ' + one.slice(12, 16));
+    console.log(two.slice(0, 4) + ' ' + two.slice(4, 8) + ' ' + two.slice(8, 12) + ' ' + two.slice(12, 16));
+    console.log(three.slice(0, 4) + ' ' + three.slice(4, 8) + ' ' + three.slice(8, 12) + ' ' + three.slice(12, 16));
+    console.log(four.slice(0, 4) + ' ' + four.slice(4, 8) + ' ' + four.slice(8, 12) + ' ' + four.slice(12, 16));
+
+    one = (65536 + bState[1][0]).toString(2).slice(1, 17);
+    two = (65536 + bState[1][1]).toString(2).slice(1, 17);
+    three = (65536 + bState[1][2]).toString(2).slice(1, 17);
+    four = (65536 + bState[1][3]).toString(2).slice(1, 17);
+    console.log('white');
+    console.log(one.slice(0, 4) + ' ' + one.slice(4, 8) + ' ' + one.slice(8, 12) + ' ' + one.slice(12, 16));
+    console.log(two.slice(0, 4) + ' ' + two.slice(4, 8) + ' ' + two.slice(8, 12) + ' ' + two.slice(12, 16));
+    console.log(three.slice(0, 4) + ' ' + three.slice(4, 8) + ' ' + three.slice(8, 12) + ' ' + three.slice(12, 16));
+    console.log(four.slice(0, 4) + ' ' + four.slice(4, 8) + ' ' + four.slice(8, 12) + ' ' + four.slice(12, 16));
+};
+/**
+* Calculate next move
+* @method move
+*/
+GOBBLET.AI.prototype.move = function (bState, pawns) {
+    if (this.moving === false) {
+        this.moving = true;// make threat save
+
+        delete this.rowsWith3BlackPawns;
+        this.cache(0, bState);
+        this.cache(1, bState);
+
+        this.report = 0;
+        //this.writeLog(bState);
+        if (this.tryToWin(bState, pawns)) {
+            this.report = 1;
+            if (this.dontLose(bState, pawns)) {
+                this.report = 2;
+                if (this.block(bState, pawns)) {
+                    this.report = 3;
+                    this.attack(bState, pawns);
+                }
             }
         }
+        //fallback
+        if ((this.pawn === undefined) || (this.pawn.tile === undefined) || (this.tiles.indexOf(this.nextMove) === -1)) {
+            this.writeLog(bState);
+            this.randomMove(pawns);
+            console.log('current tile: ' + this.pawn.tile + ', next tile: ' + this.nextMove);
+        }
+        //console.log('current tile: ' + this.pawn.tile + ', next tile: ' + this.nextMove);
+        this.moving = false;
     }
 };
 
 /**
- * Darker color
- * @method darkerColor
- * @namespace GOBBLET
- */
-Shape.prototype.darkerColor = function(color, prc) {
-    if(prc !== 0) {
-        var num = parseInt(color.slice(1),16),
-            amt = Math.round(2.55 * prc),
-            R = (num >> 16) + amt,
-            G = (num >> 8 & 0x00FF) + amt,
-            B = (num & 0x0000FF) + amt;
-        return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255)).toString(16).slice(1);
-    }
-    return color;
-};
+* Try To Win
+* @method tryToWin
+*/
+GOBBLET.AI.prototype.tryToWin = function (bState, pawns) {
+    var i, l, blackSize, maskToCheck, rows = this.rowCheck(true, 3, bState, true); //Get all white rows with 3 on a row without black size 0
 
-/**
- * Draw shape
- * @method draw
- * @namespace GOBBLET
- * @param {2d context} ctx The context
- */
-Shape.prototype.draw = function(ctx, isSelection) {
-    ctx.save();
-    if(ctx && this.points_2d.length > 0 && (this.visible === undefined || this.visible === true)) {
-        var i, l, face, colourLength = this.facesColour.length-1;
-        ctx.lineWidth = 1;
-        if(isSelection) {
-            ctx.strokeStyle = this.darkerColor(this.facesColour[0], this.percent*2);
+    for (i = 0, l = rows.length; i < l; i += 1) {
+        maskToCheck = this.mask[rows[i]];
+        //the tile to attack
+        this.nextMove = this.getNextMove(maskToCheck, this.visibleWhite, true);
+        //check if the tile is empty
+        if ((this.visibleBlack & maskToCheck) !== 0) {
+            blackSize = this.getPawnSize(this.nextMove, pawns);
+            if (blackSize > 0 && blackSize < 4) {
+                return this.setNextPawn(pawns, blackSize, rows, bState);
+            }
         } else {
-            ctx.strokeStyle = (this.facesColour.length > 1) ? '#000' : this.darkerColor(this.facesColour[0], this.percent);
+            return this.setNextPawn(pawns, 4, rows, bState);
         }
-        ctx.lineWidth= (this.facesColour.length > 1) ? 1 : 2;
-        for (i = 0, l = this.shape3D.faces.length; i < l; i+=1) {
-            face = this.shape3D.faces[i];
+    }
+    return true;
+};
 
-            face[3] = this.dotProduct(face, this.points_2d) ? 1 : 0;
-            if(face[3] === 1) {
-                ctx.fillStyle = this.facesColour[i > colourLength ? colourLength : i];
-                ctx.beginPath();
-                ctx.moveTo(this.points_2d[face[0]][0],this.points_2d[face[0]][1]);
-                ctx.lineTo(this.points_2d[face[1]][0],this.points_2d[face[1]][1]);
-                ctx.lineTo(this.points_2d[face[2]][0],this.points_2d[face[2]][1]);
-                ctx.stroke();
+/**
+* Don't lose
+* @method dontLose
+*/
+GOBBLET.AI.prototype.dontLose = function (bState, pawns) {
+    var i, l, s, maskCrossing, maskToCheck,
+        rows = this.rowCheck(false, 3, bState, true); //Get all black rows with 3 on a row without white size 0
 
-                //SELECTION
-                /*ctx.shadowColor = '#ffffff';
-                ctx.shadowBlur = 40;
-                ctx.shadowOffsetX = 0;
-                ctx.shadowOffsetY = 0;*/
-
-                ctx.fill();
+    if (rows.length > 1) {
+        maskCrossing = this.mask[rows[0]];
+        for (i = 1, l = rows.length; i < l; i += 1) {
+            maskCrossing &= this.mask[rows[i]];
+        }
+        if (maskCrossing > 0) {
+            //check if the opponent has a size 0 on the row
+            //if ((bState[1][0] & maskCrossing) === 0) {
+            this.nextMove = this.getNextMove(0, maskCrossing, false);
+            //Check if size 0 not already on crossing
+            if (this.getPawnSize(this.nextMove, pawns) !== 0) {
+                //get size 0 to put on crossing
+                if (this.setNextPawn(pawns, 1, rows, bState) === false) {
+                    return false;
+                }
             }
+            //}
+        }
+    } else if (rows.length === 1) {
+        maskToCheck = this.mask[rows[0]];
+        //check if there is not already a size 0 on the row
+        //if ((bState[1][0] & maskToCheck) === 0) {
+        s = this.getSmallestBlackPawnOfRow(this.mask[rows[0]]);
+        //the tile to attack
+        this.nextMove = this.getNextMove(maskToCheck, this.visibleBlackRows[s], false);
+        // Try to put pawn over opponent
+        if (this.setNextPawn(pawns, s, rows, bState) === false) {
+            return false;
         }
 
-        /*REMOVE
-        ctx.rect(this.minX, this.minY, this.maxX-this.minX, this.maxY-this.minY);
-        ctx.stroke();
-
-        ctx.fillStyle = '#000';
-        ctx.font = 'italic bold 10px sans-serif';
-        for(var i = 0, l = this.points_2d.length; i < l; i++) {
-            ctx.fillText(i, this.points_2d[i][0], this.points_2d[i][1]);
+        // Try to put a size = 0 on empty cell
+        //the tile to attack
+        this.nextMove = this.getNextMove(maskToCheck, this.visibleBlack, true);
+        // Try to put pawn on empty tile
+        if (this.setNextPawn(pawns, 1, rows, bState) === false) {
+            return false;
         }
-        //END*/
+        //}
     }
-    ctx.restore();
+    //go to attack
+    return true;
 };
 
 /**
- * Calculate the dot product of the face
- * dot product => determine how similar two vectors point to the same point (same direction = 1;  90 degrees = 0; opposite direction = -1)
- * or simply put the cosine between two vectors
- * @method dotProduct
- * @namespace GOBBLET
- * @param {array} points The 2d points of the shape
- * @param {array} face An array with indexes of the points of the face
- */
-Shape.prototype.dotProduct = function(face, p) {
-    var a1 = p[face[1]][0] - p[face[0]][0],
-        a2 = p[face[1]][1] - p[face[0]][1],
-        b1 = p[face[2]][0] - p[face[0]][0],
-        b2 = p[face[2]][1] - p[face[0]][1];
-
-    return (a1*b2 - a2*b1) < 0;
-};
-
-/**
- * Determine the boundaries of a shape
- * @method contains
- */
-Shape.prototype.setBoundaries = function(point2d, first) {
-    if(first) {
-        this.minX = point2d[0];
-        this.minY = point2d[1];
-        this.maxX = point2d[0];
-        this.maxY = point2d[1];
-    }
-    else {
-        if(point2d[0] < this.minX) {
-            this.minX = point2d[0];
-        }
-        if(point2d[0] > this.maxX) {
-            this.maxX = point2d[0];
-        }
-        if(point2d[1] < this.minY) {
-            this.minY = point2d[1];
-        }
-        if(point2d[1] > this.maxY) {
-            this.maxY = point2d[1];
-        }
-    }
-};
-
-/**
- * Determine if a point is inside the shape's bounds
- * @method contains
- */
-Shape.prototype.contains = function(mx, my) {
-  // All we have to do is make sure the Mouse X,Y fall in the area between
-  // the shape's X and (X + Height) and its Y and (Y + Height)
-  if((this.minX <= mx) && (this.maxX >= mx) && (this.minY <= my) && (this.maxY >= my)) {
-      this.mouseX = mx;
-      this.mouseY = my;
-      return true;
-  }
-
-  this.mouseX = -1;
-  this.mouseY = -1;
-  return false;
-};
-
-/**
- * Pawn class
- * @class Pawn
- * @constructor
- * @namespace GOBBLET
- * @param {matrix} matrix Our matrix object with defined center
- * @param {float} x x-axis value
- * @param {float} y y-axis value
- * @param {float} z z-axis value
- * @param {float} d depth of the pawn
- * @param {int} size 0 = biggest pawn, 1 = normal pawn, ...
- */
-function Pawn(matrix, x, y, z, h, d, size, isTurn, n) {
-    this.matrix = matrix;
-    this.depth = d;
-    this.pHeight = Math.floor(h * Math.pow(0.7, size));
-    this.size = size;
-    this.visible = (size % 4 === 0);
-    this.setInvisible = false;
-    this.onTheBoard = false;
-    this.endX = x;
-    this.endZ = z;
-    this.enable = true;
-    this.isTurn = isTurn;
-    this.tile = -1;
-
-    y -= this.pHeight;
-    this.centerPoint = [x, y, z, 1];
-    this.centerPoint2D = [x, y, z, 1];
-
-    this.mouseX = 0;
-    this.mouseY = 0;
-    this.z_index = z + d / 2;
-    this.id = n;
-};
-
-/**
- * inherit from Shape class
- * @method prototype
- */
-Pawn.prototype = new Shape();
-
-/**
- * scale and rotate the center point of the shape
- * @method zoomAndRotate
- * @namespace GOBBLET
- */
-Pawn.prototype.zoomAndRotate = function(scale, rotMatrix) {
-    if(this.visible) {
-        var p = [this.centerPoint[0], this.centerPoint[1], this.centerPoint[2], 1];
-        if(rotMatrix) {
-            p = this.matrix.multiplyPointAndMatrix(p, this.matrix.translation);
-            p = this.matrix.multiplyPointAndMatrix(p, this.matrix.getScaling(scale /100.0));
-            p = this.matrix.multiplyPointAndMatrix(p, rotMatrix);
-            p = this.matrix.multiplyPointAndMatrix(p, this.matrix.inverseTranslation);
-        }
-        this.z_index = p[2] + (this.depth / 2);
-        this.centerPoint2D = p;
-    }
-};
-
-/**
-* Move selected pawn according to the mouse movement
-* @method translate
+* Block
+* @method block
 */
-Pawn.prototype.move = function(newX, newY, angle) {
-     var sine = Math.round(Math.sin(Math.PI * angle/180)),
-     cosine = Math.round(Math.cos(Math.PI * angle/180)),
-     tx = (newX - this.mouseX),
-     ty = (newY - this.mouseY),
-     x = tx*cosine - ty*sine,
-     y = tx*sine + ty*cosine;
+GOBBLET.AI.prototype.block = function (bState, pawns) {
+    //if level is 1: check if black player can put a size0 on a tile creating 2 row with 3 pawns. (no biggest white pawns on the rows)
+    //fake a black pawn size1 on that tile and do don't loose
+    if (this.level === 1) {
+        var i, l, oldValue, old2, old3, ret = true,
+            masks = [63624, 62532, 61986, 61713, 36744, 20292, 12066, 7953, 35064, 17652, 8946, 4593, 34959, 17487, 8751, 4383, 62497, 36641, 34033, 33839, 62024, 8008, 4856, 4687, 36009, 50277, 42531, 38193, 39624, 22092, 12906, 4953],
+            crossing = [32768, 16384, 8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 32768, 1024, 32, 1, 4096, 512, 64, 8, 32768, 1024, 32, 1, 8, 64, 512, 4096];
+        for (i = 0, l = masks.length; i < l; i += 1) {
+            if ((this.count1Bits(this.visibleBlack & masks[i]) > 3) && ((this.visibleBlack & crossing[i]) === 0) && ((bState[1][0] & masks[i]) === 0)) {
+                oldValue = bState[0][1];
+                old2 = this.visibleBlack;
+                old3 = this.visibleBlackRows[1];
 
-    this.centerPoint[0] += x;
-    this.centerPoint[2] += y;
+                bState[0][1] |= crossing[i];
+                this.visibleBlack |= crossing[i];
+                this.visibleBlackRows[1] |= crossing[i];
 
-    this.mouseX = newX;
-    this.mouseY = newY;
-};
+                ret = this.dontLose(bState, pawns);
 
-/**
-* Lift the pawn on mouse up, drop on mouse down
-* @method lift
-*/
-Pawn.prototype.lift = function(up) {
-    this.centerPoint[1] += up;
-};
-/**
-* Place the pawn onto the board
-* @method endMove
-*/
-Pawn.prototype.endMove = function(h) {
-    this.centerPoint[1] = h - this.pHeight;
-};
-
-/**
-* Validate after another pawn has moved
-* onDown mouse => isDown = false; isDownValid = true; isOnBoard = true;
-* onUp mouse (Invalid move) => isDown = true; isDownValid = false; isOnBoard = check if selected pawn came from stack or board;
-* movePawn (valid move) => isDown = true; isDownValid = true; isOnBoard = true;
-* @method notification
-*/
-Pawn.prototype.notification = function(args) {
-    var i,
-        isDown = args[0],
-        isDownValid = args[1],
-        bState = args[2],
-        isOnBoard = args[3],
-        found = false;
-    if(this.tile > -1) {
-        var t = this.shape3D.aHashMap[this.tile];
-        for(i=0; i < this.size; i++) {
-            if((bState[i] & t) === t) {
-                found = true;
-                this.setInvisible = true;
+                bState[0][1] = oldValue;
+                this.visibleBlack = old2;
+                this.visibleBlackRows[1] = old3;
                 break;
             }
         }
-        if(!found) {
-            this.visible = true;
-        }
+        return ret;
     }
-    if(isDown) {
-        if(isDownValid) {
-            this.isTurn ^= 1;
-        }
-        if(isOnBoard) {
-            this.enable = isDownValid;
-        }
-    }
+    return true;
 };
+
 /**
-* Finish event settings
-* @method endEvent
+* Attack
+* @method attack
 */
-Pawn.prototype.endEvent = function(args) {
-    if(this.setInvisible) {
-        this.visible = false;
-        this.setInvisible = false;
+GOBBLET.AI.prototype.attack = function (bState, pawns) {
+    var s = 0, i, rowToAttack, wRows = [];
+
+    if (this.visibleWhite !== 0) {
+        //determine whites best row lower is better
+        wRows = this.sortWhiteRows(bState);
+    }
+    for (i = 0; i < 10; i += 1) {
+        rowToAttack = (wRows.length > i)  ? (wRows[i].rowNumber) : undefined;
+        //set the nextMove
+        this.chooseTileFromRowToAttack(bState, rowToAttack);
+
+        if (this.nextMove >= 0) {
+            s = this.getPawnSize(this.nextMove, pawns);
+            s = (s === -1 ? 4 : s);
+            if (this.setNextPawn(pawns, s, this.getRowsOfTile(this.nextMove), bState) === false) {
+                break;
+            }
+        }
+        if (wRows.length < i) {
+            break;
+        }
+    }
+
+    if (this.nextMove < 0) {
+        this.attackFallBack(bState, pawns);
+    }
+};
+/**
+* Attack fall back
+* @method attackFallBack
+*/
+GOBBLET.AI.prototype.attackFallBack = function (bState, pawns) {
+    var i, size, ignore = 0;
+    for (i = 0; i < 4; i += 1) {
+        size = this.getPawnSize(this.nextMove, pawns);
+        size = (size === -1 ? 4 : size);
+        if (this.setNextPawn(pawns, size, this.getRowsOfTile(this.nextMove), bState)) {
+            //setNextPawn returns true if no pawn was found.
+            this.nextMove = this.startAttack(bState, ignore);
+            ignore += Math.pow(2, this.tiles.indexOf(this.nextMove));
+        } else {
+            break;
+        }
+    }
+};
+/**
+* Choose a tile to attack
+* @method startAttack
+*/
+GOBBLET.AI.prototype.startAttack = function (bState, ignore) {
+    var c = (this.crossings ^ bState[0][0] ^ bState[1][0] ^ ignore).toString(2), rnd = c.length, t;
+    rnd = Math.floor(Math.random() * rnd);
+    t = c.indexOf('1', rnd);
+    while (t === -1) {
+        rnd = Math.floor(Math.random() * rnd);
+        t = c.indexOf('1', rnd);
+    }
+    return this.tiles[15 - t];//15=tiles.length - 1
+};
+
+/**
+* get Next Move
+* @method getNextMove
+*/
+GOBBLET.AI.prototype.getNextMove = function (mask, state, reverse) {
+    var result = 0;
+    if (mask === 0) {
+        result = state;
+    } else {
+        result = (mask & state);
+        if (reverse) {
+            result ^= mask;
+        }
+    }
+    return this.tiles[result.toString(2).length - 1];
+};
+
+/**
+* set Next Pawn
+* @method setNextPawn
+*/
+GOBBLET.AI.prototype.setNextPawn = function (pawns, size, rows, bState) {
+    var ret = true, solution = this.getPawnFromStack(pawns, size);
+    if (solution) {
+        this.pawn = solution;
+        ret = false;
+    } else {
+        solution = this.getPawnFromBoard(pawns, size, rows, bState);
+        if (solution) {
+            this.pawn = solution;
+            ret = false;
+        }
+    }
+    return ret;
+};
+
+/**
+* random Move (fallback)
+* @method randomMove
+*/
+GOBBLET.AI.prototype.randomMove = function (pawns) {
+    var i, s = 0, t, p;
+    while (s === 0) {
+        t = Math.floor(Math.random() * 16);
+        this.nextMove = this.tiles[t];
+        s = this.getPawnSize(this.nextMove, pawns);
+    }
+    for (i = pawns.length - 1; i >= 0; i -= 1) {
+        p = pawns[i];
+        if ((p.isTurn === 1) && p.visible && (p.tile !== this.nextMove) && (p.size < s || s === 4)) {
+            this.pawn = pawns[i];
+            break;
+        }
     }
 };
 
 /**
- * Board class
- * @class Board
- * @namespace GOBBLET
- * @param {array} matrix Our matrix object with defined center
+ * Shuffle the values of an array around;
  */
-function Board(matrix, x, y, z) {
-    this.matrix = matrix;
-    this.centerPoint = [x, y, z, 1];
-    this.centerPoint2D = [x, y, z, 1];
+GOBBLET.AI.prototype.shuffle = function (o) {
+    var j, x, i;
+    for (i = o.length; i; j = parseInt(Math.random() * i, 10), x = o[--i]) {
+        o[i] = o[j];
+        o[j] = x;
+    }
+    return o;
 };
 
 /**
- * inherit from Shape class
- * @method prototype
+* Get rows of tile
+* @method getRowsOfTile
+*/
+GOBBLET.AI.prototype.getRowsOfTile = function (tile) {
+    var i, rows = [], tileNr = Math.pow(2, this.tiles.indexOf(tile));
+    for (i = 0; i < 10; i += 1) {
+        if ((this.mask[i] & tileNr) !== 0) {
+            rows.push(i);
+        }
+    }
+    return rows;
+};
+
+/**
+* Get Pawn From Stack
+* @method getPawnFromStack
+*/
+GOBBLET.AI.prototype.getPawnFromStack = function (pawns, size) {
+    var i, p, r;
+    for (i = pawns.length - 1; i >= 0; i -= 1) {
+        p = pawns[i];
+        if ((p.isTurn === 1) && p.visible && (p.onTheBoard === false) && (p.size < size)) {
+            if (r === undefined || (p.size > r.size)) {
+                r = p;
+            }
+        }
+    }
+    return r;
+};
+
+/**
+* Get Pawn From Board
+* There no black pawn beneath it
+* @method getPawnFromBoard
+* @param excludeRows: the rows that are being checked must be excluded
+*/
+GOBBLET.AI.prototype.getPawnFromBoard = function (pawns, size, excludeRows, bState) {
+    var i, l, j, r, g, p, theTile, binairTile, graded;
+    if (this.level === 0) {
+        for (i = 0, l = pawns.length; (i < l) && (r === undefined); i += 1) {
+            p = pawns[i];
+            if ((p.isTurn === 1) && p.visible && (p.onTheBoard === true) && (p.size < size)) {
+                binairTile = Math.pow(2, this.tiles.indexOf(p.tile));
+                for (j = 0; j < this.mask.length; j += 1) {
+                    if ((this.mask[j] & binairTile) === binairTile) {
+                        if ((this.getRowsWith3BlackPawns().indexOf(j) === -1) && (excludeRows.indexOf(j) === -1)) {
+                            r = p;
+                        } else {
+                            r = undefined;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        j = 0;
+        for (i = size - 1; i > -1; i -= 1) {
+            graded = this.getUnimportantWhiteTile(i, excludeRows, bState);
+            for (g = 0, l = graded.length; g < l; g += 1) {
+                if ((j === 0) || (j > graded[g].grade)) {
+                    j = graded[g].grade;
+                    theTile = graded[g].id;
+                }
+            }
+        }
+        if (theTile !== undefined) {
+            for (i = 0, l = pawns.length; i < l; i += 1) {
+                p = pawns[i];
+                if ((p.tile === theTile) && (p.isTurn === 1) && p.visible) {
+                    r = p;
+                    break;
+                }
+            }
+        }
+    }
+    return r;
+};
+
+/**
+* get unimportant White Tile
+* @method getUnimportantWhiteTile
+*/
+GOBBLET.AI.prototype.getUnimportantWhiteTile = function (size, excludeRows, bState) {
+    var i, j, l, lj, o, n, r, p, bad, aTile, cache = [], result = [], tileRows, wTiles = this.getTilesOfSize(size); //get the tile of a visible white pawns from a certain size
+
+    for (i = 0, l = wTiles.length; i < l; i += 1) {
+        bad = false;
+        aTile = wTiles[i];
+        //tileRows contains the row indexes, these indexes are the same as the mask indexes for those rows
+        tileRows = this.getRowsOfTile(aTile);
+        //loop over every row of the tile (max 3)
+        //a white pawn is only unimportant if it's not blocking a row or not of strategic interest for a row
+        for (j = 0, lj = tileRows.length; j < lj; j += 1) {
+            r = tileRows[j];
+            p = Math.pow(2, this.tiles.indexOf(aTile));
+            //stop processing the tile if it's in a row with 3 black pawns, or the row that is currently formed.
+            if ((this.getRowsWith3BlackPawns().indexOf(r) !== -1) || (excludeRows.indexOf(r) !== -1)) {
+                bad = true;
+                break;
+            } else if ((this.count1Bits(this.mask[r] & this.visibleBlack) === 2) &&
+                    ((((this.mask[r] & bState[1][0]) | p) ^ p) === 0) &&
+                    (this.getColorUnderneath(aTile, size, bState) === 2)) {
+                //Stop when all conditions are true
+                // - 2 black pawn
+                // - no biggest white pawn (except the one being checked)
+                // - and one black pawn underneath (the one being checked)
+                bad = true;
+                break;
+            } else {
+                //Set cache for Grade
+                //Count for every row the tile is in, the white and black pawns.
+                o = this.getObjectFromArray(cache, aTile);//id === tile
+                if (o) {
+                    o.countWhite += this.count1Bits((this.visibleWhite & this.mask[r]));
+                    o.countBlack += this.count1Bits((this.visibleBlack & this.mask[r]));
+                } else {
+                    cache.push({id: aTile,
+                        countWhite: this.count1Bits((this.visibleWhite & this.mask[r])),
+                        countBlack: this.count1Bits((this.visibleBlack & this.mask[r]))});
+                }
+            }
+        }
+        if (bad === false) {
+            //initialize result array for tiles that passed the test.
+            result.push({id: aTile, grade: 0});
+        }
+    }
+    //GRADE
+    for (i = 0; i < result.length; i += 1) {
+        o = this.getObjectFromArray(cache, result[i].id);//id === tile
+        n = this.getColorUnderneath(o.id, size, bState);
+        /* *** the best pawn we do not want to move ***
+         * larger pawn
+         * 1 or 2 white pawns in a row
+         * 1, 2, 3 black pawns in a row
+         * a black pawn underneath
+         * a white pawn underneath is not the best situation
+         * */
+        result[i].grade = ((4 - size) * 2) + o.countWhite + (o.countBlack * 2) + ((n === 0) ? 0 : (n === 1) ? -2 : 5);
+    }
+    return result;
+};
+
+/**
+* get Object From Array
+* @method getObjectFromArray
+*/
+GOBBLET.AI.prototype.getObjectFromArray = function (objects, value) {
+    var ret, o, l;
+    for (o = 0, l = objects.length; o < l; o += 1) {
+        if (objects[o].id === value) {
+            ret = objects[o];
+            break;
+        }
+    }
+    return ret;
+};
+/**
+* get Color Underneath
+* @method getColorUnderneath
+* @return int: 0 = nothing; 1 = white; 2 = black;
+*/
+GOBBLET.AI.prototype.getColorUnderneath = function (tile, size, bState) {
+    var i, number = Math.pow(2, this.tiles.indexOf(tile)), ret = 0;
+    for (i = size + 1; (i < 4) && (ret === 0); i += 1) {
+        if ((bState[1][i] & number) !== 0) {
+            ret = 1;
+        }
+        if ((bState[0][i] & number) !== 0) {
+            ret = 2;
+        }
+    }
+    return ret;
+};
+
+/**
+* get Tiles Of Size
+* @method getTilesOfSize
+*/
+GOBBLET.AI.prototype.getTilesOfSize = function (size) {
+    if (size <= 3) {
+        var wTiles = [],
+            b = this.visibleWhiteRows[size].toString(2),
+            l = b.length - 1,
+            start = b.indexOf('1');
+
+        while (start > -1) {
+            wTiles.push(this.tiles[l - start]);
+            start = b.indexOf('1', start + 1);
+        }
+
+        return wTiles;
+    }
+    return [];
+};
+/**
+* Get size pawn on tile
+* @method getPawnSize
+*/
+GOBBLET.AI.prototype.getPawnSize = function (tile, pawns) {
+    var i, p, r = 4;
+    for (i = pawns.length - 1; i >= 0; i -= 1) {
+        p = pawns[i];
+        if (p.visible && (p.tile === tile)) {
+            r = p.size;
+            break;
+        }
+    }
+    return r;
+};
+/**
+ * Determine whites best row lower is better
+ * @method sortWhiteRows
  */
-Board.prototype = new Shape();
+//
+GOBBLET.AI.prototype.sortWhiteRows = function (bState) {
+    var i, j, visibleWhiteOnRow, aMask, countRow, whiteBestRows = [];
+    //var lowest = 21;
+    for (i = 0; i < 10; i += 1) {
+        j = this.randomMaskSequence[i];//shuffled numbers from 0 to 10
+        aMask = this.mask[j];
+        visibleWhiteOnRow = this.visibleWhite & aMask;
+        //count the biggest black pawns and white pawns on the row if equal to four the row can't be attacked
+        if (this.count1Bits(visibleWhiteOnRow ^ (aMask & bState[0][0])) !== 4) {
+            countRow = (4 - this.count1Bits(visibleWhiteOnRow)) * 5; //number of tiles on row not occupied by white * 5
+            countRow += (this.count1Bits(this.visibleWhiteRows[3] & aMask)) * 4;//tiles occupied by smallest white * 4
+            countRow += (this.count1Bits(this.visibleWhiteRows[2] & aMask)) * 3;
+            countRow += (this.count1Bits(this.visibleWhiteRows[1] & aMask)) * 2;
+            countRow += (this.count1Bits(this.visibleWhiteRows[0] & aMask));
+            countRow -= this.count1Bits((aMask & (this.visibleWhite | this.visibleBlack)) ^ aMask); //empty tiles
+
+            /*//find lowest countRow with the smallest black pawn different from the biggest
+            if ((countRow < lowest) && (this.getSmallestBlackPawnOfRow(aMask) !== 0)) {
+                rowToAttack = j;
+                lowest = countRow;
+            }*/
+            whiteBestRows.push({rowCount: countRow, rowNumber: j});
+        }
+    }
+    whiteBestRows.sort(function (a, b) { return a.rowCount - b.rowCount; });
+    return whiteBestRows;
+};
+/**
+ * Pick a tile from a given row to attack
+ * @method choose Tile From Row To Attack
+ */
+//
+GOBBLET.AI.prototype.chooseTileFromRowToAttack = function (bState, rowToAttack) {
+    var rowMask, emptyTiles, s;
+    if (rowToAttack === undefined) {
+        //do random move
+        this.nextMove = this.startAttack(bState, 0);
+    } else {
+        rowMask = this.mask[rowToAttack];
+        emptyTiles = (rowMask & (this.visibleWhite | this.visibleBlack)) ^ rowMask;
+        if (emptyTiles === 0) {
+            s = this.getSmallestBlackPawnOfRow(rowMask);
+            //emptyTiles = array of tiles with the smallest black pawns
+            emptyTiles = bState[0][s];
+            for (s -= 1; s > -1; s -= 1) {
+                emptyTiles = (emptyTiles ^ (bState[0][s] | bState[1][s])) & emptyTiles;
+            }
+        }
+        this.nextMove = this.getNextMove(rowMask, emptyTiles, false);
+    }
+};
+
+/**
+ * Check number of 1 in a row for a certain player
+ * @method rowCheck
+ */
+GOBBLET.AI.prototype.rowCheck = function (checkWin, maxCount, bState, removeRowsWithSize0) {
+    var i, l, color = (checkWin ? 0 : 1), rows = [], number = (checkWin ? this.visibleWhite : this.visibleBlack);
+    for (i = 0, l = this.mask.length; i < l; i += 1) {
+        if (this.count1Bits(this.mask[i] & number) === maxCount) {
+            if (removeRowsWithSize0) {
+                if ((bState[color][0] & this.mask[i]) === 0) {
+                    rows.push(i);
+                }
+            } else {
+                rows.push(i);
+            }
+        }
+    }
+    return rows;
+};
+
+/**
+ * Smallest visible pawn of black in that row
+ * @method getSmallestBlackPawnOfRow
+ */
+GOBBLET.AI.prototype.getSmallestBlackPawnOfRow = function (mask) {
+    var i, s = 4;
+    for (i = 3; i > -1; i -= 1) {
+        if ((mask & this.visibleBlackRows[i]) !== 0) {
+            s = i;
+            break;
+        }
+    }
+    return s;
+};
+
+/**
+ * Wegner: This algorithm is better when most bits in x are 0
+ * @method count1Bits
+ */
+GOBBLET.AI.prototype.count1Bits = function (x) {
+    var count;
+    for (count = 0; x; count += 1) {
+        x &= x - 1;
+    }
+    return count;
+};

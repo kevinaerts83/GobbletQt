@@ -5,7 +5,7 @@
 #include "shape.h"
 #include "gobbler3d.h"
 
-class Gobbler : public QQuickPaintedItem, public Shape
+class Gobbler : public QQuickPaintedItem
 {
     // Q_PROPERTY only work for Q_OBJECT classes, you can only inherit from ONE Q_Object class
     // (QQuickPaintedItem already does) so the properties can't be moved to Shape
@@ -13,7 +13,7 @@ class Gobbler : public QQuickPaintedItem, public Shape
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(Matrix* matrix MEMBER m_matrix)
 
-    Q_PROPERTY(bool isWhite READ isWhite WRITE setWhite CONSTANT)
+    Q_PROPERTY(bool isWhite READ isWhite WRITE setWhite)
     Q_PROPERTY(int depth READ depth WRITE setDepth NOTIFY depthChanged)
     Q_PROPERTY(double x3d READ x3d WRITE setX3d NOTIFY x3dChanged)
     Q_PROPERTY(double y3d READ y3d WRITE setY3d NOTIFY y3dChanged)
@@ -22,9 +22,10 @@ class Gobbler : public QQuickPaintedItem, public Shape
     QML_ELEMENT
 
 public:
-    Gobbler(QQuickItem *parent = 0);
-    gobbler3d model;
-    Matrix* m_matrix;
+    Gobbler(QQuickItem *parent = 0, Shape *shape = nullptr, Gobbler3d model = NULL);
+    Gobbler3d model;
+    Matrix *m_matrix;
+    Shape *m_shape;
 
     QString name() const;
     void setName(const QString &name);
