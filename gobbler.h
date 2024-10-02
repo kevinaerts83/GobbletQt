@@ -14,6 +14,7 @@ class Gobbler : public QQuickPaintedItem
     Q_PROPERTY(Matrix* matrix MEMBER m_matrix)
 
     Q_PROPERTY(bool isWhite READ isWhite WRITE setWhite)
+    Q_PROPERTY(int size READ size WRITE setSize)
     Q_PROPERTY(int depth READ depth WRITE setDepth NOTIFY depthChanged)
     Q_PROPERTY(double x3d READ x3d WRITE setX3d NOTIFY x3dChanged)
     Q_PROPERTY(double y3d READ y3d WRITE setY3d NOTIFY y3dChanged)
@@ -32,6 +33,9 @@ public:
 
     bool isWhite() const;
     void setWhite(const bool &isWhite);
+
+    int size() const;
+    void setSize(const int &size);
 
     int depth() const;
     void setDepth(const int &depth);
@@ -56,6 +60,7 @@ signals:
 private:
     QString m_name;
     bool m_isWhite;
+    int m_size;
     int m_depth;
     double m_x3d;
     double m_y3d;

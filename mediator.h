@@ -33,6 +33,10 @@ public slots:
     void repaint();
     void onClick(Matrix *matrix, const double x, const double y);
 
+private slots:
+    bool checkWinner(bool player);
+    void writeLog();
+
 signals:
     void listChanged();
     void blackTurnChanged();
@@ -43,6 +47,8 @@ private:
     bool m_blackTurn;
     Gobbler* m_selection;
     Board* m_board;
+    int m_state [2][4] = {{ 0, 0, 0, 0}, {0, 0, 0, 0}};
+    int m_mask [10] = {61440, 3840, 240, 15, 34952, 17476, 8738, 4369, 33825, 4680};
 };
 
 #endif // MEDIATOR_H

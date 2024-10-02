@@ -1,7 +1,8 @@
 #include "mediator.h"
 #include <QQmlEngine>
 #include <iostream>
-#include <ostream>
+#include <bitset>
+#include <string>
 
 #include "gobbler.h"
 
@@ -88,6 +89,14 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y)
 
     if (getSelection() != NULL) {
 
+        // update state of old tile
+        if ((((int) getSelection()->z3d()) % 150) != 0) {
+            int tile = (getSelection()->x3d() + 225) / 150 + ((getSelection()->z3d() + 225) / 150) * 4;
+            if(tile > -1) {
+                m_state[getSelection()->isWhite()][getSelection()->size()] ^= (int)pow(2, tile); //Clear previous position
+            }
+        }
+
         for (const auto& item : getList()) {
             if (item->depth() > getSelection()->depth()
                 && item->x3d() == getSelection()->x3d()
@@ -105,7 +114,27 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y)
         getSelection()->setY3d(coord[1]);
         getSelection()->setZ3d(roundZ);
 
+        // update state of new tile
+        int newTile = (getSelection()->x3d() + 225) / 150 + ((getSelection()->z3d() + 225) / 150) * 4;
+        m_state[getSelection()->isWhite()][getSelection()->size()] |= (int) pow(2, newTile); //Set new position
+
+        // first check the player who's turn is next (In case when a gobblet of the opposite player is revealed)
+        if (getSelection()->isWhite()) {
+            if (checkWinner(0)) {
+                std::cout << "Black won " << std::endl;
+            } else if (checkWinner(1)) {
+                std::cout << "White won " << std::endl;
+            }
+        } else {
+            if (checkWinner(1)) {
+                std::cout << "White won " << std::endl;
+            } else if (checkWinner(0)) {
+                std::cout << "Black won " << std::endl;
+            }
+        }
+
         setSelection(NULL);
+
     } else {
         for (const auto& item : getList()) {
             if (item->depth() == 0 && item->x3d() == roundX && item->z3d() == borderZ) {
@@ -118,3 +147,62 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y)
     }
 }
 
+/*
+  Check if one of the following values occur.
+
+  1111 0000 0000 0000
+  0000 1111 0000 0000
+  0000 0000 1111 0000
+  0000 0000 0000 1111
+  1000 1000 1000 1000
+  0100 0100 0100 0100
+  0010 0010 0010 0010
+  0001 0001 0001 0001
+  1000 0100 0010 0001
+  0001 0010 0100 1000
+*/
+bool Mediator::checkWinner(bool player) {
+    int winner [4] = {m_state[player][0], m_state[player][1], m_state[player][2], m_state[player][3]};
+    int loser [4] = {m_state[player ^ 1][0], m_state[player ^ 1][1], m_state[player ^ 1][2], m_state[player ^ 1][3]};
+    int chkPlayer [4];
+    chkPlayer[0] = winner[0];
+    chkPlayer[1] = (winner[1] ^ loser[0]) & winner[1];
+    chkPlayer[2] = (winner[2] ^ (loser[0] | loser[1])) & winner[2];
+    chkPlayer[3] = (winner[3] ^ (loser[0] | loser[1] | loser[2])) & winner[3];
+
+    int number = chkPlayer[0] | chkPlayer[1] | chkPlayer[2] | chkPlayer[3];
+
+    bool won = false;
+    for (int i = 0; i < 10; i++) {
+        if ((m_mask[i] & number) == m_mask[i]) {
+            won = true;
+            break;
+        }
+    }
+    return won;
+}
+
+
+void Mediator::writeLog() {
+    std::bitset<16> one(65536 + m_state[0][0]);
+    std::bitset<16> two(65536 + m_state[0][1]);
+    std::bitset<16> three(65536 + m_state[0][2]);
+    std::bitset<16> four(65536 + m_state[0][3]);
+
+    std::cout << "black" << std::endl;
+    std::cout << one.to_string().substr(0, 4) << " " << one.to_string().substr(4, 4) << " " << one.to_string().substr(8, 4) << " " << one.to_string().substr(12, 4) << std::endl;
+    std::cout << two.to_string().substr(0, 4) << " " << two.to_string().substr(4, 4) << " " << two.to_string().substr(8, 4) << " " << two.to_string().substr(12, 4) << std::endl;
+    std::cout << three.to_string().substr(0, 4) << " " << three.to_string().substr(4, 4) << " " << three.to_string().substr(8, 4) << " " << three.to_string().substr(12, 4) << std::endl;
+    std::cout << four.to_string().substr(0, 4) << " " << four.to_string().substr(4, 4) << " " << four.to_string().substr(8, 4) << " " << four.to_string().substr(12, 4) << std::endl;
+
+    one = std::bitset<16>(65536 + m_state[1][0]);
+    two = std::bitset<16>(65536 + m_state[1][1]);
+    three = std::bitset<16>(65536 + m_state[1][2]);
+    four = std::bitset<16>(65536 + m_state[1][3]);
+
+    std::cout << "white" << std::endl;
+    std::cout << one.to_string().substr(0, 4) << " " << one.to_string().substr(4, 4) << " " << one.to_string().substr(8, 4) << " " << one.to_string().substr(12, 4) << std::endl;
+    std::cout << two.to_string().substr(0, 4) << " " << two.to_string().substr(4, 4) << " " << two.to_string().substr(8, 4) << " " << two.to_string().substr(12, 4) << std::endl;
+    std::cout << three.to_string().substr(0, 4) << " " << three.to_string().substr(4, 4) << " " << three.to_string().substr(8, 4) << " " << three.to_string().substr(12, 4) << std::endl;
+    std::cout << four.to_string().substr(0, 4) << " " << four.to_string().substr(4, 4) << " " << four.to_string().substr(8, 4) << " " << four.to_string().substr(12, 4) << std::endl;
+}

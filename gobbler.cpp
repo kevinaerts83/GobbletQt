@@ -1,7 +1,7 @@
 #include "gobbler.h"
 
 //![0]
-Gobbler::Gobbler(QQuickItem *parent, Shape *shape, Gobbler3d model) : QQuickPaintedItem(parent), model(*new Gobbler3d(150)), m_shape(shape) {
+Gobbler::Gobbler(QQuickItem *parent, Shape *shape, Gobbler3d model) : QQuickPaintedItem(parent), model(model), m_shape(shape) {
 
     //if (model) {
     // model = *new Gobbler3d(150);
@@ -33,6 +33,16 @@ bool Gobbler::isWhite() const
 void Gobbler::setWhite(const bool &isWhite)
 {
     m_isWhite = isWhite;
+}
+
+int Gobbler::size() const
+{
+    return m_size;
+}
+
+void Gobbler::setSize(const int &size)
+{
+    m_size = size;
 }
 
 int Gobbler::depth() const

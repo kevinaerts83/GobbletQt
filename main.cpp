@@ -49,25 +49,33 @@ int main(int argc, char *argv[])
 
             Shape *myShape = new Shape();
             QQuickItem *parentItem = qobject_cast<QQuickItem *>(children.at(0));
-            Gobbler *gobblerItem = new Gobbler(parentItem, myShape, *new Gobbler3d(150));
 
-            if (gobblerItem) {
-                gobblerItem->m_matrix = qobject_cast<Matrix*>(children.at(1));
-                //gobblerItem->model = *new Gobbler3d(150);
+            if (parentItem) {
 
-                gobblerItem->setDepth(0);
-                gobblerItem->setX3d(375);
-                gobblerItem->setY3d(0);
-                gobblerItem->setZ3d(0);
+                for (int i = 0; i < 24; i++) {
 
-                gobblerItem->setWhite(false);
-                gobblerItem->setProperty("id", "b12");
-                gobblerItem->setProperty("name", "b12");
+                    Gobbler *gobblerItem = new Gobbler(parentItem, myShape, *new Gobbler3d(150 - 15 - ((i % 4) * 30)));
 
-                gobblerItem->setWidth(1024);
-                gobblerItem->setHeight(768);
+                    if (gobblerItem) {
+                        gobblerItem->m_matrix = qobject_cast<Matrix*>(children.at(1));
+                        //gobblerItem->model = *new Gobbler3d(150);
 
-                mediator->addItem(gobblerItem);
+                        gobblerItem->setDepth(i % 4);
+                        gobblerItem->setSize(i % 4);
+                        gobblerItem->setX3d((i > 11) ? 375 : -375);
+                        gobblerItem->setY3d(0);
+                        gobblerItem->setZ3d(-150 + ((((i > 11) ? i - 12 : i)/ 4) * 150));
+
+                        gobblerItem->setWhite(i < 12);
+                        gobblerItem->setProperty("id", i);
+                        gobblerItem->setProperty("name", i);
+
+                        gobblerItem->setWidth(1024);
+                        gobblerItem->setHeight(768);
+
+                        mediator->addItem(gobblerItem);
+                    }
+                }
             }
         } else {
             qWarning("Failed to cast child at index 2 to Mediator*");
