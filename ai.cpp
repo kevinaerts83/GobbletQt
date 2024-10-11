@@ -6,8 +6,6 @@
 #include <random>
 #include <bitset>
 
-// std::size_t
-
 AI::AI() {
     std::array<int, 10> sequence { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -98,28 +96,28 @@ bool AI::tryToWin() {
 
 // Dont lose
 bool AI::dontLose() {
-    std::vector<int> rows = rowCheck(false, 3);
+    std::vector<int> rows = rowCheck(3, false, false);
     if (rows.size() > 1) {
-        int maskCrossing = mask[rows[0]];
-        for (int i = 1; i < rows.size(); ++i) {
-            maskCrossing &= mask[rows[i]];
+        int maskCrossing = m_mask[rows[0]];
+        for (int i = 1; i < static_cast<int>(rows.size()); ++i) {
+            maskCrossing &= m_mask[rows[i]];
         }
         if (maskCrossing > 0) {
             m_toTile = getNextMove(0, maskCrossing, false);
-            if (getPawnSize(m_toTile, pawns) != 0) {
+            if (getPawnSize(m_toTile) != 0) {
                 if (setNextPawn(1, rows)) {
                     return false;
                 }
             }
         }
     } else if (rows.size() == 1) {
-        int maskToCheck = mask[rows[0]];
-        int s = getSmallestBlackPawnOfRow(mask[rows[0]]);
-        m_toTile = getNextMove(maskToCheck, visibleBlackRows[s], false);
+        int maskToCheck = m_mask[rows[0]];
+        int s = getSmallestBlackPawnOfRow(m_mask[rows[0]]);
+        m_toTile = getNextMove(maskToCheck, m_visibleBlackRows[s], false);
         if (setNextPawn(s, rows)) {
             return false;
         }
-        m_toTile = getNextMove(maskToCheck, visibleBlack, true);
+        m_toTile = getNextMove(maskToCheck, m_visibleBlack, true);
         if (setNextPawn(1, rows)) {
             return false;
         }
@@ -130,102 +128,128 @@ bool AI::dontLose() {
 bool AI::block() {
     //if level is 1: check if black player can put a size0 on a tile creating 2 row with 3 pawns. (no biggest white pawns on the rows)
     //fake a black pawn size1 on that tile and do don't loose
-    if (level === 1) {
-        var i, l, oldValue, old2, old3, ret = true,
-            masks = [63624, 62532, 61986, 61713, 36744, 20292, 12066, 7953, 35064, 17652, 8946, 4593, 34959, 17487, 8751, 4383, 62497, 36641, 34033, 33839, 62024, 8008, 4856, 4687, 36009, 50277, 42531, 38193, 39624, 22092, 12906, 4953],
-            crossing = [32768, 16384, 8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 32768, 1024, 32, 1, 4096, 512, 64, 8, 32768, 1024, 32, 1, 8, 64, 512, 4096];
-        for (i = 0, l = masks.length; i < l; i += 1) {
-            if ((count1Bits(visibleBlack & masks[i]) > 3) && ((visibleBlack & crossing[i]) === 0) && ((bState[1][0] & masks[i]) === 0)) {
-                oldValue = m_bState[0][1];
-                old2 = visibleBlack;
-                old3 = visibleBlackRows[1];
+    if (m_level == 1) {
+        bool ret = true;
 
-                bState[0][1] |= crossing[i];
-                visibleBlack |= crossing[i];
-                visibleBlackRows[1] |= crossing[i];
+        int i = 0;
+        for (int twiceThree : m_twiceThree) {
+            if ((count1Bits(m_visibleBlack & twiceThree) > 3)
+                && ((m_visibleBlack & m_blockMove[i]) == 0)
+                && ((m_bState[1][0] & twiceThree) == 0)) {
 
-                ret = dontLose(bState, pawns);
+                int oldValue = m_bState[0][1];
+                int old2 = m_visibleBlack;
+                int old3 = m_visibleBlackRows[1];
 
-                bState[0][1] = oldValue;
-                visibleBlack = old2;
-                visibleBlackRows[1] = old3;
+                m_bState[0][1] |= m_blockMove[i];
+                m_visibleBlack |= m_blockMove[i];
+                m_visibleBlackRows[1] |= m_blockMove[i];
+
+                ret = dontLose();
+
+                m_bState[0][1] = oldValue;
+                m_visibleBlack = old2;
+                m_visibleBlackRows[1] = old3;
                 break;
             }
+            i++;
         }
         return ret;
     }
     return false;
 }
 
-void AI::attack() {
-    var s = 0, i, rowToAttack, wRows = [];
+bool AI::attack() {
+    std::vector<Grades> wRows;
 
-    if (m_visibleWhite !== 0) {
+    if (m_visibleWhite != 0) {
         //determine whites best row lower is better
-        wRows = sortWhiteRows(bState);
+        wRows = sortWhiteRows();
     }
-    for (i = 0; i < 10; i += 1) {
-        rowToAttack = (wRows.length > i)  ? (wRows[i].rowNumber) : undefined;
+    for (int i = 0; i < 10; i += 1) {
+        int rowToAttack = (static_cast<int>(wRows.size()) > i) ? wRows[i].id : -1;
         //set the nextMove
-        chooseTileFromRowToAttack(bState, rowToAttack);
+        chooseTileFromRowToAttack(rowToAttack);
 
         if (m_toTile >= 0) {
-            s = getPawnSize(m_toTile, pawns);
-            s = (s === -1 ? 4 : s);
+            int s = getPawnSize(m_toTile);
+            s = (s == -1 ? 4 : s);
             if (setNextPawn(s, getRowsOfTile(m_toTile))) {
                 break;
             }
         }
-        if (wRows.length < i) {
+        if (static_cast<int>(wRows.size()) < i) {
             break;
         }
     }
 
     if (m_toTile < 0) {
-        attackFallBack(bState, pawns);
+        attackFallBack();
     }
+    return true;
 }
 
 void AI::randomMove() {
     int s = 0;
     while (s == 0) {
         int t = std::rand() % 16;
-        m_toTile = tiles[t];
-        s = getPawnSize(m_toTile, pawns);
+        m_toTile = t;
+        s = getPawnSize(m_toTile);
     }
-    for (int i = pawns.size() - 1; i >= 0; --i) {
-        p = pawns[i];
-        if ((p.isTurn === 1) && p.visible && (p.tile !== m_toTile) && (p.size < s || s === 4)) {
-            this->pawn = pawns[i];
-            break;
+
+    int stackSize = getPawnFromStack(s - 1);
+    if (stackSize > -1) {
+        m_fromTile = 16 + stackSize;
+    }
+
+    for (int i = s - 1; i > 0; i--) {
+        int pawnsOnBoard = m_visibleBlackRows[i];
+        int toTile = pow(2, m_toTile);
+        int possibleTiles = pawnsOnBoard ^ toTile;
+        if (possibleTiles > 0) {
+            m_fromTile = possibleTiles & -possibleTiles;
         }
     }
 }
 
 void AI::attackFallBack() {
-    var i, size, ignore = 0;
-    for (i = 0; i < 4; i += 1) {
-        size = getPawnSize(m_toTile, pawns);
-        size = (size === -1 ? 4 : size);
+    int ignore = 0;
+    for (int i = 0; i < 4; i += 1) {
+        int size = getPawnSize(m_toTile);
+        size = (size == -1 ? 4 : size);
         if (!setNextPawn(size, getRowsOfTile(m_toTile))) {
-            m_toTile = startAttack(bState, ignore);
-            ignore += Math.pow(2, tiles.indexOf(m_toTile));
+            m_toTile = startAttack(ignore);
+            ignore += pow(2, m_toTile);
         } else {
             break;
         }
     }
 }
 
-void AI::startAttack() {
-    var c = (crossings ^ bState[0][0] ^ bState[1][0] ^ ignore).toString(2), rnd = c.length, t;
-    rnd = Math.floor(Math.random() * rnd);
-    t = c.indexOf('1', rnd);
-    while (t === -1) {
-        rnd = Math.floor(Math.random() * rnd);
-        t = c.indexOf('1', rnd);
-    }
-    return tiles[15 - t];//15=tiles.length - 1
+int AI::startAttack(int ignore) {
+    int number = m_crossings ^ m_bState[0][0] ^ m_bState[1][0] ^ ignore;
+    // Convert number to binary string
+    std::string binary = std::bitset<32>(number).to_string(); // Assuming a 32-bit number
+
+    // Remove leading zeros from the binary string
+    binary = binary.substr(binary.find('1'));
+
+    // Initialize random number generator
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist(0, binary.length() - 1);
+
+    int rnd, t;
+
+    // Get random index and find first '1' after that index
+    do {
+        rnd = dist(gen);  // Generate a random number
+        t = binary.find('1', rnd);  // Find the first '1' starting from rnd
+    } while (t == std::string::npos);  // Repeat if '1' is not found
+
+    return t;
 }
+
 
 
 // { 0, 1, 2, 3, 5, 6, 7, 8, 10, 11, 12, 13, 15, 16, 17, 18 }
@@ -308,11 +332,11 @@ int AI::getPawnFromBoard(int size, std::vector<int> excludeRows) {
         int result = -1;
         int j = 0;
         for (int i = size - 1; i > -1; i -= 1) {
-            std::vector<std::vector<int>> graded = getUnimportantWhiteTile(i, excludeRows);
-            for (std::vector<int> grade : graded) {
-                if ((j == 0) || (j > grade[1])) {
-                    j = grade[1];
-                    result = grade[0];
+            std::vector<Grades> graded = getUnimportantWhiteTile(i, excludeRows);
+            for (Grades grade : graded) {
+                if ((j == 0) || (j > grade.id)) {
+                    j = grade.id;
+                    result = grade.grade;
                 }
             }
         }
@@ -331,26 +355,25 @@ int AI::getPawnFromBoard(int size, std::vector<int> excludeRows) {
     return -1;
 }
 
-std::vector<std::vector<int>> AI::getUnimportantWhiteTile(int size, std::vector<int> excludeRows) {
-    var i, j, l, lj, o, n, r, p, bad, aTile, cache = [], result = [], tileRows, wTiles = getTilesOfSize(size); //get the tile of a visible white pawns from a certain size
+std::vector<Grades> AI::getUnimportantWhiteTile(int size, std::vector<int> excludeRows) {
+    std::vector<int> wTiles = getTilesOfSize(size); //get the tile of a visible white pawns from a certain size
+    std::vector<int> goodTiles;
 
-    for (i = 0, l = wTiles.length; i < l; i += 1) {
-        bad = false;
-        aTile = wTiles[i];
+    for (int aTile : wTiles) {
+        bool bad = false;
         //tileRows contains the row indexes, these indexes are the same as the mask indexes for those rows
-        tileRows = getRowsOfTile(aTile);
+        std::vector<int> tileRows = getRowsOfTile(aTile);
         //loop over every row of the tile (max 3)
         //a white pawn is only unimportant if it's not blocking a row or not of strategic interest for a row
-        for (j = 0, lj = tileRows.length; j < lj; j += 1) {
-            r = tileRows[j];
-            p = Math.pow(2, tiles.indexOf(aTile));
+        for (int r : tileRows) {
+            int p = pow(2, aTile);
             //stop processing the tile if it's in a row with 3 black pawns, or the row that is currently formed.
-            if ((rowCheck(false, 3).indexOf(r) !== -1) || (excludeRows.indexOf(r) !== -1)) {
+            if (findId(rowCheck(3, false, false), r) || findId(excludeRows, r)) {
                 bad = true;
                 break;
-            } else if ((count1Bits(mask[r] & visibleBlack) === 2) &&
-                       ((((mask[r] & bState[1][0]) | p) ^ p) === 0) &&
-                       (getColorUnderneath(aTile, size, bState) === 2)) {
+            } else if ((count1Bits(m_mask[r] & m_visibleBlack) == 2) &&
+                       ((((m_mask[r] & m_bState[1][0]) | p) ^ p) == 0) &&
+                       (getColorUnderneath(aTile, size) == 2)) {
                 //Stop when all conditions are true
                 // - 2 black pawn
                 // - no biggest white pawn (except the one being checked)
@@ -362,24 +385,25 @@ std::vector<std::vector<int>> AI::getUnimportantWhiteTile(int size, std::vector<
                 //Count for every row the tile is in, the white and black pawns.
                 o = getObjectFromArray(cache, aTile);//id === tile
                 if (o) {
-                    o.countWhite += count1Bits((visibleWhite & mask[r]));
-                    o.countBlack += count1Bits((visibleBlack & mask[r]));
+                    o.countWhite += count1Bits((m_visibleWhite & m_mask[r]));
+                    o.countBlack += count1Bits((m_visibleBlack & m_mask[r]));
                 } else {
                     cache.push({id: aTile,
-                                countWhite: count1Bits((visibleWhite & mask[r])),
-                                countBlack: count1Bits((visibleBlack & mask[r]))});
+                                countWhite: count1Bits((m_visibleWhite & m_mask[r])),
+                                countBlack: count1Bits((m_visibleBlack & m_mask[r]))});
                 }
             }
         }
-        if (bad === false) {
+        if (!bad) {
             //initialize result array for tiles that passed the test.
-            result.push({id: aTile, grade: 0});
+            goodTiles.push_back(aTile);
         }
     }
     //GRADE
-    for (i = 0; i < result.length; i += 1) {
-        o = getObjectFromArray(cache, result[i].id);//id === tile
-        n = getColorUnderneath(o.id, size, bState);
+    std::vector<Grades> result;
+    for (int tile : goodTiles) {
+        int o = getObjectFromArray(cache, tile);//id === tile
+        int n = getColorUnderneath(o.id, size);
         /* *** the best pawn we do not want to move ***
          * larger pawn
          * 1 or 2 white pawns in a row
@@ -387,49 +411,52 @@ std::vector<std::vector<int>> AI::getUnimportantWhiteTile(int size, std::vector<
          * a black pawn underneath
          * a white pawn underneath is not the best situation
          * */
-        result[i].grade = ((4 - size) * 2) + o.countWhite + (o.countBlack * 2) + ((n === 0) ? 0 : (n === 1) ? -2 : 5);
+        result.push_back(Grades(tile, ((4 - size) * 2) + o.countWhite + (o.countBlack * 2) + ((n === 0) ? 0 : (n === 1) ? -2 : 5)));
     }
     return result;
 }
 
-int AI::getObjectFromArray(int objects [], int value) {
-    for (int o = 0, l = objects.length; o < l; o++) {
-        if (objects[o].id === value) {
-            return objects[o];
-            break;
+bool AI::findId(std::vector<int> numbers, int searchId) {
+    return std::find(numbers.begin(), numbers.end(), searchId) != numbers.end();
+}
+
+int AI::getObjectFromArray(const std::vector<Grades>& objects, int searchId) {
+    for (const auto& obj : objects) {
+        if (obj.id == searchId) {
+            return obj.grade;
         }
     }
     return -1;
 }
 
-void AI::getColorUnderneath() {
-    var i, number = Math.pow(2, tiles.indexOf(tile)), ret = 0;
-    for (i = size + 1; (i < 4) && (ret === 0); i += 1) {
-        if ((bState[1][i] & number) !== 0) {
-            ret = 1;
+int AI::getColorUnderneath(int tile, int size) {
+    int number = pow(2, tile);
+    for (int i = size + 1; (i < 4); i += 1) {
+        if ((m_bState[1][i] & number) != 0) {
+            return 1;
         }
-        if ((bState[0][i] & number) !== 0) {
-            ret = 2;
+        if ((m_bState[0][i] & number) != 0) {
+            return 2;
         }
     }
-    return ret;
+    return 0;
 }
 
-void AI::getTilesOfSize() {
-    if (size <= 3) {
-        var wTiles = [],
-            b = visibleWhiteRows[size].toString(2),
-            l = b.length - 1,
-            start = b.indexOf('1');
+std::vector<int> AI::getTilesOfSize(int size) {
+    std::vector<int> wTiles;
 
-        while (start > -1) {
-            wTiles.push(tiles[l - start]);
-            start = b.indexOf('1', start + 1);
+    int number = m_visibleWhiteRows[size];
+    int bitIndex = 0;
+
+    while (number != 0) {
+        if (number & 1) {  // Check if the least significant bit is 1
+            wTiles.push_back(m_tiles[bitIndex]);  // Use the bitIndex to get the tile from m_tiles
         }
-
-        return wTiles;
+        number >>= 1;  // Shift the number to the right by 1 bit
+        bitIndex++;    // Increment the bit position
     }
-    return [];
+
+    return wTiles;
 }
 
 int AI::getPawnSize(int tile) {
@@ -442,48 +469,51 @@ int AI::getPawnSize(int tile) {
     return 4;
 }
 
-void AI::sortWhiteRows() {
-    var i, j, visibleWhiteOnRow, aMask, countRow, whiteBestRows = [];
+std::vector<Grades> AI::sortWhiteRows() {
+    std::vector<Grades> whiteBestRows;
     //var lowest = 21;
-    for (i = 0; i < 10; i += 1) {
-        j = randomMaskSequence[i];//shuffled numbers from 0 to 10
-        aMask = mask[j];
-        visibleWhiteOnRow = visibleWhite & aMask;
+    for (int i = 0; i < 10; i++) {
+        int j = m_randomMaskSequence[i];//shuffled numbers from 0 to 10
+        int aMask = m_mask[j];
+        int visibleWhiteOnRow = m_visibleWhite & aMask;
         //count the biggest black pawns and white pawns on the row if equal to four the row can't be attacked
-        if (this->count1Bits(visibleWhiteOnRow ^ (aMask & bState[0][0])) !== 4) {
-            countRow = (4 - count1Bits(visibleWhiteOnRow)) * 5; //number of tiles on row not occupied by white * 5
-            countRow += (count1Bits(visibleWhiteRows[3] & aMask)) * 4;//tiles occupied by smallest white * 4
-            countRow += (count1Bits(visibleWhiteRows[2] & aMask)) * 3;
-            countRow += (count1Bits(visibleWhiteRows[1] & aMask)) * 2;
-            countRow += (count1Bits(visibleWhiteRows[0] & aMask));
-            countRow -= count1Bits((aMask & (visibleWhite | visibleBlack)) ^ aMask); //empty tiles
+        if (this->count1Bits(visibleWhiteOnRow ^ (aMask & m_bState[0][0])) != 4) {
+            int countRow = (4 - count1Bits(visibleWhiteOnRow)) * 5; //number of tiles on row not occupied by white * 5
+            countRow += (count1Bits(m_visibleWhiteRows[3] & aMask)) * 4;//tiles occupied by smallest white * 4
+            countRow += (count1Bits(m_visibleWhiteRows[2] & aMask)) * 3;
+            countRow += (count1Bits(m_visibleWhiteRows[1] & aMask)) * 2;
+            countRow += (count1Bits(m_visibleWhiteRows[0] & aMask));
+            countRow -= count1Bits((aMask & (m_visibleWhite | m_visibleBlack)) ^ aMask); //empty tiles
 
             /*//find lowest countRow with the smallest black pawn different from the biggest
             if ((countRow < lowest) && (getSmallestBlackPawnOfRow(aMask) !== 0)) {
                 rowToAttack = j;
                 lowest = countRow;
             }*/
-            whiteBestRows.push({rowCount: countRow, rowNumber: j});
+            whiteBestRows.push_back(Grades(j, countRow));
         }
     }
-    whiteBestRows.sort(function (a, b) { return a.rowCount - b.rowCount; });
+
+    std::sort(whiteBestRows.begin(), whiteBestRows.end(), [](const Grades& a, const Grades& b) {
+        return a.grade < b.grade;
+    });
+
     return whiteBestRows;
 }
 
-void AI::chooseTileFromRowToAttack() {
-    var rowMask, emptyTiles, s;
-    if (rowToAttack === undefined) {
+void AI::chooseTileFromRowToAttack(int rowToAttack) {
+    if (rowToAttack == -1) {
         //do random move
-        m_toTile = startAttack(bState, 0);
+        m_toTile = startAttack(0);
     } else {
-        rowMask = mask[rowToAttack];
-        emptyTiles = (rowMask & (visibleWhite | visibleBlack)) ^ rowMask;
-        if (emptyTiles === 0) {
-            s = getSmallestBlackPawnOfRow(rowMask);
+        int rowMask = m_mask[rowToAttack];
+        int emptyTiles = (rowMask & (m_visibleWhite | m_visibleBlack)) ^ rowMask;
+        if (emptyTiles == 0) {
+            int s = getSmallestBlackPawnOfRow(rowMask);
             //emptyTiles = array of tiles with the smallest black pawns
-            emptyTiles = bState[0][s];
+            emptyTiles = m_bState[0][s];
             for (s -= 1; s > -1; s -= 1) {
-                emptyTiles = (emptyTiles ^ (bState[0][s] | bState[1][s])) & emptyTiles;
+                emptyTiles = (emptyTiles ^ (m_bState[0][s] | m_bState[1][s])) & emptyTiles;
             }
         }
         m_toTile = getNextMove(rowMask, emptyTiles, false);
@@ -510,10 +540,10 @@ std::vector<int> AI::rowCheck(int maxCount, bool isWhite, bool removeRowsWithSiz
     return rows;
 }
 
-void AI::getSmallestBlackPawnOfRow() {
-    var i, s = 4;
-    for (i = 3; i > -1; i -= 1) {
-        if ((mask & visibleBlackRows[i]) !== 0) {
+int AI::getSmallestBlackPawnOfRow(int mask) {
+    int s = 4;
+    for (int i = 3; i > -1; i -= 1) {
+        if ((mask & m_visibleBlackRows[i]) != 0) {
             s = i;
             break;
         }

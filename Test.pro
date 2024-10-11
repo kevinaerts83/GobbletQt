@@ -19,6 +19,7 @@ SOURCES += \
         board3d.cpp \
         gobbler.cpp \
         gobbler3d.cpp \
+        grades.cpp \
         main.cpp \
         matrix.cpp \
         mediator.cpp \
@@ -44,6 +45,7 @@ HEADERS += \
     board3d.h \
     gobbler.h \
     gobbler3d.h \
+    grades.h \
     matrix.h \
     mediator.h \
     shape.h \

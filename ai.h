@@ -2,6 +2,8 @@
 #define AI_H
 
 #include <vector>
+#include "Grades.h"
+
 class AI
 {
 
@@ -23,28 +25,31 @@ private:
     void randomMove();
 
     void attackFallBack();
-    void startAttack(bool ignore);
+    int startAttack(int ignore);
     int getNextMove(int mask, int state, bool reverse);
     bool setNextPawn(int size, std::vector<int> rows);
 
     std::vector<int> getRowsOfTile(int tile);
     int getPawnFromStack(int size);
     int getPawnFromBoard(int size, std::vector<int> excludeRows);
-    std::vector<std::vector<int>> getUnimportantWhiteTile(int size, std::vector<int> excludeRows);
+    std::vector<Grades> getUnimportantWhiteTile(int size, std::vector<int> excludeRows);
 
-    int getObjectFromArray(int objects [], int value);
-    void getColorUnderneath(int tile, int size, int bState);
-    void getTilesOfSize(int size);
+    bool findId(std::vector<int> numbers, int searchId);
+    int getObjectFromArray(const std::vector<Grades>& objects, int searchId);
+    int getColorUnderneath(int tile, int size);
+    std::vector<int> getTilesOfSize(int size);
     int getPawnSize(int tile);
-    void sortWhiteRows(int bState);
-    void chooseTileFromRowToAttack(int bState, int rowToAttack);
+    std::vector<Grades> sortWhiteRows();
+    void chooseTileFromRowToAttack(int rowToAttack);
     std::vector<int> rowCheck(int maxCount, bool isWhite, bool removeRowsWithSize0);
-    void getSmallestBlackPawnOfRow(int mask);
+    int getSmallestBlackPawnOfRow(int mask);
     int count1Bits(int x);
 
     void writeLog();
 
     int m_mask [10] = { 61440, 3840, 240, 15, 34952, 17476, 8738, 4369, 33825, 4680 };
+    int m_twiceThree [32] = { 63624, 62532, 61986, 61713, 36744, 20292, 12066, 7953, 35064, 17652, 8946, 4593, 34959, 17487, 8751, 4383, 62497, 36641, 34033, 33839, 62024, 8008, 4856, 4687, 36009, 50277, 42531, 38193, 39624, 22092, 12906, 4953 };
+    int m_blockMove [32] = { 32768, 16384, 8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 32768, 1024, 32, 1, 4096, 512, 64, 8, 32768, 1024, 32, 1, 8, 64, 512, 4096 };
 
     int m_bState [2][4];
     int m_level = 0;
