@@ -17,7 +17,7 @@ AI::AI() {
 }
 
 // Move function
-void AI::move(int boardState [2][4]) {
+aiMove AI::move(int boardState [2][4]) {
 
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 4; j++) {
@@ -46,6 +46,12 @@ void AI::move(int boardState [2][4]) {
         randomMove();
         //std::cout << "current tile: " << nextMove << std::endl;
     }
+
+    aiMove move;
+    move.setFrom(m_fromTile);
+    move.setTo(m_toTile);
+    return move;
+
 }
 
 // Cache function
@@ -245,7 +251,7 @@ int AI::startAttack(int ignore) {
     do {
         rnd = dist(gen);  // Generate a random number
         t = binary.find('1', rnd);  // Find the first '1' starting from rnd
-    } while (t == std::string::npos);  // Repeat if '1' is not found
+    } while (t == static_cast<int>(std::string::npos));  // Repeat if '1' is not found
 
     return t;
 }
@@ -359,6 +365,7 @@ std::vector<Grades> AI::getUnimportantWhiteTile(int size, std::vector<int> exclu
     std::vector<int> wTiles = getTilesOfSize(size); //get the tile of a visible white pawns from a certain size
     std::vector<int> goodTiles;
 
+    std::vector<tileCounter> cache;
     for (int aTile : wTiles) {
         bool bad = false;
         //tileRows contains the row indexes, these indexes are the same as the mask indexes for those rows
@@ -383,14 +390,13 @@ std::vector<Grades> AI::getUnimportantWhiteTile(int size, std::vector<int> exclu
             } else {
                 //Set cache for Grade
                 //Count for every row the tile is in, the white and black pawns.
-                o = getObjectFromArray(cache, aTile);//id === tile
-                if (o) {
-                    o.countWhite += count1Bits((m_visibleWhite & m_mask[r]));
-                    o.countBlack += count1Bits((m_visibleBlack & m_mask[r]));
+                tileCounter* o = getObjectFromArray(cache, aTile);//id === tile
+                if (o != nullptr) {
+                    o -> addWhiteCounter(count1Bits((m_visibleWhite & m_mask[r])));
+                    o -> addBlackCounter(count1Bits((m_visibleBlack & m_mask[r])));
                 } else {
-                    cache.push({id: aTile,
-                                countWhite: count1Bits((m_visibleWhite & m_mask[r])),
-                                countBlack: count1Bits((m_visibleBlack & m_mask[r]))});
+                    tileCounter tc(aTile, count1Bits((m_visibleWhite & m_mask[r])), count1Bits((m_visibleBlack & m_mask[r])));
+                    cache.push_back(tc);
                 }
             }
         }
@@ -402,8 +408,8 @@ std::vector<Grades> AI::getUnimportantWhiteTile(int size, std::vector<int> exclu
     //GRADE
     std::vector<Grades> result;
     for (int tile : goodTiles) {
-        int o = getObjectFromArray(cache, tile);//id === tile
-        int n = getColorUnderneath(o.id, size);
+        tileCounter* o = getObjectFromArray(cache, tile);
+        int n = getColorUnderneath(tile, size);
         /* *** the best pawn we do not want to move ***
          * larger pawn
          * 1 or 2 white pawns in a row
@@ -411,7 +417,9 @@ std::vector<Grades> AI::getUnimportantWhiteTile(int size, std::vector<int> exclu
          * a black pawn underneath
          * a white pawn underneath is not the best situation
          * */
-        result.push_back(Grades(tile, ((4 - size) * 2) + o.countWhite + (o.countBlack * 2) + ((n === 0) ? 0 : (n === 1) ? -2 : 5)));
+        result.push_back(
+            Grades(tile,
+                   ((4 - size) * 2) + o->whiteCounter() + (o->blackCounter() * 2) + ((n == 0) ? 0 : (n == 1) ? -2 : 5)));
     }
     return result;
 }
@@ -420,13 +428,13 @@ bool AI::findId(std::vector<int> numbers, int searchId) {
     return std::find(numbers.begin(), numbers.end(), searchId) != numbers.end();
 }
 
-int AI::getObjectFromArray(const std::vector<Grades>& objects, int searchId) {
-    for (const auto& obj : objects) {
-        if (obj.id == searchId) {
-            return obj.grade;
+tileCounter* AI::getObjectFromArray(std::vector<tileCounter>& counters, int tile) {
+    for (tileCounter& obj : counters) {
+        if (obj.tile() == tile) {
+            return &obj;
         }
     }
-    return -1;
+    return nullptr;
 }
 
 int AI::getColorUnderneath(int tile, int size) {

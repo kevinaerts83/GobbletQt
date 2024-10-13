@@ -3,6 +3,8 @@
 
 #include <vector>
 #include "Grades.h"
+#include "tileCounter.h"
+#include "aimove.h"
 
 class AI
 {
@@ -12,7 +14,7 @@ public:
     int m_toTile = -1;
 
     AI();
-    void move(int boardState [2][4]);
+    aiMove move(int boardState [2][4]);
 
 
 private:
@@ -35,7 +37,7 @@ private:
     std::vector<Grades> getUnimportantWhiteTile(int size, std::vector<int> excludeRows);
 
     bool findId(std::vector<int> numbers, int searchId);
-    int getObjectFromArray(const std::vector<Grades>& objects, int searchId);
+    tileCounter* getObjectFromArray(std::vector<tileCounter>& counters, int tile);
     int getColorUnderneath(int tile, int size);
     std::vector<int> getTilesOfSize(int size);
     int getPawnSize(int tile);

@@ -15,6 +15,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         ai.cpp \
+        aimove.cpp \
         board.cpp \
         board3d.cpp \
         gobbler.cpp \
@@ -24,7 +25,8 @@ SOURCES += \
         matrix.cpp \
         mediator.cpp \
         shape.cpp \
-        shape3d.cpp
+        shape3d.cpp \
+        tilecounter.cpp
 
 RESOURCES += qml.qrc
 
@@ -41,6 +43,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     ai.h \
+    aimove.h \
     board.h \
     board3d.h \
     gobbler.h \
@@ -49,7 +52,8 @@ HEADERS += \
     matrix.h \
     mediator.h \
     shape.h \
-    shape3d.h
+    shape3d.h \
+    tilecounter.h
 
 CONFIG += qmltypes
 QML_IMPORT_NAME = Gobbler
