@@ -27,6 +27,7 @@ public:
 public slots:
     void addItem(Gobbler *gobbler);
     void toggleBlackTurn();
+    void setSelection(int roundX, int borderZ);
     void setSelection(Gobbler* gobbler);
     void setBoard(Board* board);
 

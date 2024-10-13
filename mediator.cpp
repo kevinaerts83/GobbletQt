@@ -5,6 +5,7 @@
 #include <string>
 
 #include "gobbler.h"
+#include "ai.h"
 
 Mediator::Mediator(QQuickItem *parent) : QQuickItem(parent)
 {
@@ -46,6 +47,15 @@ void Mediator::toggleBlackTurn()
 Gobbler* Mediator::getSelection() const
 {
     return m_selection;
+}
+
+void Mediator::setSelection(int roundX, int borderZ)
+{
+    for (const auto& item : getList()) {
+        if (item->depth() == 0 && item->x3d() == roundX && item->z3d() == borderZ) {
+            setSelection(item);
+        }
+    }
 }
 
 void Mediator::setSelection(Gobbler* gobbler)
@@ -91,7 +101,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y)
 
         // update state of old tile
         if ((((int) getSelection()->z3d()) % 150) != 0) {
-            int tile = (getSelection()->x3d() + 225) / 150 + ((getSelection()->z3d() + 225) / 150) * 4;
+            int tile = 15 - ((getSelection()->x3d() + 225) / 150 + ((getSelection()->z3d() + 225) / 150) * 4);
             if(tile > -1) {
                 m_state[getSelection()->isWhite()][getSelection()->size()] ^= (int)pow(2, tile); //Clear previous position
             }
@@ -110,12 +120,13 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y)
             }
         }
 
+        // set to new position
         getSelection()->setX3d(roundX);
         getSelection()->setY3d(coord[1]);
         getSelection()->setZ3d(roundZ);
 
         // update state of new tile
-        int newTile = (getSelection()->x3d() + 225) / 150 + ((getSelection()->z3d() + 225) / 150) * 4;
+        int newTile = 15 - ((getSelection()->x3d() + 225) / 150 + ((getSelection()->z3d() + 225) / 150) * 4);
         m_state[getSelection()->isWhite()][getSelection()->size()] |= (int) pow(2, newTile); //Set new position
 
         // first check the player who's turn is next (In case when a gobblet of the opposite player is revealed)
@@ -135,12 +146,17 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y)
 
         setSelection(NULL);
 
+        // writeLog();
+
+        AI computer;
+        aiMove move = computer.move(m_state);
+        std::cout << move.from() << std::endl;
+        // tile to roundX and borderZ
+        // setSelection(roundX, borderZ);
+        std::cout << move.to() << std::endl;
+
     } else {
-        for (const auto& item : getList()) {
-            if (item->depth() == 0 && item->x3d() == roundX && item->z3d() == borderZ) {
-                setSelection(item);
-            }
-        }
+        setSelection(roundX, borderZ);
     }
     if (m_selection == NULL) {
         repaint();

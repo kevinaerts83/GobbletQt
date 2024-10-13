@@ -1,6 +1,7 @@
 #include "tilecounter.h"
 
-tileCounter::tileCounter(int tile, int whiteCounter = 0, int blackCounter = 0) : m_tile(tile), m_whiteCounter(whiteCounter), m_blackCounter(blackCounter);
+tileCounter::tileCounter(int tile, int whiteCounter, int blackCounter)
+    : m_tile(tile), m_whiteCounter(whiteCounter), m_blackCounter(blackCounter) {};
 
 int tileCounter::tile() const {
     return m_tile;
