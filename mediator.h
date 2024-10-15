@@ -27,6 +27,7 @@ public:
 public slots:
     void addItem(Gobbler *gobbler);
     void toggleBlackTurn();
+    void setSelectionByTile(int tile);
     void setSelection(int roundX, int borderZ);
     void setSelection(Gobbler* gobbler);
     void setBoard(Board* board);
@@ -36,6 +37,8 @@ public slots:
 
 private slots:
     bool checkWinner(bool player);
+    int getTileFromCoord(int x, int z);
+    void updateState(int x, int y, int z, int oldTile, int newTile);
     void writeLog();
 
 signals:
@@ -50,6 +53,7 @@ private:
     Board* m_board;
     int m_state [2][4] = {{ 0, 0, 0, 0}, {0, 0, 0, 0}};
     int m_mask [10] = {61440, 3840, 240, 15, 34952, 17476, 8738, 4369, 33825, 4680};
+
 };
 
 #endif // MEDIATOR_H

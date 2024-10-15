@@ -46,6 +46,7 @@ private:
     std::vector<int> rowCheck(int maxCount, bool isWhite, bool removeRowsWithSize0);
     int getSmallestBlackPawnOfRow(int mask);
     int count1Bits(int x);
+    int get_first_set_bit_position(int n);
 
     void writeLog();
 

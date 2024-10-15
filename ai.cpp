@@ -41,7 +41,7 @@ aiMove AI::move(int boardState [2][4]) {
         }
     }
 
-    if (false) { // no pawn or tile found
+    if (m_fromTile == -1 || m_toTile == -1) { // no pawn or tile found
         //writeLog(bState);
         randomMove();
         //std::cout << "current tile: " << nextMove << std::endl;
@@ -162,7 +162,7 @@ bool AI::block() {
         }
         return ret;
     }
-    return false;
+    return true;
 }
 
 bool AI::attack() {
@@ -207,13 +207,14 @@ void AI::randomMove() {
     if (stackSize > -1) {
         m_fromTile = 16 + stackSize;
     }
-
-    for (int i = s - 1; i > 0; i--) {
-        int pawnsOnBoard = m_visibleBlackRows[i];
-        int toTile = pow(2, m_toTile);
-        int possibleTiles = pawnsOnBoard ^ toTile;
-        if (possibleTiles > 0) {
-            m_fromTile = possibleTiles & -possibleTiles;
+    if (m_fromTile == -1) {
+        for (int i = s - 1; i > 0; i--) {
+            int pawnsOnBoard = m_visibleBlackRows[i];
+            int toTile = pow(2, m_toTile);
+            int possibleTiles = pawnsOnBoard & ~(toTile);
+            if (possibleTiles > 0) {
+                m_fromTile = get_first_set_bit_position(possibleTiles);
+            }
         }
     }
 }
@@ -275,8 +276,8 @@ int AI::getNextMove(int rowMask, int visiblePawns, bool reverse) {
 bool AI::setNextPawn(int size, std::vector<int> rows) {
     bool ret = false;
     int solution = getPawnFromStack(size);
-    if (solution > 0) {
-        m_fromTile = solution;
+    if (solution > -1) {
+        m_fromTile = 16 + solution;
         ret = true;
     } else {
         solution = getPawnFromBoard(size, rows);
@@ -566,7 +567,15 @@ int AI::count1Bits(int x) {
         count++;
     }
     return count;
-};
+}
+
+int AI::get_first_set_bit_position(int n) {
+    if (n == 0)
+        return -1;
+
+    int isolatedBit = n & -n;
+    return log2(isolatedBit) + 1;
+}
 
 // Write log (simulating the console.log in C++)
 void AI::writeLog() {
