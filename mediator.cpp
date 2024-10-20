@@ -58,7 +58,7 @@ void Mediator::setSelectionByTile(int tile) {
             }
         }
     } else {
-        setSelection((tile % 4) * -150 + 225, -((tile / 4) * 150 - 225));
+        setSelection(225 - (tile % 4) * 150, 225 - 150 * (tile / 4));
     }
 }
 
@@ -120,7 +120,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
         setSelectionByTile(move.from());
         std::cout << move.to() << std::endl;
         int newT = move.to();
-        updateState((newT % 4) * -150 + 225, coord[1], -((newT / 4) * 150 - 225), move.from(), newT);
+        updateState(225 - (newT % 4) * 150, coord[1], 225 -  150 * (newT / 4), move.from(), newT);
     } else {
         int borderZ = (abs(roundX) > 225) ? ((coord[2] > 75) ? 150 : ((coord[2] < -75) ? -150 : 0)) : roundZ;
         setSelection(roundX, borderZ);

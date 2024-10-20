@@ -87,15 +87,9 @@ bool AI::tryToWin() {
     std::vector<int> rows = rowCheck(3, false, false);
     for (int row : rows) {
         int maskToCheck = m_mask[row];
-        m_toTile = getNextMove(maskToCheck, m_visibleWhite, true);
-        if ((m_visibleBlack & maskToCheck) != 0) {
-            int blackSize = getPawnSize(m_toTile);
-            if (blackSize > 0 && blackSize < 4) {
-                return setNextPawn(blackSize, rows);
-            }
-        } else {
-            return setNextPawn(4, rows);
-        }
+        m_toTile = getToTile(maskToCheck, m_visibleBlack, true);
+        int size = (m_toTile & m_visibleWhite) != 0 ? getPawnSize(m_toTile) : 4;
+        return !setFromTile(size, rows);
     }
     return true;
 }
@@ -105,13 +99,13 @@ bool AI::dontLose() {
     std::vector<int> rows = rowCheck(3, true, false);
     if (rows.size() > 1) {
         int maskCrossing = m_mask[rows[0]];
-        for (int i = 1; i < static_cast<int>(rows.size()); ++i) {
-            maskCrossing &= m_mask[rows[i]];
+        for (int row : rows) {
+            maskCrossing &= m_mask[row];
         }
         if (maskCrossing > 0) {
-            m_toTile = getNextMove(0, maskCrossing, false);
+            m_toTile = getToTile(0, maskCrossing, false);
             if (getPawnSize(m_toTile) != 0) {
-                if (setNextPawn(1, rows)) {
+                if (setFromTile(1, rows)) { // if 1 only a 0 size gobbler can go gobble it.
                     return false;
                 }
             }
@@ -119,12 +113,12 @@ bool AI::dontLose() {
     } else if (rows.size() == 1) {
         int maskToCheck = m_mask[rows[0]];
         int s = getSmallestWhiteOfRow(m_mask[rows[0]]);
-        m_toTile = getNextMove(maskToCheck, m_visibleWhiteRows[s], false);
-        if (setNextPawn(s, rows)) {
+        m_toTile = getToTile(maskToCheck, m_visibleWhiteRows[s], false);
+        if (setFromTile(s, rows)) {
             return false;
         }
-        m_toTile = getNextMove(maskToCheck, m_visibleBlack, true);
-        if (setNextPawn(1, rows)) {
+        m_toTile = getToTile(maskToCheck, m_visibleBlack, true);
+        if (setFromTile(1, rows)) {
             return false;
         }
     }
@@ -180,7 +174,7 @@ bool AI::attack() {
         if (m_toTile >= 0) {
             int s = getPawnSize(m_toTile);
             s = (s == -1 ? 4 : s);
-            if (setNextPawn(s, getRowsOfTile(m_toTile))) {
+            if (setFromTile(s, getRowsOfTile(m_toTile))) {
                 break;
             }
         }
@@ -224,7 +218,7 @@ void AI::attackFallBack() {
     for (int i = 0; i < 4; i += 1) {
         int size = getPawnSize(m_toTile);
         size = (size == -1 ? 4 : size);
-        if (!setNextPawn(size, getRowsOfTile(m_toTile))) {
+        if (!setFromTile(size, getRowsOfTile(m_toTile))) {
             m_toTile = startAttack(ignore);
             ignore += pow(2, m_toTile);
         } else {
@@ -257,7 +251,7 @@ int AI::startAttack(int ignore) {
     return t;
 }
 
-int AI::getNextMove(int rowMask, int visiblePawns, bool reverse) {
+int AI::getToTile(int rowMask, int visiblePawns, bool reverse) {
     int result = (rowMask == 0) ? visiblePawns : (rowMask & visiblePawns);
     if (rowMask != 0 && reverse) {
         result ^= rowMask;
@@ -265,7 +259,7 @@ int AI::getNextMove(int rowMask, int visiblePawns, bool reverse) {
     return get_first_set_bit_position(result);
 }
 
-bool AI::setNextPawn(int size, std::vector<int> rows) {
+bool AI::setFromTile(int size, std::vector<int> rows) {
     bool ret = false;
     int solution = getPawnFromStack(size);
     if (solution > -1) {
@@ -463,7 +457,7 @@ std::vector<int> AI::getTilesOfSize(int size) {
 int AI::getPawnSize(int tile) {
     int mask = pow(2, tile);
     for (int i = 0; i < 4; i++) {
-        if (((m_bState[0][i] | m_bState[0][i]) & mask) > 0) {
+        if (((m_bState[1][i] | m_bState[1][i]) & mask) > 0) {
             return i;
         }
     }
@@ -517,7 +511,7 @@ void AI::chooseTileFromRowToAttack(int rowToAttack) {
                 emptyTiles = (emptyTiles ^ (m_bState[0][s] | m_bState[1][s])) & emptyTiles;
             }
         }
-        m_toTile = getNextMove(rowMask, emptyTiles, false);
+        m_toTile = getToTile(rowMask, emptyTiles, false);
     }
 }
 

@@ -28,8 +28,8 @@ private:
 
     void attackFallBack();
     int startAttack(int ignore);
-    int getNextMove(int mask, int state, bool reverse);
-    bool setNextPawn(int size, std::vector<int> rows);
+    int getToTile(int mask, int state, bool reverse);
+    bool setFromTile(int size, std::vector<int> rows);
 
     std::vector<int> getRowsOfTile(int tile);
     int getPawnFromStack(int size);
