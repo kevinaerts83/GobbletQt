@@ -70,7 +70,7 @@ Window {
     Slider {
         x: 0
         y : 30
-        value: 90
+        value: 65
         from: 90
         to: 35
         stepSize: 1
@@ -91,26 +91,6 @@ Window {
         orientation: "Vertical"
         onValueChanged: {
             matrix.zoom = value;
-            mediator.repaint();
-        }
-    }
-
-    Button {
-        x : w-80
-        y : 200
-        text: "right"
-        onClicked: {
-            matrix.xangle = 45;
-            mediator.repaint();
-        }
-    }
-
-    Button {
-        x : w-180
-        y : 200
-        text: "left"
-        onClicked: {
-            matrix.xangle += 10;
             mediator.repaint();
         }
     }

@@ -2,8 +2,8 @@
 #define AI_H
 
 #include <vector>
-#include "Grades.h"
-#include "tileCounter.h"
+#include "grades.h"
+#include "tilecounter.h"
 #include "aimove.h"
 
 class AI
@@ -44,7 +44,7 @@ private:
     std::vector<Grades> sortWhiteRows();
     void chooseTileFromRowToAttack(int rowToAttack);
     std::vector<int> rowCheck(int maxCount, bool isWhite, bool removeRowsWithSize0);
-    int getSmallestBlackPawnOfRow(int mask);
+    int getSmallestWhiteOfRow(int mask);
     int count1Bits(int x);
     int get_first_set_bit_position(int n);
 
@@ -56,7 +56,6 @@ private:
 
     int m_bState [2][4];
     int m_level = 0;
-    int m_tiles [16] = { 0, 1, 2, 3, 5, 6, 7, 8, 10, 11, 12, 13, 15, 16, 17, 18 };
     int m_visibleWhite = 0;
     int m_visibleBlack = 0;
     int m_visibleWhiteRows [4] = { 0, 0, 0, 0 };

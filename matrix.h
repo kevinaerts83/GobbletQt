@@ -42,7 +42,7 @@ private:
     double m_translation [4][4];
     double m_inverseTranslation [4][4];
 
-    double m_xangle = 90;
+    double m_xangle = 65;
     double m_yangle = 0;
     double m_zoom = 1;
 

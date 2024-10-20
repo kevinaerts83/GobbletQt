@@ -1,4 +1,4 @@
-#include "AI.h"
+#include "ai.h"
 
 #include <iostream>
 #include <vector>
@@ -84,7 +84,7 @@ void AI::cache(bool isWhite) {
 
 // Try to win
 bool AI::tryToWin() {
-    std::vector<int> rows = rowCheck(3, true, true);
+    std::vector<int> rows = rowCheck(3, false, false);
     for (int row : rows) {
         int maskToCheck = m_mask[row];
         m_toTile = getNextMove(maskToCheck, m_visibleWhite, true);
@@ -102,7 +102,7 @@ bool AI::tryToWin() {
 
 // Dont lose
 bool AI::dontLose() {
-    std::vector<int> rows = rowCheck(3, false, false);
+    std::vector<int> rows = rowCheck(3, true, false);
     if (rows.size() > 1) {
         int maskCrossing = m_mask[rows[0]];
         for (int i = 1; i < static_cast<int>(rows.size()); ++i) {
@@ -118,8 +118,8 @@ bool AI::dontLose() {
         }
     } else if (rows.size() == 1) {
         int maskToCheck = m_mask[rows[0]];
-        int s = getSmallestBlackPawnOfRow(m_mask[rows[0]]);
-        m_toTile = getNextMove(maskToCheck, m_visibleBlackRows[s], false);
+        int s = getSmallestWhiteOfRow(m_mask[rows[0]]);
+        m_toTile = getNextMove(maskToCheck, m_visibleWhiteRows[s], false);
         if (setNextPawn(s, rows)) {
             return false;
         }
@@ -257,20 +257,12 @@ int AI::startAttack(int ignore) {
     return t;
 }
 
-
-
-// { 0, 1, 2, 3, 5, 6, 7, 8, 10, 11, 12, 13, 15, 16, 17, 18 }
-// 0000 1111 0000 0000 rowMask
-// 1100 0001 0000 0100 visiblePawns
-
-// 1 0000 0000 = 9
-// tiles [9 - 1] = 8
 int AI::getNextMove(int rowMask, int visiblePawns, bool reverse) {
     int result = (rowMask == 0) ? visiblePawns : (rowMask & visiblePawns);
     if (rowMask != 0 && reverse) {
         result ^= rowMask;
     }
-    return m_tiles[std::bitset<16>(result).count() - 1];
+    return get_first_set_bit_position(result);
 }
 
 bool AI::setNextPawn(int size, std::vector<int> rows) {
@@ -459,7 +451,7 @@ std::vector<int> AI::getTilesOfSize(int size) {
 
     while (number != 0) {
         if (number & 1) {  // Check if the least significant bit is 1
-            wTiles.push_back(m_tiles[bitIndex]);  // Use the bitIndex to get the tile from m_tiles
+            wTiles.push_back(bitIndex);
         }
         number >>= 1;  // Shift the number to the right by 1 bit
         bitIndex++;    // Increment the bit position
@@ -518,7 +510,7 @@ void AI::chooseTileFromRowToAttack(int rowToAttack) {
         int rowMask = m_mask[rowToAttack];
         int emptyTiles = (rowMask & (m_visibleWhite | m_visibleBlack)) ^ rowMask;
         if (emptyTiles == 0) {
-            int s = getSmallestBlackPawnOfRow(rowMask);
+            int s = getSmallestWhiteOfRow(rowMask);
             //emptyTiles = array of tiles with the smallest black pawns
             emptyTiles = m_bState[0][s];
             for (s -= 1; s > -1; s -= 1) {
@@ -549,10 +541,10 @@ std::vector<int> AI::rowCheck(int maxCount, bool isWhite, bool removeRowsWithSiz
     return rows;
 }
 
-int AI::getSmallestBlackPawnOfRow(int mask) {
+int AI::getSmallestWhiteOfRow(int mask) {
     int s = 4;
     for (int i = 3; i > -1; i -= 1) {
-        if ((mask & m_visibleBlackRows[i]) != 0) {
+        if ((mask & m_visibleWhiteRows[i]) != 0) {
             s = i;
             break;
         }
@@ -574,7 +566,7 @@ int AI::get_first_set_bit_position(int n) {
         return -1;
 
     int isolatedBit = n & -n;
-    return log2(isolatedBit) + 1;
+    return log2(isolatedBit);
 }
 
 // Write log (simulating the console.log in C++)
