@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>remove.js</file>
         <file>gobbler.qml</file>
     </qresource>
 </RCC>

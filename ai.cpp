@@ -88,8 +88,10 @@ bool AI::tryToWin() {
     for (int row : rows) {
         int maskToCheck = m_mask[row];
         m_toTile = getToTile(maskToCheck, m_visibleBlack, true);
-        int size = (m_toTile & m_visibleWhite) != 0 ? getPawnSize(m_toTile) : 4;
-        return !setFromTile(size, rows);
+        int size = ((int)pow(2, m_toTile) & m_visibleWhite) != 0 ? getPawnSize(m_toTile) : 4;
+        if (size > 0) {
+            return !setFromTile(size, rows);
+        }
     }
     return true;
 }
@@ -303,19 +305,20 @@ int AI::getPawnFromStack(int size) {
 int AI::getPawnFromBoard(int size, std::vector<int> excludeRows) {
     if (m_level == 0) {
         // get pawn from board which pawnSize < size
+        std::vector<int> whiteWins = rowCheck(3, true, false);
         for (int i = size - 1; i >= 0; i--) {
-            int pawns = m_visibleWhiteRows[i];
+            int pawns = m_visibleBlackRows[i];
 
             while (pawns > 0) {
-                int binairTile = pow(2, std::bitset<16>(pawns).count() - 1);
+                int binairTile = pow(2, get_first_set_bit_position(pawns));
                 pawns -= binairTile;
 
                 for (int j = 0; j < 10; j++) {
                     if ((m_mask[j] & binairTile) == binairTile) {
-                        std::vector<int> otherPlayerWins = rowCheck(3, true, false);
-                        if (std::find(otherPlayerWins.begin(), otherPlayerWins.end(), j) != otherPlayerWins.end()
-                            && std::find(excludeRows.begin(), excludeRows.end(), j) != excludeRows.end()) {
-                            return binairTile;
+                        if (std::find(whiteWins.begin(), whiteWins.end(), j) == whiteWins.end()
+                           // && std::find(excludeRows.begin(), excludeRows.end(), j) != excludeRows.end()
+                            ) {
+                            return log2(binairTile);
                         }
                     }
                 }
@@ -547,6 +550,7 @@ int AI::getSmallestWhiteOfRow(int mask) {
 }
 
 int AI::count1Bits(int x) {
+    //return std::bitset<16>(x).count();
     int count = 0;
     while (x) {
         x &= x - 1;

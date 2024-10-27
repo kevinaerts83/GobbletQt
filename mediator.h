@@ -40,6 +40,7 @@ private slots:
     int getTileFromCoord(int x, int z);
     void updateState(int x, int y, int z, int oldTile, int newTile);
     void writeLog();
+    void tests();
 
 signals:
     void listChanged();
