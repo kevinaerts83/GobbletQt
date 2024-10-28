@@ -32,7 +32,7 @@ public slots:
     void setSelection(Gobbler* gobbler);
     void setBoard(Board* board);
 
-    void repaint();
+    void repaint(Matrix *matrix);
     void onClick(Matrix *matrix, const double x, const double y);
 
 private slots:

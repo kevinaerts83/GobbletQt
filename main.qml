@@ -57,12 +57,12 @@ Window {
         x : 30
         y : 0
         value: 0
-        from: -90
-        to: 90
+        from: -180
+        to: 180
         stepSize: 1
         onValueChanged: {
             matrix.yangle = value;
-            mediator.repaint();
+            mediator.repaint(matrix);
         }
     }
 
@@ -77,7 +77,7 @@ Window {
         orientation: "Vertical"
         onValueChanged: {
             matrix.xangle = value;
-            mediator.repaint();
+            mediator.repaint(matrix);
         }
     }
 
@@ -91,7 +91,7 @@ Window {
         orientation: "Vertical"
         onValueChanged: {
             matrix.zoom = value;
-            mediator.repaint();
+            mediator.repaint(matrix);
         }
     }
 

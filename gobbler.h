@@ -49,7 +49,7 @@ public:
 
     void paint(QPainter *painter);
 
-    static bool compareByZindex(const Gobbler* a, const Gobbler* b);
+    static bool compareByZindex(const Gobbler* a, const Gobbler* b, const double angle);
 
 signals:
     void depthChanged();

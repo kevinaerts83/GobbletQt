@@ -83,15 +83,24 @@ void Mediator::setBoard(Board* board) {
     m_board = board;
 }
 
-void Mediator::repaint() {
+void Mediator::repaint(Matrix *matrix) {
     getBoard()->update();
 
-    std::sort(m_list.begin(), m_list.end(), Gobbler::compareByZindex);
+    double angle = matrix->yangle();
+
+    std::sort(m_list.begin(), m_list.end(), [angle](const Gobbler* a, const Gobbler* b) {
+        return Gobbler::compareByZindex(a, b, angle);
+    });
+
     for (int i = 0; i < m_list.size(); i++) {
         m_list[i]->setZ(i);
     }
     for (const auto& item : m_list) {
         if (item->depth() == 0) {
+            item->setVisible(true);
+            item->update();
+        } else if (item->isVisible()) {
+            item->setVisible(false);
             item->update();
         }
     }
@@ -126,7 +135,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
         setSelection(roundX, borderZ);
     }
     if (m_selection == NULL) {
-        repaint();
+        repaint(matrix);
     }
 }
 
