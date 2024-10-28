@@ -5,6 +5,10 @@ import QtQuick.Controls 2.15
 
 import Gobbler 1.0
 
+// validation
+// reset (menu)
+// fix AI
+
 Window {
     readonly property int w: 1024
     readonly property int h: 768

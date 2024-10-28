@@ -64,7 +64,7 @@ void Mediator::setSelectionByTile(int tile) {
 
 void Mediator::setSelection(int roundX, int borderZ) {
     for (const auto& item : getList()) {
-        if (item->depth() == 0 && item->x3d() == roundX && item->z3d() == borderZ) {
+        if (item->depth() == 0 && item->x3d() == roundX && item->z3d() == borderZ && item->isWhite()) {
             setSelection(item);
             break;
         }
@@ -120,6 +120,18 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
             oldTile = getTileFromCoord(getSelection()->x3d(), getSelection()->z3d());
         }
         int newTile = getTileFromCoord(roundX, roundZ);
+
+        int size = getSelection()->size();
+        int mask = pow(2, newTile);
+        for (int i = 0; i <= size; i++) {
+            for (int w = 0; w < 2; w++) {
+                if ((m_state[w][i] & mask) > 0) {
+                    setSelection(NULL);
+                    return;
+                }
+            }
+        }
+
         updateState(roundX, coord[1], roundZ, oldTile, newTile);
         // writeLog();
 
