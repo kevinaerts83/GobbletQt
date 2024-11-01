@@ -51,6 +51,7 @@ HEADERS += \
     grades.h \
     matrix.h \
     mediator.h \
+    setupBoard.h \
     shape.h \
     shape3d.h \
     tilecounter.h
