@@ -46,12 +46,14 @@ HEADERS += \
     aimove.h \
     board.h \
     board3d.h \
+    bridge.h \
     gobbler.h \
     gobbler3d.h \
     grades.h \
     matrix.h \
     mediator.h \
     setupBoard.h \
+    setupMenu.h \
     shape.h \
     shape3d.h \
     tilecounter.h

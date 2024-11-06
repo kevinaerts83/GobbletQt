@@ -183,14 +183,18 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
     if (getSelection()->isWhite()) {
         if (checkWinner(0)) {
             std::cout << "Black won " << std::endl;
+            this->m_comm->handleButtonClick();
         } else if (checkWinner(1)) {
             std::cout << "White won " << std::endl;
+            this->m_comm->handleButtonClick();
         }
     } else {
         if (checkWinner(1)) {
             std::cout << "White won " << std::endl;
+            this->m_comm->handleButtonClick();
         } else if (checkWinner(0)) {
             std::cout << "Black won " << std::endl;
+            this->m_comm->handleButtonClick();
         }
     }
 

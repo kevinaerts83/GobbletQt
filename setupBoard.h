@@ -6,14 +6,15 @@
 
 #include "mediator.h"
 #include "gobbler.h"
+#include "bridge.h"
 
 class SetupBoard : public QObject {
     Q_OBJECT
 public:
-    explicit SetupBoard(QQmlApplicationEngine *engine, QObject *parent = nullptr)
-        : QObject(parent), m_engine(engine) {}
+    explicit SetupBoard(Bridge *comm, QQmlApplicationEngine *engine, QObject *parent = nullptr)
+        : QObject(parent), m_engine(engine), m_comm(comm) {}
 
-    Q_INVOKABLE void createRectangle() {
+    Q_INVOKABLE void createBoard() {
 
         // Get the root object (the ApplicationWindow)
         QObject *rootObject = m_engine->rootObjects().first();
@@ -30,10 +31,10 @@ public:
 
             // Optionally, cast to the Mediator type if you know it should be a Mediator object
             Mediator *mediator = qobject_cast<Mediator*>(child);
-            if (mediator) {
+            if (mediator && mediator->getList().size() == 0) {
                 // Successfully cast, now you can call methods on the Mediator object
 
-
+                mediator->m_comm = m_comm;
                 Shape *myShape = new Shape();
                 QQuickItem *parentItem = qobject_cast<QQuickItem *>(children.at(1)->children().at(9));
 
@@ -82,6 +83,6 @@ public:
 
 private:
     QQmlApplicationEngine *m_engine;
+    Bridge *m_comm;
 };
-
 #endif // SETUPBOARD_H

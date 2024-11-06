@@ -85,7 +85,7 @@ Page {
 
 
             Text {
-                text: "0"
+                text: setupMenu.whiteCounter
                 font.pixelSize: 120
                 color: "black"
             }
@@ -191,40 +191,63 @@ Page {
                         ctx.restore();
                     }
 
-                    function drawComputer(ctx, w, h) {
+                    function drawComputer(ctx) {
                         ctx.clearRect(0, 0, width, height);  // Clear the canvas
 
                         // Draw ellipse border
-                        ctx.lineWidth = 7; // Border width
-                        ctx.strokeStyle = "red"; // Black border color
+                        ctx.fillStyle = "black";
                         ctx.beginPath();
-                        ctx.ellipse(10, 10, 120, 70, 0, 0, Math.PI * 2);
+                        ctx.ellipse(10, 30, 120, 70, 0, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Draw ellipse border
+                        ctx.lineWidth = 7; // Border width
+                        ctx.strokeStyle = "orange"; // Black border color
+                        ctx.beginPath();
+                        ctx.ellipse(10, 30, 120, 70, 0, 0, Math.PI * 2);
                         ctx.stroke();
 
                         // Draw left circle
                         ctx.fillStyle = "white"; // White circle
                         ctx.beginPath();
-                        ctx.arc(30, 40, 10, 0, Math.PI * 2); // Circle on the left
+                        ctx.arc(30, 60, 10, 0, Math.PI * 2); // Circle on the left
                         ctx.fill();
 
                         // Draw right circle
                         ctx.beginPath();
-                        ctx.arc(100, 40, 10, 0, Math.PI * 2); // Circle on the right
+                        ctx.arc(100, 60, 10, 0, Math.PI * 2); // Circle on the right
                         ctx.fill();
 
                         ctx.fillStyle = "white";
                         ctx.beginPath();
-                        ctx.rect(width / 2 - 5, 0, 10, height);
+                        ctx.rect(47, 72, 28, 9);
                         ctx.fill();
 
-                        // Draw white stripe on the top left
+                        // Draw angled line
                         ctx.beginPath();
-                        ctx.rect(width / 2 - 120, 0, 60, 10); // Top left stripe
+                        ctx.moveTo(10, 20);
+                        ctx.lineTo(28, 38);
+                        ctx.strokeStyle = "white";
+                        ctx.lineWidth = 4;
+                        ctx.stroke();
+
+                        // Draw angled line
+                        ctx.beginPath();
+                        ctx.moveTo(128, 20);
+                        ctx.lineTo(102, 36);
+                        ctx.strokeStyle = "white";
+                        ctx.lineWidth = 4;
+                        ctx.stroke();
+
+                        // Draw left circle
+                        ctx.fillStyle = "white"; // White circle
+                        ctx.beginPath();
+                        ctx.arc(8, 15, 8, 0, Math.PI * 2); // Circle on the left
                         ctx.fill();
 
-                        // Draw white stripe on the top right
+                        // Draw right circle
                         ctx.beginPath();
-                        ctx.rect(width / 2 + 60, 0, 60, 10); // Top right stripe
+                        ctx.arc(132, 18, 8, 0, Math.PI * 2); // Circle on the right
                         ctx.fill();
 
                     }
@@ -243,7 +266,7 @@ Page {
             }
 
             Text {
-                text: "0"
+                text: setupMenu.blackCounter
                 font.pixelSize: 120
                 color: "black"
             }

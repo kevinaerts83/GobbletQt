@@ -7,6 +7,7 @@
 #include <QQuickItem>
 #include "gobbler.h"
 #include "board.h"
+#include "bridge.h"
 
 class Mediator : public QQuickItem
 {
@@ -15,6 +16,7 @@ class Mediator : public QQuickItem
     Q_PROPERTY(bool blackTurn READ isBlackTurn NOTIFY blackTurnChanged)
     Q_PROPERTY(Gobbler* selection READ getSelection NOTIFY selectionChanged)
     Q_PROPERTY(Board* board READ getBoard CONSTANT)
+    Q_PROPERTY(Bridge* comm MEMBER m_comm)
     QML_ELEMENT
 
 public:
@@ -23,6 +25,7 @@ public:
     bool isBlackTurn() const;
     Gobbler* getSelection() const;
     Board* getBoard() const;
+    Bridge* m_comm;
 
 public slots:
     void addItem(Gobbler *gobbler);

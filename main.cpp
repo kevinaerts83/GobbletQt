@@ -4,7 +4,10 @@
 #include <QQuickItem>
 #include <QQuickView>
 #include <QPainter>
+
 #include "setupBoard.h"
+#include "setupMenu.h"
+#include "bridge.h"
 
 int main(int argc, char *argv[])
 {
@@ -19,8 +22,18 @@ int main(int argc, char *argv[])
     }, Qt::QueuedConnection);
     engine.load(url);
 
-    SetupBoard setup(&engine);
-    engine.rootContext()->setContextProperty("setupBoard", &setup);
+    Bridge comm;
+    SetupMenu setupMenu;
+    SetupBoard setupBoard(&comm, &engine);
+
+    // Connect the button's increment signal to update the counter in the label
+    QObject::connect(&comm, &Bridge::incrementCounter, [&]() {
+        setupMenu.setWhiteCounter(setupMenu.whiteCounter() + 1);
+    });
+
+    engine.rootContext()->setContextProperty("setupMenu", &setupMenu);
+    engine.rootContext()->setContextProperty("comm", &comm);
+    engine.rootContext()->setContextProperty("setupBoard", &setupBoard);
 
     // Ensure that the QML file was loaded successfully
     if (engine.rootObjects().isEmpty()) {

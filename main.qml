@@ -15,7 +15,7 @@ ApplicationWindow {
 
         onCurrentItemChanged: {
             //if (stackView.currentItem === 1) { // Only trigger on returning to Page1
-                setupBoard.createRectangle()  // Call the C++ function
+                setupBoard.createBoard()  // Call the C++ function
             //}
         }
     }

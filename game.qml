@@ -42,8 +42,6 @@ Page {
 
     Board {
         id: board
-        x: 0
-        y: 0
         matrix: matrix
         width: 1024
         height: 768
