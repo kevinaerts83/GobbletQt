@@ -4,6 +4,9 @@
 #include <bitset>
 #include <string>
 
+#include <QQmlComponent>
+#include <QQmlContext>
+
 #include "gobbler.h"
 #include "ai.h"
 
@@ -182,19 +185,23 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
     // first check the player who's turn is next (In case when a gobblet of the opposite player is revealed)
     if (getSelection()->isWhite()) {
         if (checkWinner(0)) {
-            std::cout << "Black won " << std::endl;
-            this->m_comm->handleButtonClick();
+            this->m_comm->blackWon();
+            QObject* button = this->parent()->findChild<QObject *>("menuButton");
+            QMetaObject::invokeMethod(button, "clicked");
         } else if (checkWinner(1)) {
-            std::cout << "White won " << std::endl;
-            this->m_comm->handleButtonClick();
+            this->m_comm->whiteWon();
+            QObject* button = this->parent()->findChild<QObject *>("menuButton");
+            QMetaObject::invokeMethod(button, "clicked");
         }
     } else {
         if (checkWinner(1)) {
-            std::cout << "White won " << std::endl;
-            this->m_comm->handleButtonClick();
+            this->m_comm->whiteWon();
+            QObject* button = this->parent()->findChild<QObject *>("menuButton");
+            QMetaObject::invokeMethod(button, "clicked");
         } else if (checkWinner(0)) {
-            std::cout << "Black won " << std::endl;
-            this->m_comm->handleButtonClick();
+            this->m_comm->blackWon();
+            QObject* button = this->parent()->findChild<QObject *>("menuButton");
+            QMetaObject::invokeMethod(button, "clicked");
         }
     }
 

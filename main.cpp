@@ -27,8 +27,11 @@ int main(int argc, char *argv[])
     SetupBoard setupBoard(&comm, &engine);
 
     // Connect the button's increment signal to update the counter in the label
-    QObject::connect(&comm, &Bridge::incrementCounter, [&]() {
+    QObject::connect(&comm, &Bridge::incrementWhite, [&]() {
         setupMenu.setWhiteCounter(setupMenu.whiteCounter() + 1);
+    });
+    QObject::connect(&comm, &Bridge::incrementBlack, [&]() {
+        setupMenu.setBlackCounter(setupMenu.blackCounter() + 1);
     });
 
     engine.rootContext()->setContextProperty("setupMenu", &setupMenu);

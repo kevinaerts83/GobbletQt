@@ -14,6 +14,7 @@ Page {
     width: 1024
     height: 768
     id: game
+    objectName: "game"
 
     Matrix {
         id: matrix
@@ -96,6 +97,7 @@ Page {
 
     Button {
         text: "Go to Page 1"
+        objectName: "menuButton"
         onClicked: stackView.push("menu.qml")
     }
 

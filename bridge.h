@@ -10,11 +10,15 @@ public:
     explicit Bridge(QObject *parent = nullptr) : QObject(parent) {}
 
 signals:
-    void incrementCounter();
+    void incrementWhite();
+    void incrementBlack();
 
 public slots:
-    void handleButtonClick() {
-        emit incrementCounter();
+    void whiteWon() {
+        emit incrementWhite();
+    }
+    void blackWon() {
+        emit incrementBlack();
     }
 };
 

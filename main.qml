@@ -12,11 +12,12 @@ ApplicationWindow {
         anchors.fill: parent
         initialItem: "menu.qml"
         visible: true
+        objectName: "stackview"
 
         onCurrentItemChanged: {
-            //if (stackView.currentItem === 1) { // Only trigger on returning to Page1
+            if (stackView.currentItem.objectName == "game") { // Only trigger on returning to Page1
                 setupBoard.createBoard()  // Call the C++ function
-            //}
+            }
         }
     }
 
