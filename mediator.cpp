@@ -10,7 +10,7 @@
 #include "gobbler.h"
 #include "ai.h"
 
-Mediator::Mediator(QQuickItem *parent) : QQuickItem(parent)
+Mediator::Mediator(QObject *parent) : QObject(parent)
 {
     qmlRegisterType<Mediator>("MyTypes", 1, 0, "Mediator");
 }

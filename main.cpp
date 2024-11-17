@@ -24,7 +24,9 @@ int main(int argc, char *argv[])
 
     Bridge comm;
     SetupMenu setupMenu;
-    SetupBoard setupBoard(&comm, &engine);
+    SetupBoard setupBoard(&comm);
+
+    //qmlRegisterType<SetupBoard>("setupBoard", 1, 0, "SetupBoard");
 
     // Connect the button's increment signal to update the counter in the label
     QObject::connect(&comm, &Bridge::incrementWhite, [&]() {

@@ -3,10 +3,9 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
 Page {
-    visible: true
-    width: 1024
-    height: 768
     id: menu
+
+    //signal showGame()
 
     property bool buttonClicked: false
 
@@ -122,10 +121,52 @@ Page {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        //showGame();
                         stackView.push("game.qml");
+                    }
+
+                }
+            }
+
+            Rectangle {
+                width: 100
+                height: 100
+                radius: 50  // Make it circular
+                color: "#4CAF50"  // Green background color
+
+                // Play Icon (Triangle) in the middle
+                Canvas {
+                    anchors.fill: parent
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.clearRect(0, 0, width, height);
+
+                        var eyeLeft = [32, 35, 62, 65];
+                        var eyeTop = [30, 33, 30, 33];
+                        var eyeRadius = [10, 4, 10, 4];
+
+                        for (var i = 0; i < 4; i++) {
+                            ctx.beginPath();
+                            ctx.arc(eyeLeft[i], eyeTop[i], eyeRadius[i], 0, 2 * Math.PI);
+                            ctx.fillStyle = i % 2 === 0 ? 'black' : 'white';
+                            ctx.fill();
+                            ctx.closePath();
+                        }
+
+                        ctx.fillStyle = "white";
+                        ctx.fill();
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        //showGame();
+                        stackView.pop();
                     }
                 }
             }
+
         }
 
         ColumnLayout {

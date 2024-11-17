@@ -5,7 +5,7 @@
 #include <QObject>
 #include <QVector>
 
-class Matrix : public QQuickItem
+class Matrix : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(double xangle READ xangle WRITE setXangle NOTIFY xangleChanged)
@@ -15,7 +15,7 @@ class Matrix : public QQuickItem
     QML_ELEMENT
 
 public:
-    Matrix(QQuickItem *parent = 0);
+    Matrix(QObject *parent = 0);
 
     QVector<double> MultiplyPointAndMatrix(QVector<double> point, double matrix [4][4]);
     QVector<double> ProjectPoint(QVector<double> point);

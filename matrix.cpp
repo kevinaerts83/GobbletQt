@@ -2,7 +2,7 @@
 #include <cmath>
 
 //constructor
-Matrix::Matrix(QQuickItem *parent) : QQuickItem(parent)
+Matrix::Matrix(QObject *parent) : QObject(parent)
 {
     double width = 1024;
     double height = 768;

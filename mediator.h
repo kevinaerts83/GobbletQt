@@ -4,12 +4,11 @@
 #include <QtQuick/QQuickItem>
 #include <QVector>
 #include <QObject>
-#include <QQuickItem>
 #include "gobbler.h"
 #include "board.h"
 #include "bridge.h"
 
-class Mediator : public QQuickItem
+class Mediator : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QList<Gobbler*> list READ getList NOTIFY listChanged)
@@ -20,7 +19,7 @@ class Mediator : public QQuickItem
     QML_ELEMENT
 
 public:
-    Mediator(QQuickItem *parent = 0);
+    Mediator(QObject *parent = 0);
     QList<Gobbler*> getList() const;
     bool isBlackTurn() const;
     Gobbler* getSelection() const;

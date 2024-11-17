@@ -5,23 +5,24 @@ import QtQuick.Controls 2.15
 
 import Gobbler 1.0
 
-// validation
-// reset (menu)
-// fix AI
-
 Page {
-    visible: false
     width: 1024
     height: 768
     id: game
     objectName: "game"
 
+    Component.onCompleted: {
+        setupBoard.onGameVisible(game);
+    }
+
     Matrix {
         id: matrix
+        objectName: "matrix"
     }
 
     Mediator {
         id: mediator
+        objectName: "mediator"
     }
 
     Rectangle
@@ -98,7 +99,10 @@ Page {
     Button {
         text: "Go to Page 1"
         objectName: "menuButton"
-        onClicked: stackView.push("menu.qml")
+        onClicked: {
+            stackView.push("menu.qml");
+            //showMenu();
+        }
     }
 
 }
