@@ -12,21 +12,11 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-
     QQmlApplicationEngine engine;
-    const QUrl url(QStringLiteral("qrc:/main.qml"));
-    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
-                     &app, [url](QObject *obj, const QUrl &objUrl) {
-        if (!obj && url == objUrl)
-            QCoreApplication::exit(-1);
-    }, Qt::QueuedConnection);
-    engine.load(url);
 
     Bridge comm;
     SetupMenu setupMenu;
     SetupBoard setupBoard(&comm);
-
-    //qmlRegisterType<SetupBoard>("setupBoard", 1, 0, "SetupBoard");
 
     // Connect the button's increment signal to update the counter in the label
     QObject::connect(&comm, &Bridge::incrementWhite, [&]() {
@@ -35,10 +25,21 @@ int main(int argc, char *argv[])
     QObject::connect(&comm, &Bridge::incrementBlack, [&]() {
         setupMenu.setBlackCounter(setupMenu.blackCounter() + 1);
     });
+    QObject::connect(&setupMenu, &SetupMenu::modeChanged, [&]() {
+        comm.setMode(setupMenu.mode());
+    });
 
     engine.rootContext()->setContextProperty("setupMenu", &setupMenu);
     engine.rootContext()->setContextProperty("comm", &comm);
     engine.rootContext()->setContextProperty("setupBoard", &setupBoard);
+
+    const QUrl url(QStringLiteral("qrc:/main.qml"));
+    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
+                     &app, [url](QObject *obj, const QUrl &objUrl) {
+        if (!obj && url == objUrl)
+            QCoreApplication::exit(-1);
+    }, Qt::QueuedConnection);
+    engine.load(url);
 
     // Ensure that the QML file was loaded successfully
     if (engine.rootObjects().isEmpty()) {

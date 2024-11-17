@@ -7,42 +7,22 @@ ApplicationWindow {
     height: 768
     title: "Gobblet"
 
-    //property int currentPage: 0 // 0 for Menu, 1 for Game
-
-    /*
-    Loader {
-        id: menuLoader
-        source: currentPage === 0 ? "menu.qml" : ""
-        anchors.fill: parent
-        visible: currentPage === 0
-        onLoaded: {
-            menuLoader.item.showGame.connect(function() {
-                currentPage = 1;
-            });
-        }
-    }
-
-    Loader {
-        id: gameLoader
-        source: currentPage === 1 ? "game.qml" : ""
-        anchors.fill: parent
-        visible: currentPage === 1
-        onLoaded: {
-            if (gameLoader.item) {
-                setupBoard.parent = gameLoader.item;
-            }
-            gameLoader.item.showMenu.connect(function() {
-                currentPage = 0;
-            });
-        }
-    }*/
-
     StackView {
         id: stackView
         anchors.fill: parent
         initialItem: "menu.qml"
         visible: true
         objectName: "stackview"
+    }
+
+    Connections {
+        target: setupMenu
+        function onBlackCounterChanged() {
+            stackView.push("menu.qml");
+        }
+        function onWhiteCounterChanged() {
+            stackView.push("menu.qml");
+        }
     }
 
 }

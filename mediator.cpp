@@ -138,7 +138,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
         updateState(roundX, coord[1], roundZ, oldTile, newTile);
         // writeLog();
 
-        AI computer;
+        AI computer = *new AI(m_comm->mode());
         aiMove move = computer.move(m_state);
         // std::cout << move.from() << std::endl;
         setSelectionByTile(move.from());
@@ -186,22 +186,14 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
     if (getSelection()->isWhite()) {
         if (checkWinner(0)) {
             this->m_comm->blackWon();
-            QObject* button = this->parent()->findChild<QObject *>("menuButton");
-            QMetaObject::invokeMethod(button, "clicked");
         } else if (checkWinner(1)) {
             this->m_comm->whiteWon();
-            QObject* button = this->parent()->findChild<QObject *>("menuButton");
-            QMetaObject::invokeMethod(button, "clicked");
         }
     } else {
         if (checkWinner(1)) {
             this->m_comm->whiteWon();
-            QObject* button = this->parent()->findChild<QObject *>("menuButton");
-            QMetaObject::invokeMethod(button, "clicked");
         } else if (checkWinner(0)) {
             this->m_comm->blackWon();
-            QObject* button = this->parent()->findChild<QObject *>("menuButton");
-            QMetaObject::invokeMethod(button, "clicked");
         }
     }
 
@@ -274,7 +266,7 @@ void Mediator::writeLog() {
 }
 
 void Mediator::tests() {
-    AI computer;
+    AI computer = *new AI(0);
     /* TRY TO WIN */
     int state [2][4] = {{32768, 2048, 128, 0}, { 0, 0, 0, 0}};
     aiMove move = computer.move(state);

@@ -2,7 +2,6 @@
 #define SETUPBOARD_H
 
 #include <QObject>
-#include <QQmlApplicationEngine>
 
 #include "bridge.h"
 #include "mediator.h"

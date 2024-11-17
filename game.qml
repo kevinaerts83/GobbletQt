@@ -70,7 +70,7 @@ Page {
     // turns around x-axis
     Slider {
         x: 0
-        y : 30
+        y : 50
         value: 65
         from: 90
         to: 35
@@ -96,12 +96,47 @@ Page {
         }
     }
 
-    Button {
-        text: "Go to Page 1"
-        objectName: "menuButton"
-        onClicked: {
-            stackView.push("menu.qml");
-            //showMenu();
+
+    Rectangle {
+        width: 40
+        height: 80
+        color: "transparent"
+        objectName: "meuButton"
+
+        // Canvas for additional details
+        Canvas {
+            anchors.fill: parent
+
+            onPaint: {
+                // Draw additional body and head shape details
+                var ctx = getContext("2d");
+                ctx.clearRect(0, 0, width, height); // Clear previous drawings
+
+                ctx.fillStyle = "black";
+
+                // Define circle properties
+                var circleRadius = 4;
+                var centerX = width / 2;
+                var circleSpacing = 10; // Space between circles
+
+                // Draw three circles
+                for (var i = 0; i < 3; i++) {
+                    var centerY = 10 + i * circleSpacing;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, circleRadius, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+        }
+
+        // MouseArea for button clicks
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                onClicked: {
+                    stackView.push("menu.qml");
+                }
+            }
         }
     }
 

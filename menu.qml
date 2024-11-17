@@ -5,8 +5,6 @@ import QtQuick.Layouts 1.15
 Page {
     id: menu
 
-    property bool buttonClicked: false
-
     Text {
         text: "Gobblet"
         font.pixelSize: 120
@@ -82,7 +80,7 @@ Page {
 
 
             Text {
-                text: setupMenu.whiteCounter
+                text: setupMenu ? setupMenu.whiteCounter : "Loading..."
                 font.pixelSize: 120
                 color: "black"
             }
@@ -187,10 +185,12 @@ Page {
                         ctx.clearRect(0, 0, width, height);
 
                         // Draw additional body and head shape details
-                        if (buttonClicked) {
+                        if (setupMenu.mode === 0) {
                             drawFigure(ctx, "#2C2F20", 10, 10);
-                        } else {
-                            drawComputer(ctx);
+                        } else if (setupMenu.mode === 1) {
+                            drawComputer(ctx, "green");
+                        } else{
+                            drawComputer(ctx, "red");
                         }
                     }
 
@@ -231,7 +231,7 @@ Page {
                         ctx.restore();
                     }
 
-                    function drawComputer(ctx) {
+                    function drawComputer(ctx, color) {
                         ctx.clearRect(0, 0, width, height);  // Clear the canvas
 
                         // Draw ellipse border
@@ -242,7 +242,7 @@ Page {
 
                         // Draw ellipse border
                         ctx.lineWidth = 7; // Border width
-                        ctx.strokeStyle = "orange"; // Black border color
+                        ctx.strokeStyle = color; // Black border color
                         ctx.beginPath();
                         ctx.ellipse(10, 30, 120, 70, 0, 0, Math.PI * 2);
                         ctx.stroke();
@@ -298,7 +298,8 @@ Page {
                     anchors.fill: parent
                     onClicked: {
                         onClicked: {
-                            buttonClicked = !buttonClicked;
+                            setupMenu.setMode(setupMenu.mode + 1);
+                            if (setupMenu.mode === 3) setupMenu.setMode(0);
                             rightButton.requestPaint();
                         }
                     }
@@ -306,7 +307,7 @@ Page {
             }
 
             Text {
-                text: setupMenu.blackCounter
+                text: setupMenu ? setupMenu.blackCounter : "Loading..."
                 font.pixelSize: 120
                 color: "black"
             }

@@ -13,11 +13,12 @@ public:
     int m_fromTile = -1;
     int m_toTile = -1;
 
-    AI();
+    AI(int level);
     aiMove move(int boardState [2][4]);
 
-
 private:
+    int m_level;
+
     void cache (bool isWhite);
 
     bool tryToWin();
@@ -56,7 +57,6 @@ private:
     int m_crossings = 38505;
 
     int m_bState [2][4];
-    int m_level = 0;
     int m_visibleWhite = 0;
     int m_visibleBlack = 0;
     int m_visibleWhiteRows [4] = { 0, 0, 0, 0 };
