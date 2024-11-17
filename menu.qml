@@ -5,8 +5,6 @@ import QtQuick.Layouts 1.15
 Page {
     id: menu
 
-    //signal showGame()
-
     property bool buttonClicked: false
 
     Text {
@@ -121,7 +119,9 @@ Page {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        //showGame();
+                        while (stackView.depth > 1) {
+                            stackView.pop();
+                        }
                         stackView.push("game.qml");
                     }
 
@@ -161,7 +161,6 @@ Page {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        //showGame();
                         stackView.pop();
                     }
                 }
