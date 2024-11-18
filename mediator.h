@@ -7,6 +7,7 @@
 #include "gobbler.h"
 #include "board.h"
 #include "bridge.h"
+#include "ai.h"
 
 class Mediator : public QObject
 {

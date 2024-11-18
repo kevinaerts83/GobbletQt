@@ -12,7 +12,6 @@
 
 Mediator::Mediator(QObject *parent) : QObject(parent)
 {
-    qmlRegisterType<Mediator>("MyTypes", 1, 0, "Mediator");
 }
 
 /*
@@ -55,7 +54,11 @@ void Mediator::setSelectionByTile(int tile) {
     if (tile > 15) {
         int theSize = tile - 16;
         for (const auto& item : getList()) {
-            if (item->depth() == 0 && abs(item->x3d()) > 225 && item->size() == theSize && !item->isWhite()) {
+            if (item->depth() == 0
+                && item->size() == theSize
+                && ((!isBlackTurn() && abs(item->x3d()) > 225 && !item->isWhite())
+                || (isBlackTurn() && abs(item->x3d()) < -225 && item->isWhite()))) {
+
                 setSelection(item);
                 break;
             }
@@ -67,7 +70,8 @@ void Mediator::setSelectionByTile(int tile) {
 
 void Mediator::setSelection(int roundX, int borderZ) {
     for (const auto& item : getList()) {
-        if (item->depth() == 0 && item->x3d() == roundX && item->z3d() == borderZ && item->isWhite()) {
+        if (item->depth() == 0 && item->x3d() == roundX && item->z3d() == borderZ
+                && ((!isBlackTurn() && item->isWhite())||(isBlackTurn() && !item->isWhite()))) {
             setSelection(item);
             break;
         }
@@ -127,24 +131,25 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
         int size = getSelection()->size();
         int mask = pow(2, newTile);
         for (int i = 0; i <= size; i++) {
-            for (int w = 0; w < 2; w++) {
-                if ((m_state[w][i] & mask) > 0) {
-                    setSelection(NULL);
-                    return;
-                }
+            if (((m_state[0][i] | m_state[1][i]) & mask) > 0) {
+                setSelection(NULL);
+                return;
             }
         }
 
         updateState(roundX, coord[1], roundZ, oldTile, newTile);
+        toggleBlackTurn();
         // writeLog();
 
-        AI computer = *new AI(m_comm->mode());
-        aiMove move = computer.move(m_state);
-        // std::cout << move.from() << std::endl;
-        setSelectionByTile(move.from());
-        // std::cout << move.to() << std::endl;
-        int newT = move.to();
-        updateState(225 - (newT % 4) * 150, coord[1], 225 -  150 * (newT / 4), move.from(), newT);
+        if (m_comm->mode() > 0) {
+            AI m_computer = *new AI(m_comm->mode());
+            aiMove move = m_computer.move(m_state);
+            // std::cout << move.from() << std::endl;
+            setSelectionByTile(move.from());
+            // std::cout << move.to() << std::endl;
+            int newT = move.to();
+            updateState(225 - (newT % 4) * 150, coord[1], 225 -  150 * (newT / 4), move.from(), newT);
+        }
     } else {
         int borderZ = (abs(roundX) > 225) ? ((coord[2] > 75) ? 150 : ((coord[2] < -75) ? -150 : 0)) : roundZ;
         setSelection(roundX, borderZ);
