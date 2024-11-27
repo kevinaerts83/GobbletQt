@@ -52,7 +52,7 @@ signals:
 
 private:
     QList<Gobbler*> m_list;
-    bool m_blackTurn;
+    bool m_blackTurn = false;
     Gobbler* m_selection;
     Board* m_board;
     int m_state [2][4] = {{ 0, 0, 0, 0}, {0, 0, 0, 0}};

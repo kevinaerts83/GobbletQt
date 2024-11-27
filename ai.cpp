@@ -129,30 +129,31 @@ bool AI::dontLose() {
 }
 
 bool AI::block() {
-    //if level is 1: check if black player can put a size0 on a tile creating 2 row with 3 pawns. (no biggest white pawns on the rows)
-    //fake a black pawn size1 on that tile and do don't loose
+    // if level is 1: check if white player can put a size0 on a tile creating 2 row with 3 pawns.
+    // (no biggest white pawns on the rows)
+    // fake a white pawn size1 on that tile and do don't loose
     if (m_level == 1) {
         bool ret = true;
 
         int i = 0;
         for (int twiceThree : m_twiceThree) {
-            if ((count1Bits(m_visibleBlack & twiceThree) > 3)
-                && ((m_visibleBlack & m_blockMove[i]) == 0)
-                && ((m_bState[1][0] & twiceThree) == 0)) {
+            if ((count1Bits(m_visibleWhite & twiceThree) > 3)
+                && ((m_visibleWhite & m_blockMove[i]) == 0) // no white on the block move
+                && ((count1Bits(m_bState[1][0] & twiceThree) < 3))) {
 
-                int oldValue = m_bState[0][1];
-                int old2 = m_visibleBlack;
-                int old3 = m_visibleBlackRows[1];
+                int oldValue = m_bState[1][1];
+                int old2 = m_visibleWhite;
+                int old3 = m_visibleWhiteRows[1];
 
-                m_bState[0][1] |= m_blockMove[i];
-                m_visibleBlack |= m_blockMove[i];
-                m_visibleBlackRows[1] |= m_blockMove[i];
+                m_bState[1][1] |= m_blockMove[i];
+                m_visibleWhite |= m_blockMove[i];
+                m_visibleWhiteRows[1] |= m_blockMove[i];
 
                 ret = dontLose();
 
-                m_bState[0][1] = oldValue;
-                m_visibleBlack = old2;
-                m_visibleBlackRows[1] = old3;
+                m_bState[1][1] = oldValue;
+                m_visibleWhite = old2;
+                m_visibleWhiteRows[1] = old3;
                 break;
             }
             i++;
@@ -222,8 +223,8 @@ void AI::attackFallBack() {
         int size = getPawnSize(m_toTile);
         size = (size == -1 ? 4 : size);
         if (!setFromTile(size, getRowsOfTile(m_toTile))) {
-            m_toTile = startAttack(ignore);
             ignore += pow(2, m_toTile);
+            m_toTile = startAttack(ignore);
         } else {
             break;
         }
@@ -231,27 +232,8 @@ void AI::attackFallBack() {
 }
 
 int AI::startAttack(int ignore) {
-    int number = m_crossings ^ m_bState[0][0] ^ m_bState[1][0] ^ ignore;
-    // Convert number to binary string
-    std::string binary = std::bitset<32>(number).to_string(); // Assuming a 32-bit number
-
-    // Remove leading zeros from the binary string
-    binary = binary.substr(binary.find('1'));
-
-    // Initialize random number generator
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist(0, binary.length() - 1);
-
-    int rnd, t;
-
-    // Get random index and find first '1' after that index
-    do {
-        rnd = dist(gen);  // Generate a random number
-        t = binary.find('1', rnd);  // Find the first '1' starting from rnd
-    } while (t == static_cast<int>(std::string::npos));  // Repeat if '1' is not found
-
-    return t;
+    int num = m_crossings ^ m_bState[0][0] ^ m_bState[1][0] ^ ignore;
+    return 1 << get_first_set_bit_position(num); // pow 2 of position of 1 bit
 }
 
 int AI::getToTile(int rowMask, int visiblePawns, bool reverse) {
@@ -327,16 +309,18 @@ int AI::getPawnFromBoard(int size, std::vector<int> excludeRows) {
         }
     } else {
         int result = -1;
-        int j = 0;
-        for (int i = size - 1; i > -1; i -= 1) {
+        for (int i = size - 1; i > -1; --i) {
             std::vector<Grades> graded = getUnimportantWhiteTile(i, excludeRows);
-            for (Grades grade : graded) {
-                if ((j == 0) || (j > grade.id)) {
-                    j = grade.id;
-                    result = grade.grade;
-                }
+
+            auto maxId = std::max_element(graded.begin(), graded.end(),
+                   [](const Grades& a, const Grades& b) {
+                       return a.grade < b.grade;
+                   });
+            if (maxId != graded.end() && maxId->id > result) {
+                result = maxId->id;
             }
         }
+
         if (result > 0) {
             return result;
         }
@@ -461,7 +445,7 @@ std::vector<int> AI::getTilesOfSize(int size) {
 int AI::getPawnSize(int tile) {
     int mask = pow(2, tile);
     for (int i = 0; i < 4; i++) {
-        if (((m_bState[1][i] | m_bState[1][i]) & mask) > 0) {
+        if (((m_bState[0][i] | m_bState[1][i]) & mask) > 0) {
             return i;
         }
     }
@@ -560,12 +544,34 @@ int AI::count1Bits(int x) {
     return count;
 }
 
-int AI::get_first_set_bit_position(int n) {
-    if (n == 0)
-        return -1;
+int AI::get_first_set_bit_position(int num) {
+    int bitCount = std::bitset<16>(num).count(); // count number of 1 bits
 
-    int isolatedBit = n & -n;
-    return log2(isolatedBit);
+    if (bitCount == 0) {
+        return -1; // No 1 bits, return 0
+    }
+
+    // Generate a random number between 1 and bitCount
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist(1, bitCount);
+    int randomBitIndex = dist(gen);
+
+    // Locate the chosen 1 bit
+    int currentBitIndex = 0;
+    for (int i = 0; i < 16; ++i) {
+        if (num & (1 << i)) { // Check if the i-th bit is 1
+            ++currentBitIndex;
+            if (currentBitIndex == randomBitIndex) {
+                return i;
+            }
+        }
+    }
+
+    return -1; // Should never reach here
+
+    /*if (n == 0) return -1;
+    return log2(n & -n);*/
 }
 
 // Write log (simulating the console.log in C++)

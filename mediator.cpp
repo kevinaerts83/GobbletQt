@@ -56,11 +56,10 @@ void Mediator::setSelectionByTile(int tile) {
         for (const auto& item : getList()) {
             if (item->depth() == 0
                 && item->size() == theSize
-                && ((!isBlackTurn() && abs(item->x3d()) > 225 && !item->isWhite())
-                || (isBlackTurn() && abs(item->x3d()) < -225 && item->isWhite()))) {
+                && ((isBlackTurn() && item->x3d() > 225) || (!isBlackTurn() && item->x3d() < -225))) {
 
-                setSelection(item);
-                break;
+                    setSelection(item);
+                    break;
             }
         }
     } else {
@@ -138,10 +137,10 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
         }
 
         updateState(roundX, coord[1], roundZ, oldTile, newTile);
-        toggleBlackTurn();
-        // writeLog();
 
+        writeLog();
         if (m_comm->mode() > 0) {
+            toggleBlackTurn();
             AI m_computer = *new AI(m_comm->mode());
             aiMove move = m_computer.move(m_state);
             // std::cout << move.from() << std::endl;
@@ -150,6 +149,8 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
             int newT = move.to();
             updateState(225 - (newT % 4) * 150, coord[1], 225 -  150 * (newT / 4), move.from(), newT);
         }
+
+        toggleBlackTurn();
     } else {
         int borderZ = (abs(roundX) > 225) ? ((coord[2] > 75) ? 150 : ((coord[2] < -75) ? -150 : 0)) : roundZ;
         setSelection(roundX, borderZ);
@@ -160,6 +161,10 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
 }
 
 void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
+    if (getSelection() == nullptr) {
+        std::cout << "An error occurred" << std::endl;
+        return;
+    }
     if(oldTile > -1) {
         // update state of oldTile
         m_state[getSelection()->isWhite()][getSelection()->size()] ^= (int)pow(2, oldTile);
@@ -203,7 +208,7 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
     }
 
     setSelection(NULL);
-    // tests();
+    tests();
 }
 
 int Mediator::getTileFromCoord(int x, int z) {
@@ -271,7 +276,7 @@ void Mediator::writeLog() {
 }
 
 void Mediator::tests() {
-    AI computer = *new AI(0);
+    AI computer = *new AI(1);
     /* TRY TO WIN */
     int state [2][4] = {{32768, 2048, 128, 0}, { 0, 0, 0, 0}};
     aiMove move = computer.move(state);
@@ -287,12 +292,16 @@ void Mediator::tests() {
 
     int state4 [2][4] = {{49184, 51200, 49280, 0}, { 0, 8, 0, 0}}; // white blocks with size 1 all pawns on board
     move = computer.move(state4);
-    std::cout << "5 -> 3 : " << move.from() << " -> " << move.to() << std::endl;
+    std::cout << "Win 5 -> 3 : " << move.from() << " -> " << move.to() << std::endl;
+    /* 1100 0000 0010 0000  0000 0000 0000 0000         15 14 13 12
+     * 1100 1000 0000 0000  0000 0000 0000 1000         11 10 09 08
+     * 1100 0000 1000 0000  0000 0000 0000 0000         07 06 05 04
+     * 0000 0000 0000 0000  0000 0000 0000 0000         03 02 01 00 */
 
     // don't use a tile that let white win.
     int state5 [2][4] = {{49184, 51200, 49280, 0}, { 8706, 32, 8, 0}}; // white blocks with size 2 all pawns on board
     move = computer.move(state5);
-    std::cout << "11 -> 3 : " << move.from() << " -> " << move.to() << std::endl;
+    std::cout << "Win 11 -> 3 : " << move.from() << " -> " << move.to() << std::endl;
     /* 1100 0000 0010 0000  0010 0010 0000 0010         15 14 13 12
      * 1100 1000 0000 0000  0000 0000 0010 0000         11 10 09 08
      * 1100 0000 1000 0000  0000 0000 0000 1000         07 06 05 04
@@ -305,17 +314,40 @@ void Mediator::tests() {
 
     int state7 [2][4] = {{1600, 0, 0, 0}, { 28672, 2048, 128, 8}}; // take from board
     move = computer.move(state7);
-    std::cout << "6 -> 15 : " << move.from() << " -> " << move.to() << std::endl;
+    std::cout << "6/9 -> 15 : " << move.from() << " -> " << move.to() << std::endl;
 
-    /* Block */
-    /* 0000 0000 0000 0000  0000 1001 0000 0000         15 14 13 12
-     * 0000 0000 0000 0000  0010 0000 0000 0010         11 10 09 08
-     * 0000 0000 0000 0000  0000 0000 0000 1000         07 06 05 04
-     * 0000 0000 0000 0000  0000 0000 0000 0000         03 02 01 00 */
-    int state8 [2][4] = {{0, 0, 0, 0}, { 2304, 8194, 0, 0}}; // take from board
+    /* Block if 1 sized is placed on 9 no possibility to block */
+    /* 0000 0000 0000 0000  0000 1001 0000 0000         15 14 13 12    0 0 1 0
+     * 0000 0000 0000 0000  0010 0000 0000 0010         11 10 09 08    1 0 0 1
+     * 0000 0000 0000 0000  0000 0000 0000 1000         07 06 05 04    0 0 0 0
+     * 0000 0000 0000 0000  0000 0000 0000 0000         03 02 01 00    1 0 1 0 */
+    int state8 [2][4] = {{0, 0, 0, 0}, { 2304, 8194, 0, 0}}; // take from stack
     move = computer.move(state8);
     std::cout << "16 -> 9 : " << move.from() << " -> " << move.to() << std::endl;
 
-
     /* Attack */
+    // put on the middle
+    int state9 [2][4] = {{1, 2, 0, 0}, { 12, 32, 0, 0}};
+    move = computer.move(state9);
+    std::cout << "Attack 18 -> 6/9/12/15 : " << move.from() << " -> " << move.to() << std::endl;
+
+    int state10 [2][4] = {{128, 1, 0, 0}, { 8, 4, 2, 0}};
+    move = computer.move(state10);
+    std::cout << "Attack 16 -> 1 : " << move.from() << " -> " << move.to() << std::endl;
+
+    /* 1 0 0 2
+     * 0 2 1 1
+     * 0 1 1 2
+     * 2 1 0 2 */
+    int state11 [2][4] = {{5136, 1, 8, 4}, { 32864, 772, 2, 1024}};
+    move = computer.move(state11);
+    std::cout << "Attack(11) 6 -> 8 : " << move.from() << " -> " << move.to() << std::endl;
+
+    /* 1 0 0 2
+     * 2 2 1 0
+     * 1 0 2 1
+     * 2 0 1 2 */
+    int state12 [2][4] = {{7168, 40, 1, 32}, { 32898, 2560, 1056, 16}};
+    move = computer.move(state12);
+    std::cout << "Attack(12) 4 -> 5 : " << move.from() << " -> " << move.to() << std::endl;
 }
