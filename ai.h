@@ -35,7 +35,7 @@ private:
     std::vector<int> getRowsOfTile(int tile);
     int getPawnFromStack(int size);
     int getPawnFromBoard(int size, std::vector<int> excludeRows);
-    std::vector<Grades> getUnimportantWhiteTile(int size, std::vector<int> excludeRows);
+    std::vector<Grades> getUnimportantBlackTile(int size, std::vector<int> excludeRows);
 
     bool findId(std::vector<int> numbers, int searchId);
     tileCounter* getObjectFromArray(std::vector<tileCounter>& counters, int tile);

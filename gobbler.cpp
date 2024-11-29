@@ -80,7 +80,7 @@ void Gobbler::paint(QPainter *painter)
 {
     if (this->depth() == 0) {
         model.Rotate(m_matrix, m_x3d, m_y3d, m_z3d);
-        QColor color = m_isWhite ? QColor(QColorConstants::Svg::ivory) : QColor(QColorConstants::Svg::saddlebrown);
+        QColor color = m_isWhite ? QColor(QColorConstants::Svg::linen).darker(120) : QColor(QColorConstants::Svg::peru.darker(140));
         painter->setBrush(color);
         m_shape->paint(m_matrix, model, painter);
     }

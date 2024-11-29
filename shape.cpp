@@ -21,9 +21,22 @@ void Shape::paint(Matrix *matrix, Shape3d model, QPainter *painter)
         points2d.append(matrix->ProjectPoint(matrix->MultiplyPointAndMatrix(model.cache[i], translation)));
     }
 
+    bool board = model.faces.size() == 26;
     // PAINTER
     for (int i = 0; i < model.faces.size(); i++) {
-        if(dotProduct(points2d, model.faces[i])) {
+        if((board && i > 7) || dotProduct(points2d, model.faces[i])) {
+            if (board) {
+                QColor color;
+                if (i < 8) {
+                    color = Qt::black;
+                } else if (i < 10) {
+                    color = QColorConstants::Svg::sienna.darker(190);
+                } else {
+                    color = QColorConstants::Svg::oldlace.darker(120);
+                }
+                painter->setBrush(color);
+            }
+
             paintPolygon(painter,
                     points2d[model.faces[i][0]][0],
                     points2d[model.faces[i][0]][1],
@@ -34,6 +47,35 @@ void Shape::paint(Matrix *matrix, Shape3d model, QPainter *painter)
                     points2d[model.faces[i][2]][0],
                     points2d[model.faces[i][2]][1]);
         }
+    }
+
+    if (model.faces.size() == 16) {
+        QPoint point1(points2d[8][0], points2d[8][1]);
+        QPoint point2(points2d[9][0], points2d[9][1]);
+        QPoint point3(points2d[10][0], points2d[10][1]);
+        QPoint point4(points2d[11][0], points2d[11][1]);
+        QPoint point5(points2d[12][0], points2d[12][1]);
+        QPoint point6(points2d[13][0], points2d[13][1]);
+        QPoint point7(points2d[14][0], points2d[14][1]);
+        QPoint point8(points2d[15][0], points2d[15][1]);
+
+        QPolygon top;
+        top << point1 << point2 << point3 << point4 << point5 << point6 << point7 << point8;
+        painter->drawPolygon(top);
+
+
+        QPen pen(painter->brush().color().darker(150));
+        pen.setWidth(2);
+        painter->setPen(pen);
+
+        painter->drawLine(point1, point2); // Draw border 1
+        painter->drawLine(point2, point3);
+        painter->drawLine(point3, point4);
+        painter->drawLine(point4, point5);
+        painter->drawLine(point5, point6);
+        painter->drawLine(point6, point7);
+        painter->drawLine(point7, point8);
+        painter->drawLine(point8, point1);
     }
 }
 //![1]
@@ -60,15 +102,66 @@ void Shape::paintPolygon(QPainter *painter, qreal x1, qreal y1, qreal x2, qreal 
 
     painter->drawPolygon(triangle);  // Draw the filled triangle
 
-    // Draw the two borders
-    painter->setPen(Qt::black);      // Set the border color
-
-    painter->drawLine(point1, point2);  // Draw border 1
-    painter->drawLine(point2, point3);  // Draw border 2
-
     QColor brushColor = painter->brush().color();
+    // Draw the two borders
+    painter->setPen(brushColor.darker(150)); // Set the border color
+
+    painter->drawLine(point1, point2); // Draw border 1
+    painter->drawLine(point2, point3); // Draw border 2
+
     if (brushColor != Qt::black) {
         painter->setPen(brushColor);
         painter->drawLine(point3, point1);
     }
 }
+
+/*
+#include <QApplication>
+#include <QWidget>
+#include <QPainter>
+#include <QTimer>
+
+class AnimatedWidget : public QWidget {
+    Q_OBJECT
+
+public:
+    AnimatedWidget(QWidget *parent = nullptr) : QWidget(parent), m_circleX(50) {
+        // Timer for manual animation
+        QTimer *timer = new QTimer(this);
+        connect(timer, &QTimer::timeout, this, &AnimatedWidget::animateStep);
+        timer->start(30); // 30 ms per frame
+    }
+
+protected:
+    void paintEvent(QPaintEvent *event) override {
+        QPainter painter(this);
+
+        // Draw a circle that moves based on m_circleX
+        painter.setBrush(Qt::blue);
+        painter.drawEllipse(m_circleX, height() / 2 - 25, 50, 50);
+    }
+
+private slots:
+    void animateStep() {
+        if (m_circleX < 300) {
+            m_circleX += 5; // Increment position
+            update();       // Trigger repaint
+        }
+    }
+
+private:
+    int m_circleX;
+};
+
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+
+    AnimatedWidget window;
+    window.resize(400, 200);
+    window.show();
+
+    return app.exec();
+}
+
+#include "main.moc"
+ */

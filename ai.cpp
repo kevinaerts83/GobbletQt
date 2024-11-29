@@ -310,7 +310,7 @@ int AI::getPawnFromBoard(int size, std::vector<int> excludeRows) {
     } else {
         int result = -1;
         for (int i = size - 1; i > -1; --i) {
-            std::vector<Grades> graded = getUnimportantWhiteTile(i, excludeRows);
+            std::vector<Grades> graded = getUnimportantBlackTile(i, excludeRows);
 
             auto maxId = std::max_element(graded.begin(), graded.end(),
                    [](const Grades& a, const Grades& b) {
@@ -326,7 +326,7 @@ int AI::getPawnFromBoard(int size, std::vector<int> excludeRows) {
         }
 
         for (int i = size - 1; i >= 0; i--) {
-            int pawns = m_visibleWhiteRows[i];
+            int pawns = m_visibleBlackRows[i];
 
             if (pawns > 0) {
                 return pow(2, std::bitset<16>(pawns).count() - 1);
@@ -336,12 +336,12 @@ int AI::getPawnFromBoard(int size, std::vector<int> excludeRows) {
     return -1;
 }
 
-std::vector<Grades> AI::getUnimportantWhiteTile(int size, std::vector<int> excludeRows) {
-    std::vector<int> wTiles = getTilesOfSize(size); //get the tile of a visible white pawns from a certain size
+std::vector<Grades> AI::getUnimportantBlackTile(int size, std::vector<int> excludeRows) {
+    std::vector<int> bTiles = getTilesOfSize(size); //get the tile of a visible black pawns from a certain size
     std::vector<int> goodTiles;
 
     std::vector<tileCounter> cache;
-    for (int aTile : wTiles) {
+    for (int aTile : bTiles) {
         bool bad = false;
         //tileRows contains the row indexes, these indexes are the same as the mask indexes for those rows
         std::vector<int> tileRows = getRowsOfTile(aTile);
@@ -349,16 +349,16 @@ std::vector<Grades> AI::getUnimportantWhiteTile(int size, std::vector<int> exclu
         //a white pawn is only unimportant if it's not blocking a row or not of strategic interest for a row
         for (int r : tileRows) {
             int p = pow(2, aTile);
-            //stop processing the tile if it's in a row with 3 black pawns, or the row that is currently formed.
-            if (findId(rowCheck(3, false, false), r) || findId(excludeRows, r)) {
+            //stop processing the tile if it's in a row with 3 black whites, or the row that is currently formed.
+            if (findId(rowCheck(3, true, false), r) || findId(excludeRows, r)) {
                 bad = true;
                 break;
-            } else if ((count1Bits(m_mask[r] & m_visibleBlack) == 2) &&
-                       ((((m_mask[r] & m_bState[1][0]) | p) ^ p) == 0) &&
-                       (getColorUnderneath(aTile, size) == 2)) {
+            } else if ((count1Bits(m_mask[r] & m_visibleWhite) == 2) &&
+                       ((((m_mask[r] & m_bState[0][0]) | p) ^ p) == 0) &&
+                       (getColorUnderneath(aTile, size) == 1)) {
                 //Stop when all conditions are true
-                // - 2 black pawn
-                // - no biggest white pawn (except the one being checked)
+                // - 2 white pawns
+                // - no biggest black pawn (except the one being checked)
                 // - and one black pawn underneath (the one being checked)
                 bad = true;
                 break;
@@ -426,20 +426,20 @@ int AI::getColorUnderneath(int tile, int size) {
 }
 
 std::vector<int> AI::getTilesOfSize(int size) {
-    std::vector<int> wTiles;
+    std::vector<int> bTiles;
 
-    int number = m_visibleWhiteRows[size];
+    int number = m_visibleBlackRows[size];
     int bitIndex = 0;
 
     while (number != 0) {
         if (number & 1) {  // Check if the least significant bit is 1
-            wTiles.push_back(bitIndex);
+            bTiles.push_back(bitIndex);
         }
         number >>= 1;  // Shift the number to the right by 1 bit
         bitIndex++;    // Increment the bit position
     }
 
-    return wTiles;
+    return bTiles;
 }
 
 int AI::getPawnSize(int tile) {
