@@ -16,11 +16,13 @@ Mediator::Mediator(QObject *parent) : QObject(parent)
 
 /*
  * TODO
- * For the gobblers keep the size
- * gobblers keep the dept (how many gobblers are above me adjust when visibility changes
- *
- * keep the side center points the one from the board should be asked to the board class
- * ...
+ * - Animation
+ * - Show selected
+ * - Make sure you can't put gobblers off the board
+ * - Make AI bug free
+ * - max screen size
+ * - use gestures not sliders
+ * DONE
  * */
 
 QList<Gobbler*> Mediator::getList() const
@@ -78,6 +80,12 @@ void Mediator::setSelection(int roundX, int borderZ) {
 }
 
 void Mediator::setSelection(Gobbler* gobbler) {
+    if (gobbler != NULL) {
+        gobbler->model.toggleSelection();
+    }
+    if (m_selection != NULL && m_selection->model.isSelected()) {
+        m_selection->model.toggleSelection();
+    }
     m_selection = gobbler;
 }
 
@@ -125,6 +133,13 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
         if ((((int) getSelection()->z3d()) % 150) != 0) {
             oldTile = getTileFromCoord(getSelection()->x3d(), getSelection()->z3d());
         }
+
+        if (abs(roundX) > 225 || abs(roundZ) > 225) {
+            setSelection(NULL);
+            repaint(matrix);
+            return;
+        }
+
         int newTile = getTileFromCoord(roundX, roundZ);
 
         int size = getSelection()->size();
@@ -132,6 +147,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
         for (int i = 0; i <= size; i++) {
             if (((m_state[0][i] | m_state[1][i]) & mask) > 0) {
                 setSelection(NULL);
+                repaint(matrix);
                 return;
             }
         }
@@ -155,9 +171,9 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
         int borderZ = (abs(roundX) > 225) ? ((coord[2] > 75) ? 150 : ((coord[2] < -75) ? -150 : 0)) : roundZ;
         setSelection(roundX, borderZ);
     }
-    if (m_selection == NULL) {
-        repaint(matrix);
-    }
+    //if (m_selection == NULL) {
+    repaint(matrix);
+    //}
 }
 
 void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
@@ -192,6 +208,7 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
     // update state of new tile
     m_state[getSelection()->isWhite()][getSelection()->size()] |= (int) pow(2, newTile); //Set new position
 
+    getSelection()->model.toggleSelection();
     // first check the player who's turn is next (In case when a gobblet of the opposite player is revealed)
     if (getSelection()->isWhite()) {
         if (checkWinner(0)) {
@@ -347,7 +364,15 @@ void Mediator::tests() {
      * 2 2 1 0
      * 1 0 2 1
      * 2 0 1 2 */
-    int state12 [2][4] = {{7168, 40, 1, 32}, { 32898, 2560, 1056, 16}};
+    int state12 [2][4] = {{7168, 40, 1, 32}, {32898, 2560, 1056, 16}};
     move = computer.move(state12);
     std::cout << "Attack(12) 4 -> 5 : " << move.from() << " -> " << move.to() << std::endl;
+
+    /* 2 2 0 2         15 14 13 12
+     * 1 1 2 1         11 10 09 08
+     * 2 1 1 2         07 06 05 04
+     * 1 0 0 2         03 02 01 00 */
+    int state13 [2][4] = {{1064, 36928, 17, 128}, {33281, 16528, 32768, 4096}};
+    move = computer.move(state13);
+    std::cout << "Attack(13) 4 -> 13 : " << move.from() << " -> " << move.to() << std::endl;
 }

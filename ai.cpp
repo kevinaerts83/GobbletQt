@@ -196,8 +196,7 @@ bool AI::attack() {
 void AI::randomMove() {
     int s = 0;
     while (s == 0) {
-        int t = std::rand() % 16;
-        m_toTile = t;
+        m_toTile = std::rand() % 16;
         s = getPawnSize(m_toTile);
     }
 
@@ -276,7 +275,7 @@ int AI::getPawnFromStack(int size) {
     int maxNo = 3;
     int pawnSize = -1;
     for (int i = 0; i < size; i++) {
-        int onBoard = count1Bits(m_bState[0][i]); // 0 means it's white turn
+        int onBoard = count1Bits(m_bState[0][i]);
         if (onBoard < maxNo) {
             pawnSize = i;
         }

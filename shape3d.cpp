@@ -40,4 +40,12 @@ void Shape3d::Zoom(Matrix* matrix) {
     for (int i = 0; i < this->cache.size(); i++) {
         this->cache[i] = matrix->MultiplyPointAndMatrix(this->cache[i], scalingMatrix);
     }
-};
+}
+
+bool Shape3d::isSelected() const {
+    return m_selected;
+}
+
+void Shape3d::toggleSelection() {
+    m_selected = !m_selected;
+}

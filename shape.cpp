@@ -63,10 +63,15 @@ void Shape::paint(Matrix *matrix, Shape3d model, QPainter *painter)
         top << point1 << point2 << point3 << point4 << point5 << point6 << point7 << point8;
         painter->drawPolygon(top);
 
-
-        QPen pen(painter->brush().color().darker(150));
-        pen.setWidth(2);
-        painter->setPen(pen);
+        if (model.isSelected()) {
+            QPen pen(Qt::blue);
+            pen.setWidth(2);
+            painter->setPen(pen);
+        } else {
+            QPen pen(painter->brush().color().darker(150));
+            pen.setWidth(2);
+            painter->setPen(pen);
+        }
 
         painter->drawLine(point1, point2); // Draw border 1
         painter->drawLine(point2, point3);

@@ -14,8 +14,12 @@ public:
 
     void Rotate(Matrix* matrix, double x, double y, double z);
     int PowerOfTwo(int x);
+
+    bool isSelected() const;
+    void toggleSelection();
 private:
     void Zoom(Matrix* matrix);
+    bool m_selected;
 };
 
 #endif // SHAPE3D_H
