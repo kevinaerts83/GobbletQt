@@ -73,7 +73,7 @@ Page {
         y : 50
         value: 65
         from: 90
-        to: 35
+        to: 10
         stepSize: 1
         orientation: "Vertical"
         onValueChanged: {

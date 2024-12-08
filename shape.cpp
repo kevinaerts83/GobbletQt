@@ -16,13 +16,42 @@ void Shape::paint(Matrix *matrix, Shape3d model, QPainter *painter)
     double translation [4][4];
     matrix->getInverseTranslationMatrix(translation);
 
+    bool board = model.faces.size() == 26;
+    int shadePoints = board ? 0 : 8;
+    QPolygon shadow;
+
     // PROJECT 2D FIGURE
     for (int i = 0; i < model.cache.size(); i++) {
         points2d.append(matrix->ProjectPoint(matrix->MultiplyPointAndMatrix(model.cache[i], translation)));
+        if (shadePoints > 0 && model.isSelected() && model.cache[0][2] > 0) {
+            QVector<double> point ({model.cache[i][0], model.cache[i][1], model.cache[i][2], 1});
+
+            double rotationMatrix [4][4];
+            matrix->getRotationMatrix(rotationMatrix);
+
+            double transposedMatrix [4][4];
+            matrix->getTransposedMatrix(rotationMatrix, transposedMatrix);
+
+            QVector<double> basePoint = matrix->MultiplyPointAndMatrix(point, transposedMatrix);
+            QVector<double> newPoint ({basePoint[0], 0, basePoint[2], 1});
+
+            QVector<double> drawPoint = matrix->MultiplyPointAndMatrix(newPoint, rotationMatrix);
+
+            //QVector<double> newPoint ({model.cache[i][0], model.cache[i][1], 0, 1});
+            QVector<double> new2dPoint = matrix->ProjectPoint(matrix->MultiplyPointAndMatrix(drawPoint, translation));
+            QPoint point1(new2dPoint[0], new2dPoint[1]);
+            shadow << point1;
+
+            shadePoints--;
+        }
     }
 
-    bool board = model.faces.size() == 26;
     // PAINTER
+    QColor original = painter->brush().color();
+    painter->setBrush(QColor(0, 0, 0, 128));
+    painter->drawPolygon(shadow);
+    painter->setBrush(original);
+
     for (int i = 0; i < model.faces.size(); i++) {
         if((board && i > 7) || dotProduct(points2d, model.faces[i])) {
             if (board) {
@@ -119,54 +148,3 @@ void Shape::paintPolygon(QPainter *painter, qreal x1, qreal y1, qreal x2, qreal 
         painter->drawLine(point3, point1);
     }
 }
-
-/*
-#include <QApplication>
-#include <QWidget>
-#include <QPainter>
-#include <QTimer>
-
-class AnimatedWidget : public QWidget {
-    Q_OBJECT
-
-public:
-    AnimatedWidget(QWidget *parent = nullptr) : QWidget(parent), m_circleX(50) {
-        // Timer for manual animation
-        QTimer *timer = new QTimer(this);
-        connect(timer, &QTimer::timeout, this, &AnimatedWidget::animateStep);
-        timer->start(30); // 30 ms per frame
-    }
-
-protected:
-    void paintEvent(QPaintEvent *event) override {
-        QPainter painter(this);
-
-        // Draw a circle that moves based on m_circleX
-        painter.setBrush(Qt::blue);
-        painter.drawEllipse(m_circleX, height() / 2 - 25, 50, 50);
-    }
-
-private slots:
-    void animateStep() {
-        if (m_circleX < 300) {
-            m_circleX += 5; // Increment position
-            update();       // Trigger repaint
-        }
-    }
-
-private:
-    int m_circleX;
-};
-
-int main(int argc, char *argv[]) {
-    QApplication app(argc, argv);
-
-    AnimatedWidget window;
-    window.resize(400, 200);
-    window.show();
-
-    return app.exec();
-}
-
-#include "main.moc"
- */

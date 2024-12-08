@@ -1,5 +1,6 @@
 #include "mediator.h"
 #include <QQmlEngine>
+#include <QTimer>
 #include <iostream>
 #include <bitset>
 #include <string>
@@ -12,13 +13,13 @@
 
 Mediator::Mediator(QObject *parent) : QObject(parent)
 {
+    timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &Mediator::updateGobbler);
 }
 
 /*
  * TODO
  * - Animation
- * - Show selected
- * - Make sure you can't put gobblers off the board
  * - Make AI bug free
  * - max screen size
  * - use gestures not sliders
@@ -152,21 +153,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
             }
         }
 
-        updateState(roundX, coord[1], roundZ, oldTile, newTile);
-
-        writeLog();
-        if (m_comm->mode() > 0) {
-            toggleBlackTurn();
-            AI m_computer = *new AI(m_comm->mode());
-            aiMove move = m_computer.move(m_state);
-            // std::cout << move.from() << std::endl;
-            setSelectionByTile(move.from());
-            // std::cout << move.to() << std::endl;
-            int newT = move.to();
-            updateState(225 - (newT % 4) * 150, coord[1], 225 -  150 * (newT / 4), move.from(), newT);
-        }
-
-        toggleBlackTurn();
+        updateState(roundX, coord[1], roundZ, oldTile, newTile, matrix);
     } else {
         int borderZ = (abs(roundX) > 225) ? ((coord[2] > 75) ? 150 : ((coord[2] < -75) ? -150 : 0)) : roundZ;
         setSelection(roundX, borderZ);
@@ -176,7 +163,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
     //}
 }
 
-void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
+void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix *matrix) {
     if (getSelection() == nullptr) {
         std::cout << "An error occurred" << std::endl;
         return;
@@ -200,13 +187,18 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
         }
     }
 
-    // set to new position
-    getSelection()->setX3d(x);
-    getSelection()->setY3d(y);
-    getSelection()->setZ3d(z);
+    newX = x;
+    newY = y;
+    newZ = z;
+    matrx = matrix;
+    myNewTile = newTile;
+    timer->start(50);
+}
+
+void Mediator::afterAnimation() {
 
     // update state of new tile
-    m_state[getSelection()->isWhite()][getSelection()->size()] |= (int) pow(2, newTile); //Set new position
+    m_state[getSelection()->isWhite()][getSelection()->size()] |= (int) pow(2, myNewTile); //Set new position
 
     getSelection()->model.toggleSelection();
     // first check the player who's turn is next (In case when a gobblet of the opposite player is revealed)
@@ -223,9 +215,67 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
             this->m_comm->blackWon();
         }
     }
-
+    bool aiTurn = getSelection()->isWhite();
     setSelection(NULL);
-    tests();
+    //tests();
+    startAi(aiTurn);
+
+}
+
+void Mediator::startAi(bool aiTurn) {
+    //writeLog();
+    toggleBlackTurn();
+    if (m_comm->mode() > 0 && aiTurn) {
+        AI m_computer = *new AI(m_comm->mode());
+        aiMove move = m_computer.move(m_state);
+        // std::cout << move.from() << std::endl;
+        setSelectionByTile(move.from());
+        // std::cout << move.to() << std::endl;
+        int newT = move.to();
+        updateState(225 - (newT % 4) * 150, newY, 225 -  150 * (newT / 4), move.from(), newT, matrx);
+    }
+}
+
+void Mediator::updateGobbler() {
+    int x = getSelection()->x3d();
+    int y = getSelection()->y3d();
+    int z = getSelection()->z3d();
+
+    if (newX != x) {
+        if (newX < x) {
+            x -= (x < (newX + 10)) ? (x - newX) : 10;
+        } else {
+            x += (x > (newX - 10)) ? (newX - x) : 10;
+        }
+    }
+
+    if (newZ != z) {
+        if (newZ < z) {
+            z -= (z < (newZ + 10)) ? (z - newZ) : 10;
+        } else {
+            z += (z > (newZ - 10)) ? (newZ - z) : 10;
+        }
+    }
+
+
+    if (x == newX && z == newZ) {
+        y += (y > (newY - 10)) ? (newY - y) : 10;
+    } else {
+        if (y > -200) {
+            y -= 20;
+        }
+    }
+
+    getSelection()->setX3d(x);
+    getSelection()->setY3d(y);
+    getSelection()->setZ3d(z);
+
+    repaint(matrx);
+
+    if (x == newX && y == newY && z == newZ) {
+        timer->stop();
+        afterAnimation();
+    }
 }
 
 int Mediator::getTileFromCoord(int x, int z) {

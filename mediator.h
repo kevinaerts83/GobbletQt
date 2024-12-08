@@ -26,6 +26,7 @@ public:
     Gobbler* getSelection() const;
     Board* getBoard() const;
     Bridge* m_comm;
+    QTimer *timer;
 
 public slots:
     void addItem(Gobbler *gobbler);
@@ -41,7 +42,10 @@ public slots:
 private slots:
     bool checkWinner(bool player);
     int getTileFromCoord(int x, int z);
-    void updateState(int x, int y, int z, int oldTile, int newTile);
+    void updateState(int x, int y, int z, int oldTile, int newTile, Matrix *matrix);
+    void updateGobbler();
+    void afterAnimation();
+    void startAi(bool aiTurn);
     void writeLog();
     void tests();
 
@@ -55,6 +59,13 @@ private:
     bool m_blackTurn = false;
     Gobbler* m_selection;
     Board* m_board;
+
+    Matrix *matrx;
+    int newX;
+    int newY;
+    int newZ;
+    int myNewTile;
+
     int m_state [2][4] = {{ 0, 0, 0, 0}, {0, 0, 0, 0}};
     int m_mask [10] = {61440, 3840, 240, 15, 34952, 17476, 8738, 4369, 33825, 4680};
 
