@@ -131,6 +131,7 @@ Page {
                 height: 100
                 radius: 50  // Make it circular
                 color: "#4CAF50"  // Green background color
+                visible: { stackView.depth > 1 }
 
                 // Play Icon (Triangle) in the middle
                 Canvas {

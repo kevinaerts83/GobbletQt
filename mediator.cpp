@@ -114,14 +114,14 @@ void Mediator::repaint(Matrix *matrix) {
         if (item->depth() == 0) {
             item->setVisible(true);
             item->update();
-        } else if (item->isVisible()) {
-            item->setVisible(false);
-            item->update();
         }
     }
 }
 
 void Mediator::onClick(Matrix *matrix, const double x, const double y) {
+    if (m_lock)
+        return;
+
     double coord [4];
     matrix -> get3dPoint(coord, x, y);
 
@@ -196,6 +196,12 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix
 }
 
 void Mediator::afterAnimation() {
+    for (const auto& item : m_list) {
+        if (item->depth() > 0 && item->isVisible()) {
+            item->setVisible(false);
+            item->update();
+        }
+    }
 
     // update state of new tile
     m_state[getSelection()->isWhite()][getSelection()->size()] |= (int) pow(2, myNewTile); //Set new position
@@ -220,6 +226,7 @@ void Mediator::afterAnimation() {
     //tests();
     startAi(aiTurn);
 
+    m_lock = false;
 }
 
 void Mediator::startAi(bool aiTurn) {
@@ -237,6 +244,8 @@ void Mediator::startAi(bool aiTurn) {
 }
 
 void Mediator::updateGobbler() {
+    m_lock = true;
+
     int x = getSelection()->x3d();
     int y = getSelection()->y3d();
     int z = getSelection()->z3d();

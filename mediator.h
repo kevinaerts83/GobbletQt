@@ -59,6 +59,7 @@ private:
     bool m_blackTurn = false;
     Gobbler* m_selection;
     Board* m_board;
+    bool m_lock;
 
     Matrix *matrx;
     int newX;
