@@ -19,10 +19,9 @@ Mediator::Mediator(QObject *parent) : QObject(parent)
 
 /*
  * TODO
- * - Animation
+ * - use gestures not sliders
  * - Make AI bug free
  * - max screen size
- * - use gestures not sliders
  * DONE
  * */
 

@@ -27,9 +27,13 @@ Page {
 
     Rectangle
     {
+        id: gameArea
         anchors.fill: parent
-        id: clickArea
         color: "transparent"
+
+        property real scaleValue: 1.0
+        property int lastCrossedThresholdX: 0
+        property int lastCrossedThresholdY: 0
 
         MouseArea {
             anchors.fill: parent
@@ -38,6 +42,58 @@ Page {
             }
             onPressed: (mouse)=> {
                 mediator.onClick(matrix, mouse.x, mouse.y);
+            }
+        }
+
+        PinchHandler {
+            id: pinchHandler
+
+            // Update the scale value based on pinch
+            onScaleChanged: {
+                gameArea.scaleValue *= scale;
+                gameArea.scaleValue = gameArea.scaleValue > 2 ? 2 : gameArea.scaleValue < 0.5 ? 0.5 : gameArea.scaleValue;
+                matrix.zoom = gameArea.scaleValue
+                mediator.repaint(matrix);
+            }
+        }
+
+        WheelHandler {
+            property: "rotation"
+            onWheel: (event)=> console.log("rotation", event.angleDelta.y,
+                                                  "scaled", rotation, "@", point.position,
+                                                  "=>", parent.rotation)
+            /*onWheel: {
+                matrix.zoom *= rotation; // rotationScale;
+                mediator.repaint(matrix);
+            }*/
+        }
+
+        DragHandler {
+            id: dragHandler
+            target: null
+
+            onActiveChanged: {
+                if (!dragHandler.active) {
+                    gameArea.lastCrossedThresholdX = 0;
+                    gameArea.lastCrossedThresholdY = 0;
+                }
+            }
+
+            onTranslationChanged: {
+                const oldX = Math.floor(dragHandler.translation.x / 20);
+
+                if (oldX != gameArea.lastCrossedThresholdX) {
+                    matrix.yangle += (oldX > gameArea.lastCrossedThresholdX) ? 5 : -5;
+                    mediator.repaint(matrix);
+                    gameArea.lastCrossedThresholdX = oldX;
+                }
+
+                const oldY = Math.floor(dragHandler.translation.y / 10);
+                if (oldY != gameArea.lastCrossedThresholdY) {
+                    matrix.xangle += (oldY > gameArea.lastCrossedThresholdY) ? 10 : -10;
+                    mediator.repaint(matrix);
+                    gameArea.lastCrossedThresholdY = oldY;
+                }
             }
         }
     }
