@@ -26,6 +26,7 @@ public:
                     //gobblerItem->model = *new Gobbler3d(150);
 
                     gobblerItem->setDepth(i % 4);
+                    gobblerItem->setVisible((i % 4) == 0);
                     gobblerItem->setSize(i % 4);
                     gobblerItem->setX3d((i > 11) ? 375 : -375);
                     gobblerItem->setY3d(0);

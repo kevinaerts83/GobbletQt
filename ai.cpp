@@ -138,9 +138,8 @@ bool AI::block() {
 
         int i = 0;
         for (int twiceThree : m_twiceThree) {
-            if ((count1Bits(m_visibleWhite & twiceThree) > 3)
-                && ((m_visibleWhite & m_blockMove[i]) == 0) // no white on the block move
-                && ((count1Bits(m_bState[1][0] & twiceThree) < 3))) {
+            if ((count1Bits(m_visibleWhite & twiceThree) - (count1Bits(m_bState[0][0] & twiceThree)) > 3)
+                && ((m_bState[1][0] & m_blockMove[i]) == 0)) { // no white on the block move
 
                 int oldValue = m_bState[1][1];
                 int old2 = m_visibleWhite;
@@ -384,6 +383,7 @@ std::vector<Grades> AI::getUnimportantBlackTile(int size, std::vector<int> exclu
     std::vector<Grades> result;
     for (int tile : goodTiles) {
         tileCounter* o = getObjectFromArray(cache, tile);
+        if (o == nullptr) continue;
         int n = getColorUnderneath(tile, size);
         /* *** the best pawn we do not want to move ***
          * larger pawn

@@ -109,8 +109,10 @@ void Mediator::repaint(Matrix *matrix) {
         m_list[i]->setZ(i);
     }
     for (const auto& item : m_list) {
-        if (item->depth() == 0) {
-            item->setVisible(true);
+        if (item->depth() == 0 || item->isVisible()) {
+            if (!item->isVisible()) {
+                item->setVisible(true);
+            }
             item->update();
         }
     }
@@ -155,10 +157,8 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
     } else {
         int borderZ = (abs(roundX) > 225) ? ((coord[2] > 75) ? 150 : ((coord[2] < -75) ? -150 : 0)) : roundZ;
         setSelection(roundX, borderZ);
+        repaint(matrix);
     }
-    //if (m_selection == NULL) {
-    repaint(matrix);
-    //}
 }
 
 void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix *matrix) {
@@ -425,11 +425,11 @@ void Mediator::tests() {
     move = computer.move(state12);
     std::cout << "Attack(12) 4 -> 5 : " << move.from() << " -> " << move.to() << std::endl;
 
-    /* 2 2 0 2         15 14 13 12
-     * 1 1 2 1         11 10 09 08
+    /* 2 2 0 1         15 14 13 12
+     * 0 1 2 1         11 10 09 08
      * 2 1 1 2         07 06 05 04
      * 1 0 0 2         03 02 01 00 */
     int state13 [2][4] = {{1064, 36928, 17, 128}, {33281, 16528, 32768, 4096}};
     move = computer.move(state13);
-    std::cout << "Attack(13) 4 -> 13 : " << move.from() << " -> " << move.to() << std::endl;
+    std::cout << "Attack(13) 3 -> 12 : " << move.from() << " -> " << move.to() << std::endl;
 }
