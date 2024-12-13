@@ -80,17 +80,25 @@ Page {
             }
 
             onTranslationChanged: {
-                const oldX = Math.floor(dragHandler.translation.x / 20);
-
+                const oldX = Math.floor(dragHandler.centroid.position.x / 50);
                 if (oldX != gameArea.lastCrossedThresholdX) {
-                    matrix.yangle += (oldX > gameArea.lastCrossedThresholdX) ? 5 : -5;
+                    matrix.yangle += (oldX < gameArea.lastCrossedThresholdX) ? 10 : -10;
                     mediator.repaint(matrix);
                     gameArea.lastCrossedThresholdX = oldX;
                 }
 
-                const oldY = Math.floor(dragHandler.translation.y / 10);
+                const oldY = Math.floor(dragHandler.centroid.position.y / 50);
                 if (oldY != gameArea.lastCrossedThresholdY) {
-                    matrix.xangle += (oldY > gameArea.lastCrossedThresholdY) ? 10 : -10;
+
+                    const newAngle = (oldY > gameArea.lastCrossedThresholdY) ? 10 : -10;
+                    if ((matrix.xangle + newAngle) < 5) {
+                        matrix.xangle += 1;
+                    } else if ((matrix.xangle + newAngle) > 90) {
+                        matrix.xangle -= 5;
+                    } else {
+                        matrix.xangle += newAngle;
+                    }
+
                     mediator.repaint(matrix);
                     gameArea.lastCrossedThresholdY = oldY;
                 }
@@ -108,50 +116,6 @@ Page {
             mediator.setBoard(this);
         }
     }
-
-    // turns around y-axis
-    Slider {
-        x : 200
-        y : 0
-        value: 0
-        from: -180
-        to: 180
-        stepSize: 1
-        onValueChanged: {
-            matrix.yangle = value;
-            mediator.repaint(matrix);
-        }
-    }
-
-    // turns around x-axis
-    Slider {
-        x: 0
-        y : 50
-        value: 65
-        from: 90
-        to: 10
-        stepSize: 1
-        orientation: "Vertical"
-        onValueChanged: {
-            matrix.xangle = value;
-            mediator.repaint(matrix);
-        }
-    }
-
-    Slider {
-        x : 1024-50
-        y : 20
-        from: 1.5
-        value: 1
-        to: 0.2
-        stepSize: 0.1
-        orientation: "Vertical"
-        onValueChanged: {
-            matrix.zoom = value;
-            mediator.repaint(matrix);
-        }
-    }
-
 
     Rectangle {
         width: 40

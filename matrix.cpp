@@ -161,17 +161,14 @@ double Matrix::zoom() const { return m_zoom; }
 void Matrix::setXangle(const double &xangle)
 {
     m_xangle = xangle;
-    emit xangleChanged(xangle);
 }
 
 void Matrix::setYangle(const double &yangle)
 {
     m_yangle = yangle;
-    emit yangleChanged(yangle);
 }
 
 void Matrix::setZoom(const double &zoom)
 {
     m_zoom = zoom;
-    emit zoomChanged(zoom);
 }

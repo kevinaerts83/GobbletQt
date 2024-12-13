@@ -19,7 +19,6 @@ Mediator::Mediator(QObject *parent) : QObject(parent)
 
 /*
  * TODO
- * - use gestures not sliders
  * - Make AI bug free
  * - max screen size
  * DONE
@@ -118,7 +117,7 @@ void Mediator::repaint(Matrix *matrix) {
 }
 
 void Mediator::onClick(Matrix *matrix, const double x, const double y) {
-    if (m_lock)
+    if (m_comm->lock())
         return;
 
     double coord [4];
@@ -225,7 +224,7 @@ void Mediator::afterAnimation() {
     //tests();
     startAi(aiTurn);
 
-    m_lock = false;
+    m_comm->setLock(false);
 }
 
 void Mediator::startAi(bool aiTurn) {
@@ -243,7 +242,7 @@ void Mediator::startAi(bool aiTurn) {
 }
 
 void Mediator::updateGobbler() {
-    m_lock = true;
+    m_comm->setLock(true);
 
     int x = getSelection()->x3d();
     int y = getSelection()->y3d();

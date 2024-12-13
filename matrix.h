@@ -9,7 +9,7 @@ class Matrix : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(double xangle READ xangle WRITE setXangle NOTIFY xangleChanged)
-    Q_PROPERTY(double yangle READ xangle WRITE setYangle NOTIFY yangleChanged)
+    Q_PROPERTY(double yangle READ yangle WRITE setYangle NOTIFY yangleChanged)
     Q_PROPERTY(double zoom READ zoom WRITE setZoom NOTIFY zoomChanged)
 
     QML_ELEMENT

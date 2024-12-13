@@ -117,6 +117,7 @@ Page {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        setupMenu.setLock(false);
                         while (stackView.depth > 1) {
                             stackView.pop();
                         }
@@ -160,6 +161,7 @@ Page {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        setupMenu.setLock(true);
                         stackView.pop();
                     }
                 }

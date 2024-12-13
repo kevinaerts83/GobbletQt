@@ -28,6 +28,9 @@ int main(int argc, char *argv[])
     QObject::connect(&setupMenu, &SetupMenu::modeChanged, [&]() {
         comm.setMode(setupMenu.mode());
     });
+    QObject::connect(&setupMenu, &SetupMenu::lockChanged, [&]() {
+        comm.setLock(setupMenu.lock());
+    });
 
     engine.rootContext()->setContextProperty("setupMenu", &setupMenu);
     engine.rootContext()->setContextProperty("comm", &comm);
