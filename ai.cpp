@@ -100,16 +100,16 @@ bool AI::tryToWin() {
 
 // Dont lose
 bool AI::dontLose() {
-    std::vector<int> rows = rowCheck(3, true, false);
+    std::vector<int> rows = rowCheck(3, true, true);
     if (rows.size() > 1) {
         int maskCrossing = m_mask[rows[0]];
         for (int row : rows) {
-            maskCrossing &= m_mask[row];
+            maskCrossing &= m_mask[row]; // row 0 is taken twice; but it's oke
         }
         if (maskCrossing > 0) {
             m_toTile = getToTile(0, maskCrossing, false);
             if (getPawnSize(m_toTile) != 0) {
-                if (setFromTile(1, rows)) { // if 1 only a 0 size gobbler can go gobble it.
+                if (setFromTile(1, rowCheck(3, true, false))) { // if 1 only a 0 size gobbler can go gobble it; exclude rows with 3 whites
                     return false;
                 }
             }
@@ -117,12 +117,14 @@ bool AI::dontLose() {
     } else if (rows.size() == 1) {
         int maskToCheck = m_mask[rows[0]];
         int s = getSmallestWhiteOfRow(m_mask[rows[0]]);
+        if (s == 0) { // all 3 big pawns
+            m_toTile = getToTile(maskToCheck, m_visibleWhite, true); // get first empty tile
+            if (setFromTile(1, rows)) {
+                return false;
+            }
+        }
         m_toTile = getToTile(maskToCheck, m_visibleWhiteRows[s], false);
         if (setFromTile(s, rows)) {
-            return false;
-        }
-        m_toTile = getToTile(maskToCheck, m_visibleBlack, true);
-        if (setFromTile(1, rows)) {
             return false;
         }
     }
@@ -524,14 +526,12 @@ std::vector<int> AI::rowCheck(int maxCount, bool isWhite, bool removeRowsWithSiz
 }
 
 int AI::getSmallestWhiteOfRow(int mask) {
-    int s = 4;
-    for (int i = 3; i > -1; i -= 1) {
+    for (int i = 3; i > -1; i--) {
         if ((mask & m_visibleWhiteRows[i]) != 0) {
-            s = i;
-            break;
+            return i;
         }
     }
-    return s;
+    return 4;
 }
 
 int AI::count1Bits(int x) {
