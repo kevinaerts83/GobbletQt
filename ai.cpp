@@ -92,7 +92,7 @@ bool AI::tryToWin() {
         m_toTile = getToTile(maskToCheck, m_visibleBlack, true);
         int size = ((int)pow(2, m_toTile) & m_visibleWhite) != 0 ? getPawnSize(m_toTile) : 4;
         if (size > 0) {
-            return !setFromTile(size, rows);
+            return !setFromTile(size, {row});
         }
     }
     return true;

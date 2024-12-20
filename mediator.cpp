@@ -206,29 +206,36 @@ void Mediator::afterAnimation() {
 
     getSelection()->model.toggleSelection();
     // first check the player who's turn is next (In case when a gobblet of the opposite player is revealed)
+    bool winner = false;
     if (getSelection()->isWhite()) {
         if (checkWinner(0)) {
             this->m_comm->blackWon();
+            winner = true;
         } else if (checkWinner(1)) {
             this->m_comm->whiteWon();
+            winner = true;
         }
     } else {
         if (checkWinner(1)) {
             this->m_comm->whiteWon();
+            winner = true;
         } else if (checkWinner(0)) {
             this->m_comm->blackWon();
+            winner = true;
         }
     }
-    bool aiTurn = getSelection()->isWhite();
-    setSelection(NULL);
-    //tests();
-    startAi(aiTurn);
+    if (!winner) {
+        bool aiTurn = getSelection()->isWhite();
+        setSelection(NULL);
+        tests();
+        startAi(aiTurn);
 
-    m_comm->setLock(false);
+        m_comm->setLock(false);
+    }
 }
 
 void Mediator::startAi(bool aiTurn) {
-    //writeLog();
+    writeLog();
     toggleBlackTurn();
     if (m_comm->mode() > 0 && aiTurn) {
         AI m_computer = *new AI(m_comm->mode());
@@ -350,7 +357,7 @@ void Mediator::writeLog() {
 }
 
 void Mediator::tests() {
-    AI computer = *new AI(1);
+    AI computer = *new AI(0);
     /* TRY TO WIN */
     int state [2][4] = {{32768, 2048, 128, 0}, { 0, 0, 0, 0}};
     aiMove move = computer.move(state);
@@ -432,4 +439,14 @@ void Mediator::tests() {
     int state13 [2][4] = {{1064, 36928, 17, 128}, {33281, 16528, 32768, 4096}};
     move = computer.move(state13);
     std::cout << "Attack(13) 3 -> 12 : " << move.from() << " -> " << move.to() << std::endl;
+
+    /* 1 1 2 2         15 14 13 12
+     * 0 1 1 2         11 10 09 08
+     * 2 2 2 1         07 06 05 04
+     * 2 0 0 1         03 02 01 00 */
+    int state14 [2][4] = {{1552, 53248, 128, 1}, {4168, 768, 544, 16512}};
+    move = computer.move(state14);
+    std::cout << "Attack(14) 14 -> 5 : " << move.from() << " -> " << move.to() << std::endl;
+
+
 }
