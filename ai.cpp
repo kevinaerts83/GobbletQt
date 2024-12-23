@@ -197,22 +197,32 @@ bool AI::attack() {
 
 void AI::randomMove() {
     int s = 0;
-    while (s == 0) {
-        m_toTile = std::rand() % 16;
-        s = getPawnSize(m_toTile);
+    int random = std::rand();
+    int tile = 0;
+    for (int i = 0; i < 16 && s == 0; i++) {
+        tile = random++ % 16;
+        if (m_level == 0 || ((tile & m_crossings) > 0 && (getColorUnderneath(tile, -1) < 2))) {
+            s = getPawnSize(tile);
+        }
     }
+    while (s == 0) {
+        tile = random++ % 16;
+        s = getPawnSize(tile);
+    }
+    m_toTile = tile;
 
     int stackSize = getPawnFromStack(s - 1);
     if (stackSize > -1) {
         m_fromTile = 16 + stackSize;
     }
+    int toTile = 1 << m_toTile;
     if (m_fromTile == -1) {
         for (int i = s - 1; i > 0; i--) {
             int pawnsOnBoard = m_visibleBlackRows[i];
-            int toTile = pow(2, m_toTile);
             int possibleTiles = pawnsOnBoard & ~(toTile);
             if (possibleTiles > 0) {
                 m_fromTile = get_first_set_bit_position(possibleTiles);
+                break;
             }
         }
     }
@@ -293,20 +303,16 @@ int AI::getPawnFromBoard(int size, std::vector<int> excludeRows) {
         for (int i = size - 1; i >= 0; i--) {
             int pawns = m_visibleBlackRows[i];
 
-            while (pawns > 0) {
-                int binairTile = pow(2, get_first_set_bit_position(pawns));
-                pawns -= binairTile;
-
-                for (int j = 0; j < 10; j++) {
-                    if ((m_mask[j] & binairTile) == binairTile) {
-                        if (std::find(whiteWins.begin(), whiteWins.end(), j) == whiteWins.end()
-                           // && std::find(excludeRows.begin(), excludeRows.end(), j) != excludeRows.end()
-                            ) {
-                            return log2(binairTile);
-                        }
-                    }
-                }
+            // exclude: white wins rows
+            for (int ww : whiteWins) {
+                pawns &= ~m_mask[ww]; // NAND & and not
             }
+            // exclude: exclude rows
+            for (int exc : excludeRows) {
+                pawns &= ~m_mask[exc]; // NAND & and not
+            }
+            // return: tile
+            return get_first_set_bit_position(pawns);
         }
     } else {
         int result = -1;

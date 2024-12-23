@@ -5,7 +5,7 @@ QT += quick
 CONFIG += qt quick c++11
 CONFIG += android
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
-ANDROID_ABIS = armeabi-v7a arm64-v8a
+ANDROID_ABIS = arm64-v8a
 ANDROID_MIN_SDK_VERSION = 21
 ANDROID_TARGET_SDK_VERSION = 31
 # The following define makes your compiler emit warnings if you use
