@@ -6,10 +6,15 @@ import QtQuick.Controls 2.15
 import Gobbler 1.0
 
 Page {
-    width: 1024
-    height: 768
     id: game
     objectName: "game"
+
+    background: Rectangle {
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#333" }
+            GradientStop { position: 1.0; color: "#191919" }
+        }
+    }
 
     Component.onCompleted: {
         setupBoard.onGameVisible(game);
@@ -59,13 +64,10 @@ Page {
 
         WheelHandler {
             property: "rotation"
-            onWheel: (event)=> console.log("rotation", event.angleDelta.y,
-                                                  "scaled", rotation, "@", point.position,
-                                                  "=>", parent.rotation)
-            /*onWheel: {
-                matrix.zoom *= rotation; // rotationScale;
+            onWheel: {
+                matrix.zoom += parent.rotation; // rotationScale;
                 mediator.repaint(matrix);
-            }*/
+            }
         }
 
         DragHandler {
@@ -109,8 +111,8 @@ Page {
     Board {
         id: board
         matrix: matrix
-        width: 1024
-        height: 768
+        width: parent.width
+        height: parent.height
 
         Component.onCompleted: {
             mediator.setBoard(this);
@@ -135,9 +137,9 @@ Page {
                 ctx.fillStyle = "black";
 
                 // Define circle properties
-                var circleRadius = 4;
+                var circleRadius = 3;
                 var centerX = width / 2;
-                var circleSpacing = 10; // Space between circles
+                var circleSpacing = 7; // Space between circles
 
                 // Draw three circles
                 for (var i = 0; i < 3; i++) {

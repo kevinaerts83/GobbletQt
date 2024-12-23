@@ -36,8 +36,8 @@ public:
                     gobblerItem->setProperty("id", i);
                     gobblerItem->setProperty("name", i);
 
-                    gobblerItem->setWidth(1024);
-                    gobblerItem->setHeight(768);
+                    gobblerItem->setWidth(1500);
+                    gobblerItem->setHeight(800);
 
                     mediator->addItem(gobblerItem);
                 }

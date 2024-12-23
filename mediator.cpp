@@ -163,7 +163,8 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
 
 void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix *matrix) {
     if (getSelection() == nullptr) {
-        std::cout << "An error occurred" << std::endl;
+        std::cout << "An error occurred: " << oldTile << " - " << newTile << std::endl;
+        writeLog();
         return;
     }
     if(oldTile > -1) {
@@ -227,7 +228,7 @@ void Mediator::afterAnimation() {
     if (!winner) {
         bool aiTurn = getSelection()->isWhite();
         setSelection(NULL);
-        tests();
+        // tests();
         startAi(aiTurn);
 
         m_comm->setLock(false);
@@ -235,7 +236,6 @@ void Mediator::afterAnimation() {
 }
 
 void Mediator::startAi(bool aiTurn) {
-    writeLog();
     toggleBlackTurn();
     if (m_comm->mode() > 0 && aiTurn) {
         AI m_computer = *new AI(m_comm->mode());

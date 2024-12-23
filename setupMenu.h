@@ -8,10 +8,9 @@ class SetupMenu : public QObject {
     Q_PROPERTY(int whiteCounter READ whiteCounter WRITE setWhiteCounter NOTIFY whiteCounterChanged)
     Q_PROPERTY(int blackCounter READ blackCounter WRITE setBlackCounter NOTIFY blackCounterChanged)
     Q_PROPERTY(int mode READ mode WRITE setMode NOTIFY modeChanged)
-    Q_PROPERTY(bool lock READ lock WRITE setLock NOTIFY lockChanged)
 
 public:
-    explicit SetupMenu(QObject *parent = nullptr) : QObject(parent), m_whiteCounter(0), m_blackCounter(0), m_mode(1), m_lock(false) {}
+    explicit SetupMenu(QObject *parent = nullptr) : QObject(parent), m_whiteCounter(0), m_blackCounter(0), m_mode(1) {}
 
     int whiteCounter() const { return m_whiteCounter; }
 
@@ -40,13 +39,8 @@ public:
         }
     }
 
-    bool lock() const { return m_lock; }
-
-    Q_INVOKABLE void setLock(bool lock) {
-        if (m_lock != lock) {
-            m_lock = lock;
-            emit lockChanged();
-        }
+    Q_INVOKABLE void setLock() {
+        emit lockChanged();
     }
 
 signals:
@@ -59,7 +53,6 @@ private:
     int m_whiteCounter;
     int m_blackCounter;
     int m_mode;
-    bool m_lock;
 };
 
 #endif // SETUPMENU_H

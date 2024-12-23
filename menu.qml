@@ -5,10 +5,17 @@ import QtQuick.Layouts 1.15
 Page {
     id: menu
 
+    background: Rectangle {
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#333" }
+            GradientStop { position: 1.0; color: "#191919" }
+        }
+    }
+
     Text {
         text: "Gobblet"
         font.pixelSize: 120
-        color: "yellow"
+        color: "silver"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.topMargin: 20
@@ -82,7 +89,7 @@ Page {
             Text {
                 text: setupMenu ? setupMenu.whiteCounter : "Loading..."
                 font.pixelSize: 120
-                color: "black"
+                color: "silver"
             }
         }
 
@@ -117,7 +124,7 @@ Page {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        setupMenu.setLock(false);
+                        setupMenu.setLock();
                         while (stackView.depth > 1) {
                             stackView.pop();
                         }
@@ -161,7 +168,7 @@ Page {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        setupMenu.setLock(true);
+                        //setupMenu.setLock(true);
                         stackView.pop();
                     }
                 }
@@ -312,7 +319,7 @@ Page {
             Text {
                 text: setupMenu ? setupMenu.blackCounter : "Loading..."
                 font.pixelSize: 120
-                color: "black"
+                color: "silver"
             }
         }
     }

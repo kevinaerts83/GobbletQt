@@ -4,8 +4,8 @@
 //constructor
 Matrix::Matrix(QObject *parent) : QObject(parent)
 {
-    double width = 1024;
-    double height = 768;
+    double width = 1500; // 1024
+    double height = 800; // 768
 
     double centerX = width / 2;
     double centerY = height / 2;

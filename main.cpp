@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         comm.setMode(setupMenu.mode());
     });
     QObject::connect(&setupMenu, &SetupMenu::lockChanged, [&]() {
-        comm.setLock(setupMenu.lock());
+        comm.setLock(false);
     });
 
     engine.rootContext()->setContextProperty("setupMenu", &setupMenu);
