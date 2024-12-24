@@ -135,7 +135,7 @@ bool AI::block() {
     // if level is 1: check if white player can put a size0 on a tile creating 2 row with 3 pawns.
     // (no biggest white pawns on the rows)
     // fake a white pawn size1 on that tile and do don't loose
-    if (m_level == 1) {
+    if (m_level == 2) {
         bool ret = true;
 
         int i = 0;
@@ -201,7 +201,7 @@ void AI::randomMove() {
     int tile = 0;
     for (int i = 0; i < 16 && s == 0; i++) {
         tile = random++ % 16;
-        if (m_level == 0 || ((tile & m_crossings) > 0 && (getColorUnderneath(tile, -1) < 2))) {
+        if (m_level < 2 || ((tile & m_crossings) > 0 && (getColorUnderneath(tile, -1) < 2))) {
             s = getPawnSize(tile);
         }
     }
@@ -297,7 +297,7 @@ int AI::getPawnFromStack(int size) {
 }
 
 int AI::getPawnFromBoard(int size, std::vector<int> excludeRows) {
-    if (m_level == 0) {
+    if (m_level < 2) {
         // get pawn from board which pawnSize < size
         std::vector<int> whiteWins = rowCheck(3, true, false);
         for (int i = size - 1; i >= 0; i--) {
@@ -498,16 +498,19 @@ void AI::chooseTileFromRowToAttack(int rowToAttack) {
         m_toTile = startAttack(0);
     } else {
         int rowMask = m_mask[rowToAttack];
-        int emptyTiles = (rowMask & (m_visibleWhite | m_visibleBlack)) ^ rowMask;
-        if (emptyTiles == 0) {
+        int cTiles = (rowMask & (m_visibleWhite | m_visibleBlack)) ^ rowMask;
+        if (cTiles == 0) {
             int s = getSmallestWhiteOfRow(rowMask);
-            //emptyTiles = array of tiles with the smallest black pawns
-            emptyTiles = m_bState[0][s];
+            //cTiles = array of tiles with the smallest black pawns
+            cTiles = m_bState[0][s];
             for (s -= 1; s > -1; s -= 1) {
-                emptyTiles = (emptyTiles ^ (m_bState[0][s] | m_bState[1][s])) & emptyTiles;
+                cTiles = (cTiles ^ (m_bState[0][s] | m_bState[1][s])) & cTiles;
             }
         }
-        m_toTile = getToTile(rowMask, emptyTiles, false);
+        if (m_level == 2 && ((cTiles & m_crossings) > 0)) {
+            cTiles &= m_crossings;
+        }
+        m_toTile = getToTile(rowMask, cTiles, false);
     }
 }
 

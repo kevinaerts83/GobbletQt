@@ -14,24 +14,23 @@ Page {
 
     Text {
         text: "Gobblet"
-        font.pixelSize: 120
+        font.pixelSize: Math.min(menu.width * 0.24, 130)
         color: "silver"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
-        anchors.topMargin: 20
+        anchors.topMargin: menu.height / 40
     }
 
     RowLayout {
         anchors.centerIn: parent
-        spacing: 100
+        spacing: menu.width / 10
 
         ColumnLayout {
             Layout.alignment: Qt.AlignCenter
-            Layout.leftMargin: 50
 
             Rectangle {
-                width: 150
-                height: 200
+                Layout.preferredWidth: menu.width * 0.45
+                Layout.preferredHeight: menu.height / 4
                 color: "transparent"
 
                 // Canvas for additional details
@@ -43,7 +42,7 @@ Page {
                         ctx.clearRect(0, 0, width, height);
 
                         // Draw additional body and head shape details
-                        drawFigure(ctx, "#9F9F9F", 10, 10);
+                        drawFigure(ctx, "#9F9F9F", width / 2 - 30, 10);
                     }
 
                     // Simplified drawFigure function focusing on details
@@ -88,18 +87,20 @@ Page {
 
             Text {
                 text: setupMenu ? setupMenu.whiteCounter : "Loading..."
-                font.pixelSize: 120
+                font.pixelSize: Math.min(menu.width * 0.24, 130)
+                Layout.alignment: Qt.AlignHCenter
                 color: "silver"
             }
         }
 
         ColumnLayout {
             Layout.alignment: Qt.AlignCenter
+            Layout.preferredWidth: menu.width * 0.1
 
             Rectangle {
-                width: 100
-                height: 100
-                radius: 50  // Make it circular
+                Layout.preferredWidth: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                Layout.preferredHeight: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                radius: Math.min(menu.width, menu.height) / 16  // Make it circular
                 color: "#4CAF50"  // Green background color
 
                 // Play Icon (Triangle) in the middle
@@ -107,13 +108,13 @@ Page {
                     anchors.fill: parent
                     onPaint: {
                         var ctx = getContext("2d");
-                        ctx.clearRect(0, 0, width, height);
+                        ctx.clearRect(0, 0, height, height);
 
                         // Draw triangle (white play symbol)
                         ctx.beginPath();
-                        ctx.moveTo(width / 3 + 5, height / 4);
-                        ctx.lineTo(width / 3 + 5, height * 3 / 4);
-                        ctx.lineTo(width * 2 / 3 + 5, height / 2);
+                        ctx.moveTo(height / 3 + 5, height / 4);
+                        ctx.lineTo(height / 3 + 5, height * 3 / 4);
+                        ctx.lineTo(height * 2 / 3 + 5, height / 2);
                         ctx.closePath();
 
                         ctx.fillStyle = "white";
@@ -135,9 +136,9 @@ Page {
             }
 
             Rectangle {
-                width: 100
-                height: 100
-                radius: 50  // Make it circular
+                Layout.preferredWidth: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                Layout.preferredHeight: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                radius: Math.min(menu.width, menu.height) / 16  // Make it circular
                 color: "#4CAF50"  // Green background color
                 visible: { stackView.depth > 1 }
 
@@ -146,11 +147,11 @@ Page {
                     anchors.fill: parent
                     onPaint: {
                         var ctx = getContext("2d");
-                        ctx.clearRect(0, 0, width, height);
+                        ctx.clearRect(0, 0, height, height);
 
-                        var eyeLeft = [32, 35, 62, 65];
-                        var eyeTop = [30, 33, 30, 33];
-                        var eyeRadius = [10, 4, 10, 4];
+                        var eyeLeft = [height / 3, height / 3 + 3, height * 2 / 3, height * 2 / 3 + 3];
+                        var eyeTop = [height / 3, height / 3 + 3, height / 3, height / 3 + 3];
+                        var eyeRadius = [height / 10, height / 20, height / 10, height / 20];
 
                         for (var i = 0; i < 4; i++) {
                             ctx.beginPath();
@@ -178,11 +179,10 @@ Page {
 
         ColumnLayout {
             Layout.alignment: Qt.AlignCenter
-            Layout.leftMargin: 50
 
             Rectangle {
-                width: 150
-                height: 200
+                Layout.preferredWidth: menu.width * 0.45
+                Layout.preferredHeight: menu.height / 4
                 color: "transparent"
 
                 // Canvas for additional details
@@ -196,11 +196,11 @@ Page {
 
                         // Draw additional body and head shape details
                         if (setupMenu.mode === 0) {
-                            drawFigure(ctx, "#2C2F20", 10, 10);
+                            drawFigure(ctx, "#2C2F20", width / 2 - 33, 10);
                         } else if (setupMenu.mode === 1) {
-                            drawComputer(ctx, "green");
+                            drawComputer(ctx, "MediumSeaGreen", "darkgreen", width / 2.6, 60, width > 300 ? 1 : 0.5);
                         } else{
-                            drawComputer(ctx, "red");
+                            drawComputer(ctx, "red", "maroon", width / 2.6, 60, width > 300 ? 1 : 0.5);
                         }
                     }
 
@@ -241,63 +241,63 @@ Page {
                         ctx.restore();
                     }
 
-                    function drawComputer(ctx, color) {
+                    function drawComputer(ctx, color, fillcolor, offsetX, offsetY, zoom) {
                         ctx.clearRect(0, 0, width, height);  // Clear the canvas
 
                         // Draw ellipse border
-                        ctx.fillStyle = "black";
+                        ctx.fillStyle = fillcolor;
                         ctx.beginPath();
-                        ctx.ellipse(10, 30, 120, 70, 0, 0, Math.PI * 2);
+                        ctx.ellipse((10 + offsetX) * zoom, (30 + offsetY) * zoom, 120 * zoom, 70 * zoom, 0, 0, Math.PI * 2);
                         ctx.fill();
 
                         // Draw ellipse border
-                        ctx.lineWidth = 7; // Border width
+                        ctx.lineWidth = 7 * zoom; // Border width
                         ctx.strokeStyle = color; // Black border color
                         ctx.beginPath();
-                        ctx.ellipse(10, 30, 120, 70, 0, 0, Math.PI * 2);
+                        ctx.ellipse((10 + offsetX) * zoom, (30 + offsetY) * zoom, 120 * zoom, 70 * zoom, 0, 0, Math.PI * 2);
                         ctx.stroke();
 
                         // Draw left circle
                         ctx.fillStyle = "white"; // White circle
                         ctx.beginPath();
-                        ctx.arc(30, 60, 10, 0, Math.PI * 2); // Circle on the left
+                        ctx.arc((30 + offsetX) * zoom, (60 + offsetY) * zoom, 10 * zoom, 0, Math.PI * 2); // Circle on the left
                         ctx.fill();
 
                         // Draw right circle
                         ctx.beginPath();
-                        ctx.arc(100, 60, 10, 0, Math.PI * 2); // Circle on the right
+                        ctx.arc((100 + offsetX) * zoom, (60 + offsetY) * zoom, 10 * zoom, 0, Math.PI * 2); // Circle on the right
                         ctx.fill();
 
                         ctx.fillStyle = "white";
                         ctx.beginPath();
-                        ctx.rect(47, 72, 28, 9);
+                        ctx.rect((47 + offsetX) * zoom, (72 + offsetY) * zoom, 28 * zoom, 9 * zoom);
                         ctx.fill();
 
                         // Draw angled line
                         ctx.beginPath();
-                        ctx.moveTo(10, 20);
-                        ctx.lineTo(28, 38);
+                        ctx.moveTo((10 + offsetX) * zoom, (20 + offsetY) * zoom);
+                        ctx.lineTo((28 + offsetX) * zoom, (38 + offsetY) * zoom);
                         ctx.strokeStyle = "white";
-                        ctx.lineWidth = 4;
+                        ctx.lineWidth = 4 * zoom;
                         ctx.stroke();
 
                         // Draw angled line
                         ctx.beginPath();
-                        ctx.moveTo(128, 20);
-                        ctx.lineTo(102, 36);
+                        ctx.moveTo((128 + offsetX) * zoom, (20 + offsetY) * zoom);
+                        ctx.lineTo((102 + offsetX) * zoom, (36 + offsetY) * zoom);
                         ctx.strokeStyle = "white";
-                        ctx.lineWidth = 4;
+                        ctx.lineWidth = 4 * zoom;
                         ctx.stroke();
 
                         // Draw left circle
                         ctx.fillStyle = "white"; // White circle
                         ctx.beginPath();
-                        ctx.arc(8, 15, 8, 0, Math.PI * 2); // Circle on the left
+                        ctx.arc((8 + offsetX) * zoom, (15 + offsetY) * zoom, 8 * zoom, 0, Math.PI * 2); // Circle on the left
                         ctx.fill();
 
                         // Draw right circle
                         ctx.beginPath();
-                        ctx.arc(132, 18, 8, 0, Math.PI * 2); // Circle on the right
+                        ctx.arc((132 + offsetX) * zoom, (18 + offsetY) * zoom, 8 * zoom, 0, Math.PI * 2); // Circle on the right
                         ctx.fill();
 
                     }
@@ -318,7 +318,8 @@ Page {
 
             Text {
                 text: setupMenu ? setupMenu.blackCounter : "Loading..."
-                font.pixelSize: 120
+                Layout.alignment: Qt.AlignHCenter
+                font.pixelSize: Math.min(menu.width * 0.24, 130)
                 color: "silver"
             }
         }
