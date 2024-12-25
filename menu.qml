@@ -14,11 +14,10 @@ Page {
 
     Text {
         text: "Gobblet"
-        font.pixelSize: Math.min(menu.width * 0.24, 130)
+        font.pixelSize: Math.min(menu.height / 8, Math.min(menu.width * 0.24, 130))
         color: "silver"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
-        anchors.topMargin: menu.height / 40
     }
 
     RowLayout {
@@ -30,7 +29,7 @@ Page {
 
             Rectangle {
                 Layout.preferredWidth: menu.width * 0.45
-                Layout.preferredHeight: menu.height / 4
+                Layout.preferredHeight: 150
                 color: "transparent"
 
                 // Canvas for additional details
@@ -84,10 +83,9 @@ Page {
                 }
             }
 
-
             Text {
                 text: setupMenu ? setupMenu.whiteCounter : "Loading..."
-                font.pixelSize: Math.min(menu.width * 0.24, 130)
+                font.pixelSize: Math.min(menu.height / 8, Math.min(menu.width * 0.24, 130))
                 Layout.alignment: Qt.AlignHCenter
                 color: "silver"
             }
@@ -182,7 +180,7 @@ Page {
 
             Rectangle {
                 Layout.preferredWidth: menu.width * 0.45
-                Layout.preferredHeight: menu.height / 4
+                Layout.preferredHeight: 150
                 color: "transparent"
 
                 // Canvas for additional details
@@ -198,9 +196,9 @@ Page {
                         if (setupMenu.mode === 0) {
                             drawFigure(ctx, "#2C2F20", width / 2 - 33, 10);
                         } else if (setupMenu.mode === 1) {
-                            drawComputer(ctx, "MediumSeaGreen", "darkgreen", width / 2.6, 60, width > 300 ? 1 : 0.5);
+                            drawComputer(ctx, "MediumSeaGreen", "darkgreen", width / 2.6, width > 300 ? 0 : 60, width > 300 ? 1 : 0.5);
                         } else{
-                            drawComputer(ctx, "red", "maroon", width / 2.6, 60, width > 300 ? 1 : 0.5);
+                            drawComputer(ctx, "red", "maroon", width / 2.6, width > 300 ? 0 : 60, width > 300 ? 1 : 0.5);
                         }
                     }
 
@@ -319,7 +317,7 @@ Page {
             Text {
                 text: setupMenu ? setupMenu.blackCounter : "Loading..."
                 Layout.alignment: Qt.AlignHCenter
-                font.pixelSize: Math.min(menu.width * 0.24, 130)
+                font.pixelSize: Math.min(menu.height / 8, Math.min(menu.width * 0.24, 130))
                 color: "silver"
             }
         }
