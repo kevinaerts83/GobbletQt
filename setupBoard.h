@@ -23,7 +23,16 @@ public:
 
                 if (gobblerItem) {
                     gobblerItem->m_matrix = parentPage->findChild<Matrix*>("matrix");
-                    //gobblerItem->model = *new Gobbler3d(150);
+                    if (i == 0) {
+                        if (parentPage->width() > parentPage->height()) {
+                            gobblerItem->m_matrix->setZoom(fmin(parentPage->width() / 1200, 1.2));
+                        } else {
+                            gobblerItem->m_matrix->setYangle(90);
+                            gobblerItem->m_matrix->setZoom(fmin(parentPage->height() / 1200, 1.2));
+                        }
+
+                        gobblerItem->m_matrix->setCenter(parentPage->width(), parentPage->height());
+                    }
 
                     gobblerItem->setDepth(i % 4);
                     gobblerItem->setVisible((i % 4) == 0);
@@ -36,8 +45,8 @@ public:
                     gobblerItem->setProperty("id", i);
                     gobblerItem->setProperty("name", i);
 
-                    gobblerItem->setWidth(1500);
-                    gobblerItem->setHeight(800);
+                    gobblerItem->setWidth(parentPage->width());
+                    gobblerItem->setHeight(parentPage->height());
 
                     mediator->addItem(gobblerItem);
                 }

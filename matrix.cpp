@@ -4,9 +4,10 @@
 //constructor
 Matrix::Matrix(QObject *parent) : QObject(parent)
 {
-    double width = 1500; // 1024
-    double height = 800; // 768
 
+}
+
+void Matrix::setCenter(double width, double height) {
     double centerX = width / 2;
     double centerY = height / 2;
     double centerZ = 0;

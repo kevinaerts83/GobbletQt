@@ -28,6 +28,8 @@ public:
     void getTransposedMatrix(double matrix [4][4], double result [4][4]);
     void get3dPoint(double result [4], const double x, const double y);
 
+    void setCenter(double width, double height);
+
     double xangle() const;
     void setXangle(const double &xangle);
     double yangle() const;

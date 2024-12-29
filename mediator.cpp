@@ -17,13 +17,6 @@ Mediator::Mediator(QObject *parent) : QObject(parent)
     connect(timer, &QTimer::timeout, this, &Mediator::updateGobbler);
 }
 
-/*
- * TODO
- * - Make AI bug free
- * - max screen size
- * DONE
- * */
-
 QList<Gobbler*> Mediator::getList() const
 {
     return m_list;
@@ -191,7 +184,7 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix
     newZ = z;
     matrx = matrix;
     myNewTile = newTile;
-    timer->start(50);
+    timer->start(25);
 }
 
 void Mediator::afterAnimation() {
