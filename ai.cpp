@@ -9,7 +9,7 @@
 
 AI::AI(int level) {
     m_level = level;
-    std::array<int, 10> sequence { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    std::vector<int> sequence { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::shuffle(sequence.begin(), sequence.end(), std::default_random_engine(seed));
 
