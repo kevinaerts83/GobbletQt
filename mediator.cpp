@@ -157,7 +157,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
 void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix *matrix) {
     if (getSelection() == nullptr) {
         std::cout << "An error occurred: " << oldTile << " - " << newTile << std::endl;
-        writeLog();
+        //writeLog();
         return;
     }
     if(oldTile > -1) {
@@ -184,7 +184,7 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix
     newZ = z;
     matrx = matrix;
     myNewTile = newTile;
-    timer->start(25);
+    timer->start(20);
 }
 
 void Mediator::afterAnimation() {
@@ -250,26 +250,26 @@ void Mediator::updateGobbler() {
 
     if (newX != x) {
         if (newX < x) {
-            x -= (x < (newX + 10)) ? (x - newX) : 10;
+            x -= (x < (newX + m_speed)) ? (x - newX) : m_speed;
         } else {
-            x += (x > (newX - 10)) ? (newX - x) : 10;
+            x += (x > (newX - m_speed)) ? (newX - x) : m_speed;
         }
     }
 
     if (newZ != z) {
         if (newZ < z) {
-            z -= (z < (newZ + 10)) ? (z - newZ) : 10;
+            z -= (z < (newZ + m_speed)) ? (z - newZ) : m_speed;
         } else {
-            z += (z > (newZ - 10)) ? (newZ - z) : 10;
+            z += (z > (newZ - m_speed)) ? (newZ - z) : m_speed;
         }
     }
 
 
     if (x == newX && z == newZ) {
-        y += (y > (newY - 10)) ? (newY - y) : 10;
+        y += (y > (newY - m_speed)) ? (newY - y) : m_speed;
     } else {
         if (y > -200) {
-            y -= 20;
+            y -= m_speed * 2;
         }
     }
 

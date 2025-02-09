@@ -7,6 +7,11 @@ ApplicationWindow {
     height: 800
     title: "Gobblet"
 
+    onWidthChanged: {
+        stackView.pop("menu.qml");
+        stackView.push("menu.qml");
+    }
+
     StackView {
         id: stackView
         anchors.fill: parent
