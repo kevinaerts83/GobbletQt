@@ -56,16 +56,8 @@ Page {
             // Update the scale value based on pinch
             onScaleChanged: {
                 gameArea.scaleValue *= scale;
-                gameArea.scaleValue = gameArea.scaleValue > 2 ? 2 : gameArea.scaleValue < 0.5 ? 0.5 : gameArea.scaleValue;
-                matrix.zoom = gameArea.scaleValue
-                mediator.repaint(matrix);
-            }
-        }
-
-        WheelHandler {
-            property: "rotation"
-            onWheel: {
-                matrix.zoom += parent.rotation; // rotationScale;
+                gameArea.scaleValue = gameArea.scaleValue > 1.5 ? 1.5 : gameArea.scaleValue < 0.5 ? 0.5 : gameArea.scaleValue;
+                matrix.zoom = gameArea.scaleValue;
                 mediator.repaint(matrix);
             }
         }
@@ -82,21 +74,21 @@ Page {
             }
 
             onTranslationChanged: {
-                const oldX = Math.floor(dragHandler.centroid.position.x / 50);
+                const oldX = Math.floor(dragHandler.centroid.position.x / 30);
                 if (oldX != gameArea.lastCrossedThresholdX) {
                     matrix.yangle += (oldX < gameArea.lastCrossedThresholdX) ? 10 : -10;
                     mediator.repaint(matrix);
                     gameArea.lastCrossedThresholdX = oldX;
                 }
 
-                const oldY = Math.floor(dragHandler.centroid.position.y / 50);
+                const oldY = Math.floor(dragHandler.centroid.position.y / 30);
                 if (oldY != gameArea.lastCrossedThresholdY) {
 
                     const newAngle = (oldY > gameArea.lastCrossedThresholdY) ? 10 : -10;
                     if ((matrix.xangle + newAngle) < 5) {
-                        matrix.xangle += 1;
+                        matrix.xangle += 3;
                     } else if ((matrix.xangle + newAngle) > 90) {
-                        matrix.xangle -= 5;
+                        matrix.xangle -= 10;
                     } else {
                         matrix.xangle += newAngle;
                     }

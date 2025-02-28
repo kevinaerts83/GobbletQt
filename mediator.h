@@ -56,8 +56,8 @@ signals:
 private:
     QList<Gobbler*> m_list;
     bool m_blackTurn = false;
-    Gobbler* m_selection;
-    Board* m_board;
+    Gobbler* m_selection = nullptr;
+    Board* m_board = nullptr;
     bool m_lock;
 
     Matrix *matrx;

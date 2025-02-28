@@ -72,10 +72,10 @@ void Mediator::setSelection(int roundX, int borderZ) {
 }
 
 void Mediator::setSelection(Gobbler* gobbler) {
-    if (gobbler != NULL) {
+    if (gobbler != nullptr) {
         gobbler->model.toggleSelection();
     }
-    if (m_selection != NULL && m_selection->model.isSelected()) {
+    if (m_selection != nullptr && m_selection->model.isSelected()) {
         m_selection->model.toggleSelection();
     }
     m_selection = gobbler;
@@ -121,7 +121,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
     int roundX = ceil(coord[0] / 150) * 150 - 75;
     int roundZ = ceil(coord[2] / 150) * 150 - 75;
 
-    if (getSelection() != NULL) {
+    if (getSelection() != nullptr) {
 
         int oldTile = -1;
         if ((((int) getSelection()->z3d()) % 150) != 0) {
@@ -129,7 +129,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
         }
 
         if (abs(roundX) > 225 || abs(roundZ) > 225) {
-            setSelection(NULL);
+            setSelection(nullptr);
             repaint(matrix);
             return;
         }
@@ -140,7 +140,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
         int mask = pow(2, newTile);
         for (int i = 0; i <= size; i++) {
             if (((m_state[0][i] | m_state[1][i]) & mask) > 0) {
-                setSelection(NULL);
+                setSelection(nullptr);
                 repaint(matrix);
                 return;
             }
@@ -220,7 +220,7 @@ void Mediator::afterAnimation() {
     }
     if (!winner) {
         bool aiTurn = getSelection()->isWhite();
-        setSelection(NULL);
+        setSelection(nullptr);
         // tests();
         startAi(aiTurn);
 
