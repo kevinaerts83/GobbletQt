@@ -129,7 +129,6 @@ Page {
                         }
                         stackView.push("game.qml");
                     }
-
                 }
             }
 
@@ -140,7 +139,7 @@ Page {
                 color: "#4CAF50"  // Green background color
                 visible: { stackView.depth > 1 }
 
-                // Play Icon (Triangle) in the middle
+                // Eyes
                 Canvas {
                     anchors.fill: parent
                     onPaint: {
@@ -169,6 +168,38 @@ Page {
                     onClicked: {
                         //setupMenu.setLock(true);
                         stackView.pop();
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.preferredWidth: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                Layout.preferredHeight: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                radius: Math.min(menu.width, menu.height) / 16  // Make it circular
+                color: "#4CAF50"  // Green background color
+
+                // Phone or Tablet mode
+                Canvas {
+                    anchors.fill: parent
+                    id: phoneAlignment
+
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.clearRect(0, 0, height, height);
+                        ctx.strokeStyle = "white"; // Border color
+                        ctx.lineWidth = 3;
+                        var x = height / (setupMenu.vertical ? 5 : 3);
+                        var y = height / (setupMenu.vertical ? 3 : 5);
+                        // x, y, width, height
+                        ctx.strokeRect((height / 2) - x, (height / 2) - y, x * 2, y * 2);
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        setupMenu.setVertical(setupMenu.vertical);
+                        phoneAlignment.requestPaint();
                     }
                 }
             }

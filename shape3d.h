@@ -13,7 +13,6 @@ public:
     Shape3d() {};
 
     void Rotate(Matrix* matrix, double x, double y, double z);
-    int PowerOfTwo(int x);
 
     bool isSelected() const;
     void toggleSelection();

@@ -24,11 +24,15 @@ public:
                 if (gobblerItem) {
                     gobblerItem->m_matrix = parentPage->findChild<Matrix*>("matrix");
                     if (i == 0) {
+
                         if (parentPage->width() > parentPage->height()) {
                             gobblerItem->m_matrix->setZoom(fmin(parentPage->width() / 1700, 0.7));
                         } else {
-                            gobblerItem->m_matrix->setYangle(90);
                             gobblerItem->m_matrix->setZoom(fmin(parentPage->height() / 1700, 0.7));
+                        }
+
+                        if (gobblerItem->m_matrix->isVertical() != m_comm->vertical()) {
+                            gobblerItem->m_matrix->toggleVertical();
                         }
 
                         gobblerItem->m_matrix->setCenter(parentPage->width(), parentPage->height());

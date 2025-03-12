@@ -106,6 +106,20 @@ void Matrix::getRotationMatrix(double result [4][4])
     this->MultiplyMatrixAndMatrix(xFacesMatrix, yFacesMatrix, result);
 }
 
+void Matrix::getRotateXMatrix(double result [4][4])
+{
+    double angleX = m_xangle * M_PI / 180,
+        angleY = m_vertical ? -90 * M_PI / 180 : 0,
+        cosx = cos(angleX),
+        sinx = -sin(angleX),
+        cosy = cos(angleY),
+        siny = -sin(angleY);
+    double xFacesMatrix [4][4] = {{1.0, 0, 0, 0}, {0, cosx, -sinx, 0}, {0, sinx, cosx, 0}, {0, 0, 0, 1.0}};
+    double yFacesMatrix [4][4] = {{cosy, 0, siny, 0}, {0, 1.0, 0, 0}, {-siny, 0, cosy, 0}, {0, 0, 0, 1.0}};
+
+    this->MultiplyMatrixAndMatrix(xFacesMatrix, yFacesMatrix, result);
+}
+
 void Matrix::getTransposedMatrix(double matrix [4][4], double result [4][4]) {
     for(int i = 0; i < 4; i += 1) {
         for(int j = 0; j < 4; j += 1) {
@@ -114,7 +128,7 @@ void Matrix::getTransposedMatrix(double matrix [4][4], double result [4][4]) {
     }
 }
 
-void Matrix::get3dPoint(double result [4], const double x, const double y) {
+void Matrix::get3dPoint(double result [4], const double x, const double y, bool stack) {
 
     // reverse translate
     double rtx = x + this->m_translation[0][3];
@@ -138,7 +152,11 @@ void Matrix::get3dPoint(double result [4], const double x, const double y) {
 
     // reverse rotation
     double rotationMatrix [4][4];
-    this->getRotationMatrix(rotationMatrix);
+    if (stack) {
+        this->getRotateXMatrix(rotationMatrix);
+    } else {
+        this->getRotationMatrix(rotationMatrix);
+    }
     double transposedMatrix [4][4];
     getTransposedMatrix(rotationMatrix, transposedMatrix);
     point = this->MultiplyPointAndMatrix(point, transposedMatrix);
@@ -158,6 +176,7 @@ void Matrix::get3dPoint(double result [4], const double x, const double y) {
 double Matrix::xangle() const { return m_xangle; }
 double Matrix::yangle() const { return m_yangle; }
 double Matrix::zoom() const { return m_zoom; }
+bool Matrix::isVertical() const { return m_vertical; }
 
 void Matrix::setXangle(const double &xangle)
 {
@@ -172,4 +191,9 @@ void Matrix::setYangle(const double &yangle)
 void Matrix::setZoom(const double &zoom)
 {
     m_zoom = zoom;
+}
+
+void Matrix::toggleVertical()
+{
+    m_vertical = !m_vertical;
 }

@@ -11,6 +11,7 @@ class Matrix : public QObject
     Q_PROPERTY(double xangle READ xangle WRITE setXangle NOTIFY xangleChanged)
     Q_PROPERTY(double yangle READ yangle WRITE setYangle NOTIFY yangleChanged)
     Q_PROPERTY(double zoom READ zoom WRITE setZoom NOTIFY zoomChanged)
+    Q_PROPERTY(bool vertical READ isVertical NOTIFY verticalChanged)
 
     QML_ELEMENT
 
@@ -25,8 +26,9 @@ public:
     void getInverseTranslationMatrix(double result [4][4]);
     void getScalingMatrix(double result [4][4]);
     void getRotationMatrix(double result [4][4]);
+    void getRotateXMatrix(double result [4][4]);
     void getTransposedMatrix(double matrix [4][4], double result [4][4]);
-    void get3dPoint(double result [4], const double x, const double y);
+    void get3dPoint(double result [4], const double x, const double y, const bool stack);
 
     void setCenter(double width, double height);
 
@@ -36,6 +38,10 @@ public:
     void setYangle(const double &yangle);
     double zoom() const;
     void setZoom(const double &zoom);
+    bool isVertical() const;
+
+public slots:
+    void toggleVertical();
 
 private:
     double m_centerX;
@@ -47,11 +53,13 @@ private:
     double m_xangle = 65;
     double m_yangle = 0;
     double m_zoom = 1;
+    bool m_vertical = true;
 
 signals:
     void xangleChanged(double xangle);
     void yangleChanged(double yangle);
     void zoomChanged(double zoom);
+    void verticalChanged(bool vertical);
 };
 
 #endif // MATRIX_H
