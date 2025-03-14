@@ -116,9 +116,9 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
         return;
 
     double coord [4];
-    matrix -> get3dPoint(coord, x, y, true);
-    if (abs(coord[0]) < 300) {
-        matrix -> get3dPoint(coord, x, y, false);
+    matrix -> get3dPoint(coord, x, y, false);
+    if (abs(coord[0]) > 300 || abs(coord[2]) > 300) {
+        matrix -> get3dPoint(coord, x, y, true);
     }
 
     int roundX = ceil(coord[0] / 150) * 150 - 75;

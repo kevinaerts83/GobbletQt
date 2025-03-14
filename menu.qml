@@ -172,7 +172,7 @@ Page {
                 }
             }
 
-            Rectangle {
+            /*Rectangle {
                 Layout.preferredWidth: Math.max(Math.min(menu.width, menu.height) / 8, 50)
                 Layout.preferredHeight: Math.max(Math.min(menu.width, menu.height) / 8, 50)
                 radius: Math.min(menu.width, menu.height) / 16  // Make it circular
@@ -202,7 +202,7 @@ Page {
                         phoneAlignment.requestPaint();
                     }
                 }
-            }
+            }*/
 
         }
 

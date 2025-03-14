@@ -31,9 +31,9 @@ int main(int argc, char *argv[])
     QObject::connect(&setupMenu, &SetupMenu::lockChanged, [&]() {
         comm.setLock(false);
     });
-    QObject::connect(&setupMenu, &SetupMenu::verticalChanged, [&]() {
+    /*QObject::connect(&setupMenu, &SetupMenu::verticalChanged, [&]() {
         comm.setVertical(setupMenu.isVertical());
-    });
+    });*/
 
     engine.rootContext()->setContextProperty("setupMenu", &setupMenu);
     engine.rootContext()->setContextProperty("comm", &comm);

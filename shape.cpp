@@ -20,7 +20,7 @@ void Shape::paint(Matrix *matrix, Shape3d model, QPainter *painter)
     int shadePoints = board ? 0 : 8;
     QPolygon shadow;
 
-    // PROJECT 2D FIGURE
+    // Draw shadow
     for (int i = 0; i < model.cache.size(); i++) {
         points2d.append(matrix->ProjectPoint(matrix->MultiplyPointAndMatrix(model.cache[i], translation)));
         if (shadePoints > 0 && model.isSelected() && model.cache[0][2] > 0) {
@@ -57,7 +57,7 @@ void Shape::paint(Matrix *matrix, Shape3d model, QPainter *painter)
             if (board) {
                 QColor color;
                 if (i < 8) {
-                    color = Qt::black;
+                    color = QColorConstants::Svg::burlywood;
                 } else if (i < 10) {
                     color = QColorConstants::Svg::sienna.darker(190);
                 } else {

@@ -8,7 +8,7 @@ class SetupMenu : public QObject {
     Q_PROPERTY(int whiteCounter READ whiteCounter WRITE setWhiteCounter NOTIFY whiteCounterChanged)
     Q_PROPERTY(int blackCounter READ blackCounter WRITE setBlackCounter NOTIFY blackCounterChanged)
     Q_PROPERTY(int mode READ mode WRITE setMode NOTIFY modeChanged)
-    Q_PROPERTY(bool vertical READ isVertical WRITE setVertical NOTIFY verticalChanged)
+    //Q_PROPERTY(bool vertical READ isVertical WRITE setVertical NOTIFY verticalChanged)
 
 public:
     explicit SetupMenu(QObject *parent = nullptr) : QObject(parent), m_whiteCounter(0), m_blackCounter(0), m_mode(1) {}
@@ -40,12 +40,12 @@ public:
         }
     }
 
-    bool isVertical() const { return m_vertical; }
+    /*bool isVertical() const { return m_vertical; }
 
     Q_INVOKABLE void setVertical(bool vertical) {
         m_vertical = !vertical;
         emit verticalChanged();
-    }
+    }*/
 
     Q_INVOKABLE void setLock() {
         emit lockChanged();
@@ -55,14 +55,14 @@ signals:
     void whiteCounterChanged();
     void blackCounterChanged();
     void modeChanged();
-    void verticalChanged();
+    //void verticalChanged();
     void lockChanged();
 
 private:
     int m_whiteCounter;
     int m_blackCounter;
     int m_mode;
-    bool m_vertical = true;
+    //bool m_vertical = true;
 };
 
 #endif // SETUPMENU_H

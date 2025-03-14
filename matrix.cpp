@@ -193,7 +193,7 @@ void Matrix::setZoom(const double &zoom)
     m_zoom = zoom;
 }
 
-void Matrix::toggleVertical()
+void Matrix::setVertical(const bool &vertical)
 {
-    m_vertical = !m_vertical;
+    m_vertical = vertical;
 }

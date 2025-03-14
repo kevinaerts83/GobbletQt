@@ -23,25 +23,21 @@ public:
 
                 if (gobblerItem) {
                     gobblerItem->m_matrix = parentPage->findChild<Matrix*>("matrix");
-                    if (i == 0) {
-
+                    if (i == 0) { // matrix is singleton
                         if (parentPage->width() > parentPage->height()) {
-                            gobblerItem->m_matrix->setZoom(fmin(parentPage->width() / 1700, 0.7));
+                            gobblerItem->m_matrix->setVertical(false);
+                            gobblerItem->m_matrix->setZoom(parentPage->height() / 900); // 1200
                         } else {
-                            gobblerItem->m_matrix->setZoom(fmin(parentPage->height() / 1700, 0.7));
+                            gobblerItem->m_matrix->setVertical(true);
+                            gobblerItem->m_matrix->setZoom(parentPage->width() / 900); // 800
                         }
-
-                        if (gobblerItem->m_matrix->isVertical() != m_comm->vertical()) {
-                            gobblerItem->m_matrix->toggleVertical();
-                        }
-
                         gobblerItem->m_matrix->setCenter(parentPage->width(), parentPage->height());
                     }
 
                     gobblerItem->setDepth(i % 4);
                     gobblerItem->setVisible((i % 4) == 0);
                     gobblerItem->setSize(i % 4);
-                    gobblerItem->setX3d((i > 11) ? 375 : -375);
+                    gobblerItem->setX3d((i > 11) ? 525 : -525);
                     gobblerItem->setY3d(0);
                     gobblerItem->setZ3d(-150 + ((((i > 11) ? i - 12 : i)/ 4) * 150));
 

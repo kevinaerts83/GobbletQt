@@ -11,7 +11,7 @@ class Matrix : public QObject
     Q_PROPERTY(double xangle READ xangle WRITE setXangle NOTIFY xangleChanged)
     Q_PROPERTY(double yangle READ yangle WRITE setYangle NOTIFY yangleChanged)
     Q_PROPERTY(double zoom READ zoom WRITE setZoom NOTIFY zoomChanged)
-    Q_PROPERTY(bool vertical READ isVertical NOTIFY verticalChanged)
+    Q_PROPERTY(bool vertical READ isVertical WRITE setVertical NOTIFY verticalChanged)
 
     QML_ELEMENT
 
@@ -39,9 +39,7 @@ public:
     double zoom() const;
     void setZoom(const double &zoom);
     bool isVertical() const;
-
-public slots:
-    void toggleVertical();
+    void setVertical(const bool &vertical);
 
 private:
     double m_centerX;
@@ -50,7 +48,7 @@ private:
     double m_translation [4][4];
     double m_inverseTranslation [4][4];
 
-    double m_xangle = 65;
+    double m_xangle = 50;
     double m_yangle = 0;
     double m_zoom = 1;
     bool m_vertical = true;
