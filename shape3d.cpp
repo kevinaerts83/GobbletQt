@@ -13,13 +13,11 @@ void Shape3d::Rotate(Matrix* matrix, double x, double y, double z) {
         this->cache.append(matrix->MultiplyPointAndMatrix(this->points[i], translation));
     }
 
-    bool board = x > -300 && x < 300;
-
     // fill cache
     this->Zoom(matrix);
 
     double rotationMatrix [4][4];
-    if (board) {
+    if (isOnBoard()) {
         matrix->getRotationMatrix(rotationMatrix);
     } else {
         matrix->getRotateXMatrix(rotationMatrix);
@@ -46,4 +44,12 @@ bool Shape3d::isSelected() const {
 
 void Shape3d::toggleSelection() {
     m_selected = !m_selected;
+}
+
+bool Shape3d::isOnBoard() const {
+    return m_onBoard;
+}
+
+void Shape3d::setOnBoard() {
+    m_onBoard = true;
 }

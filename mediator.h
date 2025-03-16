@@ -41,6 +41,7 @@ public slots:
 private slots:
     bool checkWinner(bool player);
     int getTileFromCoord(int x, int z);
+    void updateDepthOfGobblers(int x, int z);
     void updateState(int x, int y, int z, int oldTile, int newTile, Matrix *matrix);
     void updateGobbler();
     void afterAnimation();

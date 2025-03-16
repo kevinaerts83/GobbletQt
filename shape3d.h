@@ -16,9 +16,13 @@ public:
 
     bool isSelected() const;
     void toggleSelection();
+
+    bool isOnBoard() const;
+    void setOnBoard();
 private:
     void Zoom(Matrix* matrix);
-    bool m_selected;
+    bool m_selected = false;
+    bool m_onBoard = false; // for animation, Don't switch rotation during movement from stack to board
 };
 
 #endif // SHAPE3D_H

@@ -157,22 +157,11 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
     }
 }
 
-void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix *matrix) {
-    if (getSelection() == nullptr) {
-        std::cout << "An error occurred: " << oldTile << " - " << newTile << std::endl;
-        //writeLog();
-        return;
-    }
-    if(oldTile > -1) {
-        // update state of oldTile
-        m_state[getSelection()->isWhite()][getSelection()->size()] ^= (int)pow(2, oldTile);
-    }
-
-    // update depth of gobbers
-    for (const auto& item : getList()) {
-        if (item->depth() > getSelection()->depth()
-            && item->x3d() == getSelection()->x3d()
-            && item->z3d() == getSelection()->z3d()) {
+void Mediator::updateDepthOfGobblers(int x, int z) {
+    for (const auto &item : std::as_const(m_list)) {
+        if (item->depth() > getSelection()->depth() &&
+            item->x3d() == getSelection()->x3d() &&
+            item->z3d() == getSelection()->z3d()) {
 
             item->setDepth(item->depth() - 1);
         }
@@ -181,17 +170,53 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix
             item->setDepth(item->depth() + 1);
         }
     }
+}
+void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix *matrix) {
+    if (getSelection() == nullptr) {
+        std::cout << "An error occurred: " << oldTile << " - " << newTile
+                  << std::endl;
+        // writeLog();
+        return;
+    }
+    if (oldTile > -1) {
+        // update state of oldTile
+        m_state[getSelection()->isWhite()][getSelection()->size()] ^= (int)pow(2, oldTile);
+    }
 
-    newX = x;
-    newY = y;
-    newZ = z;
+    updateDepthOfGobblers(x, z);
+
+    // todo if selection stack undo rotation and rotate again
+    if (oldTile > 15) {
+        QVector<double> point ({static_cast<double>(x), static_cast<double>(y), static_cast<double>(z), 1});
+
+        double rotationMatrix [4][4];
+        matrix->getRotationMatrix(rotationMatrix);
+
+        double transposedMatrix [4][4];
+        matrix->getTransposedMatrix(rotationMatrix, transposedMatrix);
+
+        QVector<double> basePoint = matrix->MultiplyPointAndMatrix(point, transposedMatrix);
+
+        double stackRotation [4][4];
+        matrix->getRotateXMatrix(stackRotation);
+        QVector<double> stackPoint = matrix->MultiplyPointAndMatrix(basePoint, stackRotation);
+
+        newX = stackPoint[0];
+        newY = stackPoint[1];
+        newZ = stackPoint[2];
+    } else {
+        newX = x;
+        newY = y;
+        newZ = z;
+    }
+
     matrx = matrix;
     myNewTile = newTile;
     timer->start(20);
 }
 
 void Mediator::afterAnimation() {
-    for (const auto& item : m_list) {
+    for (const auto& item : std::as_const(m_list)) {
         if (item->depth() > 0 && item->isVisible()) {
             item->setVisible(false);
             item->update();
@@ -202,6 +227,7 @@ void Mediator::afterAnimation() {
     m_state[getSelection()->isWhite()][getSelection()->size()] |= (int) pow(2, myNewTile); //Set new position
 
     getSelection()->model.toggleSelection();
+    getSelection()->model.setOnBoard();
     // first check the player who's turn is next (In case when a gobblet of the opposite player is revealed)
     bool winner = false;
     if (getSelection()->isWhite()) {
