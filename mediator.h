@@ -65,6 +65,11 @@ private:
     int newX;
     int newY;
     int newZ;
+
+    int boardX;
+    int boardY;
+    int boardZ;
+
     int myNewTile;
 
     int m_state [2][4] = {{ 0, 0, 0, 0}, {0, 0, 0, 0}};

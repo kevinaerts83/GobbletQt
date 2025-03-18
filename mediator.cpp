@@ -185,30 +185,23 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix
 
     updateDepthOfGobblers(x, z);
 
-    // todo if selection stack undo rotation and rotate again
-    if (oldTile > 15) {
-        QVector<double> point ({static_cast<double>(x), static_cast<double>(y), static_cast<double>(z), 1});
+    if (oldTile == -1) {
+        double a = static_cast<double>(x);
+        double b = static_cast<double>(z);
+        double angle = (matrix->yangle() + (matrix->isVertical() ? 90 : 0)) * M_PI / 180;
 
-        double rotationMatrix [4][4];
-        matrix->getRotationMatrix(rotationMatrix);
-
-        double transposedMatrix [4][4];
-        matrix->getTransposedMatrix(rotationMatrix, transposedMatrix);
-
-        QVector<double> basePoint = matrix->MultiplyPointAndMatrix(point, transposedMatrix);
-
-        double stackRotation [4][4];
-        matrix->getRotateXMatrix(stackRotation);
-        QVector<double> stackPoint = matrix->MultiplyPointAndMatrix(basePoint, stackRotation);
-
-        newX = stackPoint[0];
-        newY = stackPoint[1];
-        newZ = stackPoint[2];
+        newX = a * cos(angle) - b * sin(angle);
+        newY = 0;
+        newZ = a * sin(angle) + b * cos(angle);
     } else {
         newX = x;
         newY = y;
         newZ = z;
     }
+
+    boardX = x;
+    boardY = y;
+    boardZ = z;
 
     matrx = matrix;
     myNewTile = newTile;
@@ -226,6 +219,11 @@ void Mediator::afterAnimation() {
     // update state of new tile
     m_state[getSelection()->isWhite()][getSelection()->size()] |= (int) pow(2, myNewTile); //Set new position
 
+    if (!getSelection()->model.isOnBoard()) {
+        getSelection()->setX3d(boardX);
+        getSelection()->setY3d(boardY);
+        getSelection()->setZ3d(boardZ);
+    }
     getSelection()->model.toggleSelection();
     getSelection()->model.setOnBoard();
     // first check the player who's turn is next (In case when a gobblet of the opposite player is revealed)
