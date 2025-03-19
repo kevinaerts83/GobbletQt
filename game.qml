@@ -58,7 +58,7 @@ Page {
                 gameArea.scaleValue *= scale;
                 gameArea.scaleValue = gameArea.scaleValue > 1.5 ? 1.5 : gameArea.scaleValue < 0.5 ? 0.5 : gameArea.scaleValue;
                 matrix.zoom = gameArea.scaleValue;
-                mediator.repaint(matrix);
+                mediator.repaint();
             }
         }
 
@@ -77,7 +77,7 @@ Page {
                 const oldX = Math.floor(dragHandler.centroid.position.x / 30);
                 if (oldX != gameArea.lastCrossedThresholdX) {
                     matrix.yangle += (oldX < gameArea.lastCrossedThresholdX) ? 10 : -10;
-                    mediator.repaint(matrix);
+                    mediator.repaint();
                     gameArea.lastCrossedThresholdX = oldX;
                 }
 
@@ -93,7 +93,7 @@ Page {
                         matrix.xangle += newAngle;
                     }
 
-                    mediator.repaint(matrix);
+                    mediator.repaint();
                     gameArea.lastCrossedThresholdY = oldY;
                 }
             }

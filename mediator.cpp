@@ -89,19 +89,25 @@ void Mediator::setBoard(Board* board) {
     m_board = board;
 }
 
-void Mediator::repaint(Matrix *matrix) {
+void Mediator::repaint() {
     getBoard()->update();
 
-    double angle = matrix->yangle();
+    for (int i = 0; i < m_list.size(); i++) {
+        m_list[i]->calculateZIndex();
+    }
 
-    std::sort(m_list.begin(), m_list.end(), [angle](const Gobbler* a, const Gobbler* b) {
-        return Gobbler::compareByZindex(a, b, angle);
-    });
+    std::sort(m_list.begin(), m_list.end(), Gobbler::compareByZindex);
+
+    /*for (int i = 0; i < m_list.size(); i++) {
+        if (m_list[i]->depth() == 0) {
+            std::cout << m_list[i]->name().toStdString() << " " << m_list[i]->getZIndex() << std::endl;
+        }
+    }*/
 
     for (int i = 0; i < m_list.size(); i++) {
         m_list[i]->setZ(i);
     }
-    for (const auto& item : m_list) {
+    for (const auto& item : std::as_const(m_list)) {
         if (item->depth() == 0 || item->isVisible()) {
             if (!item->isVisible()) {
                 item->setVisible(true);
@@ -127,13 +133,13 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
     if (getSelection() != nullptr) {
 
         int oldTile = -1;
-        if ((((int) getSelection()->z3d()) % 150) != 0) {
+        if (getSelection()->model.isOnBoard()) {
             oldTile = getTileFromCoord(getSelection()->x3d(), getSelection()->z3d());
         }
 
         if (abs(roundX) > 225 || abs(roundZ) > 225) {
             setSelection(nullptr);
-            repaint(matrix);
+            repaint();
             return;
         }
 
@@ -144,7 +150,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
         for (int i = 0; i <= size; i++) {
             if (((m_state[0][i] | m_state[1][i]) & mask) > 0) {
                 setSelection(nullptr);
-                repaint(matrix);
+                repaint();
                 return;
             }
         }
@@ -153,7 +159,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
     } else {
         int borderZ = (abs(roundX) > 225) ? ((coord[2] > 75) ? 150 : ((coord[2] < -75) ? -150 : 0)) : roundZ;
         setSelection(roundX, borderZ);
-        repaint(matrix);
+        repaint();
     }
 }
 
@@ -185,7 +191,7 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix
 
     updateDepthOfGobblers(x, z);
 
-    if (oldTile == -1) {
+    if (oldTile == -1 || oldTile > 15) {
         double a = static_cast<double>(x);
         double b = static_cast<double>(z);
         double angle = (matrix->yangle() + (matrix->isVertical() ? 90 : 0)) * M_PI / 180;
@@ -258,7 +264,7 @@ void Mediator::afterAnimation() {
 void Mediator::startAi(bool aiTurn) {
     toggleBlackTurn();
     if (m_comm->mode() > 0 && aiTurn) {
-        AI m_computer = *new AI(m_comm->mode());
+        AI m_computer(m_comm->mode());
         aiMove move = m_computer.move(m_state);
         // std::cout << move.from() << std::endl;
         setSelectionByTile(move.from());
@@ -304,7 +310,7 @@ void Mediator::updateGobbler() {
     getSelection()->setY3d(y);
     getSelection()->setZ3d(z);
 
-    repaint(matrx);
+    repaint();
 
     if (x == newX && y == newY && z == newZ) {
         timer->stop();
@@ -377,7 +383,7 @@ void Mediator::writeLog() {
 }
 
 void Mediator::tests() {
-    AI computer = *new AI(0);
+    AI computer(m_comm->mode());
     /* TRY TO WIN */
     int state [2][4] = {{32768, 2048, 128, 0}, { 0, 0, 0, 0}};
     aiMove move = computer.move(state);

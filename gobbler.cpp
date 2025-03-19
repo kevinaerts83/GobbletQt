@@ -86,9 +86,32 @@ void Gobbler::paint(QPainter *painter)
     }
 }
 
+void Gobbler::calculateZIndex() {
+    if (depth() > 0) {
+        m_zIndex = 0;
+        return;
+    }
+    if (y3d() > 100) {
+        m_zIndex = 10000;
+        return;
+    }
+
+    if (!model.isOnBoard() && y3d() == 0) {
+        m_zIndex = m_matrix->isVertical() ? x3d() * -3 : z3d();
+    } else {
+        double sinus = sin(qDegreesToRadians(m_matrix->yangle()));
+        double cosinus = cos(qDegreesToRadians(m_matrix->yangle()));
+
+        m_zIndex = x3d() * sinus + z3d() * cosinus;
+    }
+}
+
+double Gobbler::getZIndex() const
+{
+    return m_zIndex;
+}
+
 // Static comparator function to sort by z-index (ascending)
-bool Gobbler::compareByZindex(const Gobbler* a, const Gobbler* b, const double angle) {
-    double sinus = sin(qDegreesToRadians(angle));
-    double cosinus = cos(qDegreesToRadians(angle));
-    return (a->x3d() * sinus + a->z3d() * cosinus) < (b->x3d() * sinus + b->z3d() * cosinus);
+bool Gobbler::compareByZindex(const Gobbler* a, const Gobbler* b) {
+    return a->m_zIndex < b->m_zIndex;
 }

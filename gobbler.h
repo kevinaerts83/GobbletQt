@@ -47,9 +47,12 @@ public:
     double z3d() const;
     void setZ3d(const double &z3d);
 
+    void calculateZIndex();
+    double getZIndex() const;
+
     void paint(QPainter *painter);
 
-    static bool compareByZindex(const Gobbler* a, const Gobbler* b, const double angle);
+    static bool compareByZindex(const Gobbler* a, const Gobbler* b);
 
 signals:
     void depthChanged();
@@ -65,6 +68,7 @@ private:
     double m_x3d;
     double m_y3d;
     double m_z3d;
+    double m_zIndex;
 
 };
 
