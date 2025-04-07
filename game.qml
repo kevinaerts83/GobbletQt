@@ -1,9 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Window 2.15
-import QtQuick.Shapes 1.12
-import QtQuick.Controls 2.15
-
-import Gobbler 1.0
+import QtQuick
+import QtQuick.Window
+import QtQuick.Shapes
+import QtQuick.Controls
 
 Page {
     id: game
