@@ -47,7 +47,6 @@ private slots:
     void afterAnimation();
     void startAi(bool aiTurn);
     void writeLog();
-    void tests();
 
 signals:
     void listChanged();

@@ -11,6 +11,19 @@
 #include "gobbler.h"
 #include "ai.h"
 
+/* TODO
+* Unit test
+* Separate turns
+* sort on y-axis
+* Smaller build
+* Constants
+* Singleton
+* Higher board
+* zoom steps
+* scroll steps
+* QDocs
+* */
+
 Mediator::Mediator(QObject *parent) : QObject(parent)
 {
     timer = new QTimer(this);
@@ -382,97 +395,3 @@ void Mediator::writeLog() {
     std::cout << four.to_string().substr(0, 4) << " " << four.to_string().substr(4, 4) << " " << four.to_string().substr(8, 4) << " " << four.to_string().substr(12, 4) << std::endl;
 }
 
-void Mediator::tests() {
-    AI computer(m_comm->mode());
-    /* TRY TO WIN */
-    int state [2][4] = {{32768, 2048, 128, 0}, { 0, 0, 0, 0}};
-    aiMove move = computer.move(state);
-    std::cout << "19 -> 3 : " << move.from() << " -> " << move.to() << std::endl; // take from stack
-
-    int state2 [2][4] = {{32768, 2048, 128, 0}, { 0, 0, 0, 8}}; // white blocks with size 3
-    move = computer.move(state2);
-    std::cout << "16 -> 3 : " << move.from() << " -> " << move.to() << std::endl;
-
-    int state3 [2][4] = {{32768, 2048, 128, 0}, { 8, 0, 0, 0}}; // white blocks with size 0
-    move = computer.move(state3);
-    std::cout << "19 and not 3 : " << move.from() << " -> " << move.to() << std::endl;
-
-    int state4 [2][4] = {{49184, 51200, 49280, 0}, { 0, 8, 0, 0}}; // white blocks with size 1 all pawns on board
-    move = computer.move(state4);
-    std::cout << "Win 5 -> 3 : " << move.from() << " -> " << move.to() << std::endl;
-    /* 1100 0000 0010 0000  0000 0000 0000 0000         15 14 13 12
-     * 1100 1000 0000 0000  0000 0000 0000 1000         11 10 09 08
-     * 1100 0000 1000 0000  0000 0000 0000 0000         07 06 05 04
-     * 0000 0000 0000 0000  0000 0000 0000 0000         03 02 01 00 */
-
-    // don't use a tile that let white win.
-    int state5 [2][4] = {{49184, 51200, 49280, 0}, { 8706, 32, 8, 0}}; // white blocks with size 2 all pawns on board
-    move = computer.move(state5);
-    std::cout << "Win 11 -> 3 : " << move.from() << " -> " << move.to() << std::endl;
-    /* 1100 0000 0010 0000  0010 0010 0000 0010         15 14 13 12
-     * 1100 1000 0000 0000  0000 0000 0010 0000         11 10 09 08
-     * 1100 0000 1000 0000  0000 0000 0000 1000         07 06 05 04
-     * 0000 0000 0000 0000  0000 0000 0000 0000         03 02 01 00 */
-
-    /* DONT LOSE */
-    int state6 [2][4] = {{1536, 0, 0, 0}, { 28672, 2048, 128, 8}}; // take from stack
-    move = computer.move(state6);
-    std::cout << "16 -> 15 : " << move.from() << " -> " << move.to() << std::endl;
-
-    int state7 [2][4] = {{1600, 0, 0, 0}, { 28672, 2048, 128, 8}}; // take from board
-    move = computer.move(state7);
-    std::cout << "6/9 -> 15 : " << move.from() << " -> " << move.to() << std::endl;
-
-    /* Block if 1 sized is placed on 9 no possibility to block */
-    /* 0000 0000 0000 0000  0000 1001 0000 0000         15 14 13 12    0 0 1 0
-     * 0000 0000 0000 0000  0010 0000 0000 0010         11 10 09 08    1 0 0 1
-     * 0000 0000 0000 0000  0000 0000 0000 1000         07 06 05 04    0 0 0 0
-     * 0000 0000 0000 0000  0000 0000 0000 0000         03 02 01 00    1 0 1 0 */
-    int state8 [2][4] = {{0, 0, 0, 0}, { 2304, 8194, 0, 0}}; // take from stack
-    move = computer.move(state8);
-    std::cout << "16 -> 9 : " << move.from() << " -> " << move.to() << std::endl;
-
-    /* Attack */
-    // put on the middle
-    int state9 [2][4] = {{1, 2, 0, 0}, { 12, 32, 0, 0}};
-    move = computer.move(state9);
-    std::cout << "Attack 18 -> 6/9/12/15 : " << move.from() << " -> " << move.to() << std::endl;
-
-    int state10 [2][4] = {{128, 1, 0, 0}, { 8, 4, 2, 0}};
-    move = computer.move(state10);
-    std::cout << "Attack 16 -> 1 : " << move.from() << " -> " << move.to() << std::endl;
-
-    /* 1 0 0 2
-     * 0 2 1 1
-     * 0 1 1 2
-     * 2 1 0 2 */
-    int state11 [2][4] = {{5136, 1, 8, 4}, { 32864, 772, 2, 1024}};
-    move = computer.move(state11);
-    std::cout << "Attack(11) 6 -> 8 : " << move.from() << " -> " << move.to() << std::endl;
-
-    /* 1 0 0 2
-     * 2 2 1 0
-     * 1 0 2 1
-     * 2 0 1 2 */
-    int state12 [2][4] = {{7168, 40, 1, 32}, {32898, 2560, 1056, 16}};
-    move = computer.move(state12);
-    std::cout << "Attack(12) 4 -> 5 : " << move.from() << " -> " << move.to() << std::endl;
-
-    /* 2 2 0 1         15 14 13 12
-     * 0 1 2 1         11 10 09 08
-     * 2 1 1 2         07 06 05 04
-     * 1 0 0 2         03 02 01 00 */
-    int state13 [2][4] = {{1064, 36928, 17, 128}, {33281, 16528, 32768, 4096}};
-    move = computer.move(state13);
-    std::cout << "Attack(13) 3 -> 12 : " << move.from() << " -> " << move.to() << std::endl;
-
-    /* 1 1 2 2         15 14 13 12
-     * 0 1 1 2         11 10 09 08
-     * 2 2 2 1         07 06 05 04
-     * 2 0 0 1         03 02 01 00 */
-    int state14 [2][4] = {{1552, 53248, 128, 1}, {4168, 768, 544, 16512}};
-    move = computer.move(state14);
-    std::cout << "Attack(14) 14 -> 5 : " << move.from() << " -> " << move.to() << std::endl;
-
-
-}

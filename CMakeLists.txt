@@ -11,14 +11,11 @@ find_package(Qt6 REQUIRED COMPONENTS Quick)
 qt_standard_project_setup()
 
 qt_add_executable(Gobblet WIN32 MACOSX_BUNDLE
-    ai.cpp ai.h
-    aimove.cpp aimove.h
     board.cpp board.h
     board3d.cpp board3d.h
     bridge.h
     gobbler.cpp gobbler.h
     gobbler3d.cpp gobbler3d.h
-    grades.cpp grades.h
     main.cpp
     matrix.cpp matrix.h
     mediator.cpp mediator.h
@@ -26,8 +23,16 @@ qt_add_executable(Gobblet WIN32 MACOSX_BUNDLE
     setupMenu.h
     shape.cpp shape.h
     shape3d.cpp shape3d.h
-    tilecounter.cpp tilecounter.h
 )
+
+add_library(gobblet_ai
+    ai.cpp ai.h
+    aimove.cpp aimove.h
+    tilecounter.cpp tilecounter.h
+    grades.cpp grades.h
+)
+target_include_directories(gobblet_ai PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(Gobblet PRIVATE gobblet_ai)
 
 set(RESOURCES qml.qrc)
 
@@ -86,3 +91,7 @@ install(SCRIPT ${deploy_script})
 #    android/res/values/libs.xml
 #    android/res/xml/qtprovider_paths.xml
 #)
+
+find_package(Qt6 REQUIRED COMPONENTS Test)
+add_executable(myTest test_ai.cpp)
+target_link_libraries(myTest PRIVATE Qt6::Test gobblet_ai)
