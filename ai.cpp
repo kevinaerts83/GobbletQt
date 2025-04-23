@@ -328,7 +328,7 @@ int AI::getPawnFromBoard(int size, std::vector<int> excludeRows) {
             }
         }
 
-        if (result > 0) {
+        if (result >= 0) {
             return result;
         }
 
@@ -336,7 +336,7 @@ int AI::getPawnFromBoard(int size, std::vector<int> excludeRows) {
             int pawns = m_visibleBlackRows[i];
 
             if (pawns > 0) {
-                return pow(2, std::bitset<16>(pawns).count() - 1);
+                return get_first_set_bit_position(pawns);
             }
         }
     }
@@ -553,6 +553,7 @@ int AI::count1Bits(int x) {
     return count;
 }
 
+// equals to std::countr_zero(x); C++20
 int AI::get_first_set_bit_position(int num) {
     int bitCount = std::bitset<16>(num).count(); // count number of 1 bits
 

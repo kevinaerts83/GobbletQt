@@ -12,7 +12,6 @@
 #include "ai.h"
 
 /* TODO
-* Unit test
 * Separate turns
 * sort on y-axis
 * Smaller build
@@ -21,6 +20,7 @@
 * Higher board
 * zoom steps
 * scroll steps
+* Use structs
 * QDocs
 * */
 
@@ -267,7 +267,6 @@ void Mediator::afterAnimation() {
     if (!winner) {
         bool aiTurn = getSelection()->isWhite();
         setSelection(nullptr);
-        // tests();
         startAi(aiTurn);
 
         m_comm->setLock(false);

@@ -19,6 +19,7 @@ private slots:
     void attackRowWith3GobblersWithSmallDefence2();
     void attackBug1();
     void attackBug2();
+    void noMoveFound1();
 };
 
 /* TRY TO WIN */
@@ -172,6 +173,21 @@ void TestAI::attackBug2() {
     aiMove move = computer.move(state14);
     QCOMPARE(move.from(), 14);
     QCOMPARE(move.to(), 5);
+}
+
+void TestAI::noMoveFound1() {
+    AI computer(2);
+    /*
+    black                  white
+    0000 0100 1000 0001    1010 0000 0000 1000    1 0 1 0     15 14 13 12
+    0000 0000 0100 0001    0000 0010 0010 0000    2 2 1 0     11 10 09 08
+    0000 1000 0000 0000    0000 0000 0100 0000    2 2 1 1     07 06 05 04
+    0000 0000 0000 0000    0000 0000 0001 0000    1 0 0 2     03 02 01 00
+    */
+    int state15 [2][4] = {{1153, 65, 2048, 0}, {40968, 544, 64, 16}};
+    aiMove move = computer.move(state15);
+    QCOMPARE(move.from(), 0);
+    QCOMPARE(move.to() == 5 || move.to() == 9, true);
 }
 
 // Main function to run the test
