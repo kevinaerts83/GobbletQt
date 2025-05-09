@@ -12,10 +12,12 @@ public:
     int to() const;
     void setTo(int value);
 
+    bool validate();
+
 private:
     // tiles 0 till 15, 16 is size 0 of stack -> 19 is size 4 of stack
-    int m_from;
-    int m_to;
+    int m_from = -1;
+    int m_to = -1;
 };
 
 #endif // AIMOVE_H

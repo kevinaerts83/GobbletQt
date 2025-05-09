@@ -28,8 +28,8 @@ qt_add_executable(Gobblet WIN32 MACOSX_BUNDLE
 add_library(gobblet_ai
     ai.cpp ai.h
     aimove.cpp aimove.h
-    tilecounter.cpp tilecounter.h
-    grades.cpp grades.h
+
+
 )
 target_include_directories(gobblet_ai PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(Gobblet PRIVATE gobblet_ai)

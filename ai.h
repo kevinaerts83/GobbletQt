@@ -2,59 +2,62 @@
 #define AI_H
 
 #include <vector>
-#include "grades.h"
-#include "tilecounter.h"
 #include "aimove.h"
 
 class AI
 {
 
 public:
-    int m_fromTile = -1;
-    int m_toTile = -1;
-
     AI(int level);
     aiMove move(int boardState [2][4]);
 
 private:
     int m_level;
 
-    void cache (bool isWhite);
+    void setVisibleWhite();
+    void setVisibleBlack();
+    void getVisiblePawns(int main, int temp [4]);
 
-    bool tryToWin();
-    bool dontLose();
-    bool block();
-    bool attack();
-    void randomMove();
+    void tryToWin(aiMove& move);
+    void dontLose(aiMove& move);
+    void dontLoseCrossing(std::vector<int>& rows, aiMove& move);
+    void dontLoseBlock(std::vector<int>& rows, aiMove& move);
+    void blockFutureCrossing(aiMove& move);
+    void attack(aiMove& move);
+    void randomMove(aiMove& move);
+    void attackFallBack(aiMove& move);
 
-    void attackFallBack();
-    int startAttack(int ignore);
-    int getToTile(int mask, int state, bool reverse);
-    bool setFromTile(int size, std::vector<int> rows);
+    int getNewToTile(int ignore);
+    int getTileFromRowUnderAttack(int rowToAttack);
+
+    int getToTile(int mask, int visiblePawns);
+    int getUnOccupiedTile(int mask, int visiblePawns);
+    int getFromTile(int size, std::vector<int> excludeRows);
 
     std::vector<int> getRowsOfTile(int tile);
     int getPawnFromStack(int size);
     int getPawnFromBoard(int size, std::vector<int> excludeRows);
-    std::vector<Grades> getUnimportantBlackTile(int size, std::vector<int> excludeRows);
+    int getPawnFromBoardEasy(int size, std::vector<int> excludeRows);
+    int getPawnFromBoardHard(int size, std::vector<int> excludeRows);
+    int getFromBoard(int size, int tile);
 
     bool findId(std::vector<int> numbers, int searchId);
-    tileCounter* getObjectFromArray(std::vector<tileCounter>& counters, int tile);
     int getColorUnderneath(int tile, int size);
-    std::vector<int> getTilesOfSize(int size);
+    std::vector<int> getBlackTilesOfSize(int size);
     int getPawnSize(int tile);
-    std::vector<Grades> sortWhiteRows();
-    void chooseTileFromRowToAttack(int rowToAttack);
-    std::vector<int> rowCheck(int maxCount, bool isWhite, bool removeRowsWithSize0);
+    std::vector<std::pair<int, int>> sortWhiteRows();
+
     int getSmallestWhiteOfRow(int mask);
     int count1Bits(int x);
-    int get_first_set_bit_position(int n);
+    int countrZero(int n);
+    int tileToNumber(int tile);
+
+    std::vector<int> rowCheck(int maxCount, bool isWhite, bool removeRowsWithSize0);
+    std::vector<int> findRowsBlackWins();
+    std::vector<int> findRowsWhiteWins();
+    std::vector<int> findRowsWhiteCouldWin();
 
     void writeLog();
-
-    int m_mask [10] = { 61440, 3840, 240, 15, 34952, 17476, 8738, 4369, 33825, 4680 };
-    int m_twiceThree [32] = { 63624, 62532, 61986, 61713, 36744, 20292, 12066, 7953, 35064, 17652, 8946, 4593, 34959, 17487, 8751, 4383, 62497, 36641, 34033, 33839, 62024, 8008, 4856, 4687, 36009, 50277, 42531, 38193, 39624, 22092, 12906, 4953 };
-    int m_blockMove [32] = { 32768, 16384, 8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 32768, 1024, 32, 1, 4096, 512, 64, 8, 32768, 1024, 32, 1, 8, 64, 512, 4096 };
-    int m_crossings = 38505;
 
     int m_bState [2][4];
     int m_visibleWhite = 0;
@@ -63,6 +66,43 @@ private:
     int m_visibleBlackRows [4] = { 0, 0, 0, 0 };
 
     int m_randomMaskSequence [10];
+
+    enum Size {
+        Huge,
+        Large,
+        Medium,
+        Small,
+        Empty
+    };
+
+    enum Player {
+        Black,
+        White
+    };
+
+    enum Mode {
+        OneVsOne,
+        Easy,
+        Hard
+    };
+
+    const int MASKS [10] = { 61440, 3840, 240, 15, 34952, 17476, 8738, 4369, 33825, 4680 };
+    const int TWICE_THREE [32] = { 63624, 62532, 61986, 61713, 36744, 20292, 12066, 7953, 35064, 17652, 8946, 4593, 34959, 17487, 8751, 4383, 62497, 36641, 34033, 33839, 62024, 8008, 4856, 4687, 36009, 50277, 42531, 38193, 39624, 22092, 12906, 4953 };
+    const int BLOCK_TWICE_THREE [32] = { 32768, 16384, 8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 32768, 1024, 32, 1, 4096, 512, 64, 8, 32768, 1024, 32, 1, 8, 64, 512, 4096 };
+    const int CROSSING = 38505;
+
+    const int MAX_ROWS = 10;
+    const int MAX_TILES = 16;
+    const int ROW_SIZE = 4;
+
+    struct GradedTile {
+        int tile;
+        int size;
+        int whiteGobblers = 0;
+        int blackGobblers = 0;
+        int colorUnderneath;
+        int grade;
+    };
 };
 
 #endif // AI_H

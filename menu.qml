@@ -7,7 +7,7 @@ Page {
 
     background: Rectangle {
         gradient: Gradient {
-            GradientStop { position: 0.0; color: "#444" }
+            GradientStop { position: 0.0; color: "#5e5358" }
             GradientStop { position: 1.0; color: "#222" }
         }
     }

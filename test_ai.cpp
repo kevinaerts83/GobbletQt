@@ -141,14 +141,16 @@ void TestAI::attackRowWith3GobblersWithSmallDefence() {
 
 void TestAI::attackRowWith3GobblersWithSmallDefence2() {
     AI computer(2);
-    /* 1 0 0 2         15 14 13 12
-     * 2 2 1 0         11 10 09 08
-     * 1 0 2 1         07 06 05 04
-     * 2 0 1 2         03 02 01 00 */
+    /*black                  white
+    0001 1100 0000 0000    1000 0000 1000 0010      1 0 0 2   15 14 13 12
+    0000 0000 0010 1000    0000 1010 0000 0000      2 2 1 0   11 10 09 08
+    0000 0000 0000 0001    0000 0100 0010 0000      1 0 2 1   07 06 05 04
+    0000 0000 0010 0000    0000 0000 0001 0000      2 0 1 2   03 02 01 00
+    */
     int state12 [2][4] = {{7168, 40, 1, 32}, {32898, 2560, 1056, 16}};
     aiMove move = computer.move(state12);
-    QCOMPARE(move.from(), 12);
-    QCOMPARE(move.to(), 5);
+    QCOMPARE(move.from(), 18);
+    QCOMPARE(move.to(), 8);
 }
 
 void TestAI::attackBug1() {
