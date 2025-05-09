@@ -8,14 +8,14 @@ Page {
     background: Rectangle {
         gradient: Gradient {
             GradientStop { position: 0.0; color: "#5e5358" }
-            GradientStop { position: 1.0; color: "#222" }
+            GradientStop { position: 0.7; color: "#222" }
         }
     }
 
     Text {
         text: "Gobblet"
         font.pixelSize: Math.min(menu.height / 8, Math.min(menu.width * 0.24, 130))
-        color: "silver"
+        color: "#FFDF00"
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
     }
@@ -82,7 +82,7 @@ Page {
                 text: setupMenu ? setupMenu.whiteCounter : "Loading..."
                 font.pixelSize: Math.min(menu.height / 8, Math.min(menu.width * 0.24, 130))
                 Layout.alignment: Qt.AlignHCenter
-                color: "silver"
+                color: "#D0D0D0"
             }
         }
 
@@ -323,7 +323,7 @@ Page {
                 text: setupMenu ? setupMenu.blackCounter : "Loading..."
                 Layout.alignment: Qt.AlignHCenter
                 font.pixelSize: Math.min(menu.height / 8, Math.min(menu.width * 0.24, 130))
-                color: "silver"
+                color: "#D0D0D0"
             }
         }
     }
