@@ -20,6 +20,7 @@ private slots:
     void attackBug1();
     void attackBug2();
     void noMoveFound1();
+    void noMoveFound2();
 };
 
 /* TRY TO WIN */
@@ -190,6 +191,21 @@ void TestAI::noMoveFound1() {
     aiMove move = computer.move(state15);
     QCOMPARE(move.from(), 0);
     QCOMPARE(move.to() == 5 || move.to() == 9, true);
+}
+
+void TestAI::noMoveFound2() {
+    AI computer(2);
+    /*
+    black                  white
+    0000 0000 1000 0011    0001 0010 0001 0000    1 2 1 1     15 14 13 12
+    0100 0000 0000 0000    0000 0000 0010 1010    1 1 1 0     11 10 09 08
+    0000 0000 0000 0000    1000 1000 0000 0001    2 0 1 1     07 06 05 04
+    0000 0000 0000 0000    0010 0100 1000 0000    1 0 2 2     03 02 01 00
+    */
+    int state16 [2][4] = {{131, 16384, 0, 0}, {4624, 42, 34817, 9344}};
+    aiMove move = computer.move(state16);
+    QCOMPARE((move.from() > 15) || (move.from() == 14) || (move.from() == 7) || (move.from() == 1) || (move.from() == 0), true);
+    QCOMPARE(move.to() > -1 && move.to() < 16, true);
 }
 
 // Main function to run the test

@@ -164,7 +164,7 @@ void AI::attack(aiMove& move) {
 
 void AI::randomMove(aiMove& move) {
     int s = Size::Huge;
-    int random = arc4random();
+    int random = arc4random_uniform(MAX_TILES);
     int tile = -1;
     for (int i = 0; i < MAX_TILES && s == Size::Huge; i++) {
         tile = random++ % MAX_TILES;
@@ -175,7 +175,7 @@ void AI::randomMove(aiMove& move) {
     }
     move.setTo(tile);
     move.setFrom(getPawnFromStack(s - 1));
-    if (move.from() >= MAX_TILES) {
+    if (move.from() < MAX_TILES) {
         int numTile = tileToNumber(move.to());
         move.setFrom(getFromBoard(s, numTile));
     }
