@@ -34,18 +34,20 @@ public slots:
     void setSelection(int roundX, int borderZ);
     void setSelection(Gobbler* gobbler);
     void setBoard(Board* board);
+    void setMatrix(Matrix* matrix);
+    void startAi(bool aiTurn);
 
     void repaint();
-    void onClick(Matrix *matrix, const double x, const double y);
+    void onClick(const double x, const double y);
 
 private slots:
     bool checkWinner(bool player);
     int getTileFromCoord(int x, int z);
     void updateDepthOfGobblers(int x, int z);
-    void updateState(int x, int y, int z, int oldTile, int newTile, Matrix *matrix);
+    void updateState(int x, int y, int z, int oldTile, int newTile);
     void updateGobbler();
     void afterAnimation();
-    void startAi(bool aiTurn);
+
     void writeLog();
 
 signals:
@@ -58,9 +60,9 @@ private:
     bool m_blackTurn = false;
     Gobbler* m_selection = nullptr;
     Board* m_board = nullptr;
+    Matrix* m_matrix = nullptr;
     bool m_lock;
 
-    Matrix *matrx;
     int newX;
     int newY;
     int newZ;

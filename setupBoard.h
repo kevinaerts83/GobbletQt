@@ -16,13 +16,15 @@ public:
     Q_INVOKABLE void onGameVisible(QQuickItem *parentPage) {
 
         Mediator* mediator = parentPage->findChild<Mediator*>("mediator");
+        Matrix* theMatrix = parentPage->findChild<Matrix*>("matrix");
+        mediator->setMatrix(theMatrix);
         if (mediator && mediator->getList().size() == 0) {
             mediator->m_comm = m_comm;
             for (int i = 0; i < 24; i++) {
                 Gobbler *gobblerItem = new Gobbler(parentPage, new Shape(), *new Gobbler3d(150 - 15 - ((i % 4) * 30)));
 
                 if (gobblerItem) {
-                    gobblerItem->m_matrix = parentPage->findChild<Matrix*>("matrix");
+                    gobblerItem->m_matrix = theMatrix;
                     if (i == 0) { // matrix is singleton
                         if (parentPage->width() > parentPage->height()) {
                             gobblerItem->m_matrix->setVertical(false);
@@ -51,6 +53,9 @@ public:
                     mediator->addItem(gobblerItem);
                 }
             }
+        }
+        if (m_comm->isBlackTurn()) {
+            mediator->startAi(true);
         }
     }
 

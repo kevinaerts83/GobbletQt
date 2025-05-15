@@ -44,7 +44,7 @@ Page {
 
             }
             onPressed: (mouse)=> {
-                mediator.onClick(matrix, mouse.x, mouse.y);
+                mediator.onClick(mouse.x, mouse.y);
             }
         }
 
@@ -53,8 +53,8 @@ Page {
 
             // Update the scale value based on pinch
             onScaleChanged: {
-                gameArea.scaleValue *= scale;
-                gameArea.scaleValue = gameArea.scaleValue > 1.5 ? 1.5 : gameArea.scaleValue < 0.5 ? 0.5 : gameArea.scaleValue;
+                gameArea.scaleValue = scale;
+                gameArea.scaleValue = gameArea.scaleValue > 1.3 ? 1.3 : gameArea.scaleValue < 0.5 ? 0.5 : gameArea.scaleValue;
                 matrix.zoom = gameArea.scaleValue;
                 mediator.repaint();
             }

@@ -12,13 +12,10 @@
 #include "ai.h"
 
 /* TODO
-* Separate turns
 * sort on y-axis
 * Smaller build
 * Constants
 * Singleton
-* Higher board
-* zoom steps
 * scroll steps
 * Use structs
 * QDocs
@@ -102,6 +99,10 @@ void Mediator::setBoard(Board* board) {
     m_board = board;
 }
 
+void Mediator::setMatrix(Matrix* matrix) {
+    m_matrix = matrix;
+}
+
 void Mediator::repaint() {
     getBoard()->update();
 
@@ -130,14 +131,14 @@ void Mediator::repaint() {
     }
 }
 
-void Mediator::onClick(Matrix *matrix, const double x, const double y) {
+void Mediator::onClick(const double x, const double y) {
     if (m_comm->lock())
         return;
 
     double coord [4];
-    matrix -> get3dPoint(coord, x, y, false);
+    m_matrix -> get3dPoint(coord, x, y, false);
     if (abs(coord[0]) > 300 || abs(coord[2]) > 300) {
-        matrix -> get3dPoint(coord, x, y, true);
+        m_matrix -> get3dPoint(coord, x, y, true);
     }
 
     int roundX = ceil(coord[0] / 150) * 150 - 75;
@@ -168,7 +169,7 @@ void Mediator::onClick(Matrix *matrix, const double x, const double y) {
             }
         }
 
-        updateState(roundX, coord[1], roundZ, oldTile, newTile, matrix);
+        updateState(roundX, coord[1], roundZ, oldTile, newTile);
     } else {
         int borderZ = (abs(roundX) > 225) ? ((coord[2] > 75) ? 150 : ((coord[2] < -75) ? -150 : 0)) : roundZ;
         setSelection(roundX, borderZ);
@@ -190,7 +191,7 @@ void Mediator::updateDepthOfGobblers(int x, int z) {
         }
     }
 }
-void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix *matrix) {
+void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
     if (getSelection() == nullptr) {
         std::cout << "An error occurred: " << oldTile << " - " << newTile
                   << std::endl;
@@ -207,7 +208,7 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix
     if (oldTile == -1 || oldTile > 15) {
         double a = static_cast<double>(x);
         double b = static_cast<double>(z);
-        double angle = (matrix->yangle() + (matrix->isVertical() ? 90 : 0)) * M_PI / 180;
+        double angle = (m_matrix->yangle() + (m_matrix->isVertical() ? 90 : 0)) * M_PI / 180;
 
         newX = a * cos(angle) - b * sin(angle);
         newY = 0;
@@ -222,7 +223,6 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile, Matrix
     boardY = y;
     boardZ = z;
 
-    matrx = matrix;
     myNewTile = newTile;
     timer->start(20);
 }
@@ -282,7 +282,7 @@ void Mediator::startAi(bool aiTurn) {
         setSelectionByTile(move.from());
         // std::cout << move.to() << std::endl;
         int newT = move.to();
-        updateState(225 - (newT % 4) * 150, newY, 225 -  150 * (newT / 4), move.from(), newT, matrx);
+        updateState(225 - (newT % 4) * 150, newY, 225 -  150 * (newT / 4), move.from(), newT);
     }
 }
 
