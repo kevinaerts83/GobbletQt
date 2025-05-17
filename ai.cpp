@@ -164,7 +164,7 @@ void AI::attack(aiMove& move) {
 
 void AI::randomMove(aiMove& move) {
     int s = Size::Huge;
-    int random = arc4random_uniform(MAX_TILES);
+    int random = getRandom(MAX_TILES);
     int tile = -1;
     for (int i = 0; i < MAX_TILES && s == Size::Huge; i++) {
         tile = random++ % MAX_TILES;
@@ -492,10 +492,7 @@ int AI::countrZero(int num) {
     }
 
     // Generate a random number between 1 and bitCount
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist(1, bitCount);
-    int randomBitIndex = dist(gen);
+    int randomBitIndex = getRandom(bitCount);
 
     // Locate the chosen 1 bit
     int currentBitIndex = 0;
@@ -509,6 +506,13 @@ int AI::countrZero(int num) {
     }
 
     return -1; // Impossible to reach this line
+}
+
+int AI::getRandom(int upperBound) {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, upperBound);
+    return dis(gen);
 }
 
 int AI::tileToNumber(int tile) {

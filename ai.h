@@ -51,6 +51,7 @@ private:
     int count1Bits(int x);
     int countrZero(int n);
     int tileToNumber(int tile);
+    int getRandom(int upperBound);
 
     std::vector<int> rowCheck(int maxCount, bool isWhite, bool removeRowsWithSize0);
     std::vector<int> findRowsBlackWins();
@@ -89,11 +90,11 @@ private:
     const int MASKS [10] = { 61440, 3840, 240, 15, 34952, 17476, 8738, 4369, 33825, 4680 };
     const int TWICE_THREE [32] = { 63624, 62532, 61986, 61713, 36744, 20292, 12066, 7953, 35064, 17652, 8946, 4593, 34959, 17487, 8751, 4383, 62497, 36641, 34033, 33839, 62024, 8008, 4856, 4687, 36009, 50277, 42531, 38193, 39624, 22092, 12906, 4953 };
     const int BLOCK_TWICE_THREE [32] = { 32768, 16384, 8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 32768, 1024, 32, 1, 4096, 512, 64, 8, 32768, 1024, 32, 1, 8, 64, 512, 4096 };
-    const int CROSSING = 38505;
 
-    const int MAX_ROWS = 10;
-    const int MAX_TILES = 16;
-    const int ROW_SIZE = 4;
+    static const int CROSSING = 38505;
+    static const int MAX_ROWS = 10;
+    static const int MAX_TILES = 16;
+    static const int ROW_SIZE = 4;
 
     struct GradedTile {
         int tile;
