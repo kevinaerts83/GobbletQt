@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import Gobblet 1.0
 
 ApplicationWindow {
     visible: true
@@ -16,7 +17,7 @@ ApplicationWindow {
     }
 
     Connections {
-        target: setupMenu
+        target: State
         function onBlackCounterChanged() {
             stackView.push("menu.qml");
         }

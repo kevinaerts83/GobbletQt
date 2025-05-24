@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Gobblet 1.0
 
 Page {
     id: menu
@@ -79,7 +80,7 @@ Page {
             }
 
             Text {
-                text: setupMenu ? setupMenu.whiteCounter : "Loading..."
+                text: State.whiteCounter
                 font.pixelSize: Math.min(menu.height / 8, Math.min(menu.width * 0.24, 130))
                 Layout.alignment: Qt.AlignHCenter
                 color: "#D0D0D0"
@@ -118,7 +119,7 @@ Page {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        setupMenu.setLock();
+                        State.lock = false;
                         while (stackView.depth > 1) {
                             stackView.pop();
                         }
@@ -161,7 +162,6 @@ Page {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        //setupMenu.setLock(true);
                         stackView.pop();
                     }
                 }
@@ -187,9 +187,9 @@ Page {
 
                         var zoom = width / 4000;
                         // Draw additional body and head shape details
-                        if (setupMenu.mode === 0) {
+                        if (State.mode === 0) {
                             drawFigure(ctx, "#ACAFA0", width / 2 - 60, height / 2 - 68, 1.3 + zoom);
-                        } else if (setupMenu.mode === 1) {
+                        } else if (State.mode === 1) {
                             drawComputer(ctx, "#00bb00", "#009900", width / 2 - 10, height / 2 - 25, 0.16 + zoom);
                         } else {
                             drawComputer(ctx, "#bb0000", "#990000", width / 2 - 10, height / 2 - 25, 0.16 + zoom);
@@ -311,8 +311,8 @@ Page {
                     anchors.fill: parent
                     onClicked: {
                         onClicked: {
-                            setupMenu.setMode(setupMenu.mode + 1);
-                            if (setupMenu.mode === 3) setupMenu.setMode(0);
+                            State.mode = State.mode + 1;
+                            if (State.mode === 3) State.mode = 0;
                             rightButton.requestPaint();
                         }
                     }
@@ -320,7 +320,7 @@ Page {
             }
 
             Text {
-                text: setupMenu ? setupMenu.blackCounter : "Loading..."
+                text: State.blackCounter
                 Layout.alignment: Qt.AlignHCenter
                 font.pixelSize: Math.min(menu.height / 8, Math.min(menu.width * 0.24, 130))
                 color: "#D0D0D0"

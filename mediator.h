@@ -6,7 +6,7 @@
 #include <QObject>
 #include "gobbler.h"
 #include "board.h"
-#include "bridge.h"
+#include "state.h"
 
 class Mediator : public QObject
 {
@@ -15,7 +15,7 @@ class Mediator : public QObject
     Q_PROPERTY(bool blackTurn READ isBlackTurn NOTIFY blackTurnChanged)
     Q_PROPERTY(Gobbler* selection READ getSelection NOTIFY selectionChanged)
     Q_PROPERTY(Board* board READ getBoard CONSTANT)
-    Q_PROPERTY(Bridge* comm MEMBER m_comm)
+    Q_PROPERTY(State* state MEMBER m_comm)
     QML_ELEMENT
 
 public:
@@ -24,7 +24,7 @@ public:
     bool isBlackTurn() const;
     Gobbler* getSelection() const;
     Board* getBoard() const;
-    Bridge* m_comm;
+    State* m_comm;
     QTimer *timer;
 
 public slots:

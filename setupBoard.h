@@ -3,23 +3,24 @@
 
 #include <QObject>
 
-#include "bridge.h"
+#include "state.h"
 #include "mediator.h"
 #include "gobbler.h"
 
 class SetupBoard : public QObject {
     Q_OBJECT
 public:
-    explicit SetupBoard(Bridge *comm, QObject *parent = nullptr)
-        : QObject(parent), m_comm(comm) {}
+    explicit SetupBoard(QObject *parent = nullptr)
+        : QObject(parent) {}
 
     Q_INVOKABLE void onGameVisible(QQuickItem *parentPage) {
 
+        State* state = qobject_cast<State*>(State::instance());
         Mediator* mediator = parentPage->findChild<Mediator*>("mediator");
         Matrix* theMatrix = parentPage->findChild<Matrix*>("matrix");
         mediator->setMatrix(theMatrix);
         if (mediator && mediator->getList().size() == 0) {
-            mediator->m_comm = m_comm;
+            mediator->m_comm = state;
             for (int i = 0; i < 24; i++) {
                 Gobbler *gobblerItem = new Gobbler(parentPage, new Shape(), *new Gobbler3d(150 - 15 - ((i % 4) * 30)));
 
@@ -54,12 +55,9 @@ public:
                 }
             }
         }
-        if (m_comm->isBlackTurn()) {
+        if (state->isBlackTurn()) {
             mediator->startAi(true);
         }
     }
-
-private:
-    Bridge *m_comm;
 };
 #endif // SETUPBOARD_H

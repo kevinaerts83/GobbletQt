@@ -6,37 +6,16 @@
 #include <QPainter>
 
 #include "setupBoard.h"
-#include "setupMenu.h"
-#include "bridge.h"
+#include "state.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
 
-    Bridge comm;
-    SetupMenu setupMenu;
-    SetupBoard setupBoard(&comm);
+    qmlRegisterSingletonType<State>("Gobblet", 1, 0, "State", State::instance);
 
-    // Connect the button's increment signal to update the counter in the label
-    QObject::connect(&comm, &Bridge::incrementWhite, [&]() {
-        setupMenu.setWhiteCounter(setupMenu.whiteCounter() + 1);
-    });
-    QObject::connect(&comm, &Bridge::incrementBlack, [&]() {
-        setupMenu.setBlackCounter(setupMenu.blackCounter() + 1);
-    });
-    QObject::connect(&setupMenu, &SetupMenu::modeChanged, [&]() {
-        comm.setMode(setupMenu.mode());
-    });
-    QObject::connect(&setupMenu, &SetupMenu::lockChanged, [&]() {
-        comm.setLock(false);
-    });
-    /*QObject::connect(&setupMenu, &SetupMenu::verticalChanged, [&]() {
-        comm.setVertical(setupMenu.isVertical());
-    });*/
-
-    engine.rootContext()->setContextProperty("setupMenu", &setupMenu);
-    engine.rootContext()->setContextProperty("comm", &comm);
+    SetupBoard setupBoard;
     engine.rootContext()->setContextProperty("setupBoard", &setupBoard);
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));

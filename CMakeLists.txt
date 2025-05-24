@@ -11,16 +11,15 @@ find_package(Qt6 REQUIRED COMPONENTS Quick)
 qt_standard_project_setup()
 
 qt_add_executable(Gobblet WIN32 MACOSX_BUNDLE
+    state.h state.cpp
     board.cpp board.h
     board3d.cpp board3d.h
-    bridge.h
     gobbler.cpp gobbler.h
     gobbler3d.cpp gobbler3d.h
     main.cpp
     matrix.cpp matrix.h
     mediator.cpp mediator.h
     setupBoard.h
-    setupMenu.h
     shape.cpp shape.h
     shape3d.cpp shape3d.h
 )
@@ -28,9 +27,8 @@ qt_add_executable(Gobblet WIN32 MACOSX_BUNDLE
 add_library(gobblet_ai
     ai.cpp ai.h
     aimove.cpp aimove.h
-
-
 )
+
 target_include_directories(gobblet_ai PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(Gobblet PRIVATE gobblet_ai)
 
@@ -41,9 +39,9 @@ qt_add_qml_module(Gobblet
     VERSION 1.0
     QML_FILES
         main.qml
-        gobbler.qml
         menu.qml
         game.qml
+        gobbler.qml
     NO_RESOURCE_TARGET_PATH
 )
 
