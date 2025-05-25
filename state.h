@@ -2,6 +2,7 @@
 #define STATE_H
 
 #include <QObject>
+#include <QVector>
 #include <qqmlengine.h>
 
 class State : public QObject {
@@ -34,21 +35,25 @@ public:
         }
     }
 
-    int whiteCounter() const { return m_whiteCounter; }
+    int whiteCounter() const {
+        return m_whiteCounters[m_mode];
+    }
 
-    void setWhiteCounter(int count) {
-        if (m_whiteCounter != count) {
-            m_whiteCounter = count;
-            emit whiteCounterChanged(m_whiteCounter);
+    void setWhiteCounter(int value) {
+        if (m_whiteCounters[m_mode] != value) {
+            m_whiteCounters[m_mode] = value;
+            emit whiteCounterChanged(value);
         }
     }
 
-    int blackCounter() const { return m_blackCounter; }
+    int blackCounter() const {
+        return m_blackCounters[m_mode];
+    }
 
-    void setBlackCounter(int count) {
-        if (m_blackCounter != count) {
-            m_blackCounter = count;
-            emit blackCounterChanged(m_blackCounter);
+    void setBlackCounter(int value) {
+        if (m_blackCounters[m_mode] != value) {
+            m_blackCounters[m_mode] = value;
+            emit blackCounterChanged(value);
         }
     }
 
@@ -61,19 +66,21 @@ signals:
 public slots:
     void whiteWon() {
         m_blackTurn = !m_blackTurn;
-        setWhiteCounter(m_whiteCounter + 1);
+        setWhiteCounter(whiteCounter() + 1);
     }
+
     void blackWon() {
         m_blackTurn = !m_blackTurn;
-        setBlackCounter(m_blackCounter + 1);
+        setBlackCounter(blackCounter() + 1);
     }
 
 private:
     explicit State(QObject *parent = nullptr);
-    int m_mode;
-    int m_whiteCounter;
-    int m_blackCounter;
-    bool m_lock;
+
+    int m_mode = 0;
+    int m_whiteCounters[3] = {0, 0, 0};
+    int m_blackCounters[3] = {0, 0, 0};
+    bool m_lock = false;
     bool m_blackTurn = false;
 };
 

@@ -16,37 +16,45 @@ public:
     Q_INVOKABLE void onGameVisible(QQuickItem *parentPage) {
 
         State* state = qobject_cast<State*>(State::instance());
-        Mediator* mediator = parentPage->findChild<Mediator*>("mediator");
+
         Matrix* theMatrix = parentPage->findChild<Matrix*>("matrix");
+        if (parentPage->width() > parentPage->height()) {
+            theMatrix->setVertical(false);
+            theMatrix->setZoom(parentPage->height() / ZOOM);
+        } else {
+            theMatrix->setVertical(true);
+            theMatrix->setZoom(parentPage->width() / ZOOM);
+        }
+        theMatrix->setCenter(parentPage->width(), parentPage->height());
+
+        Mediator* mediator = parentPage->findChild<Mediator*>("mediator");
         mediator->setMatrix(theMatrix);
         if (mediator && mediator->getList().size() == 0) {
             mediator->m_comm = state;
-            for (int i = 0; i < 24; i++) {
-                Gobbler *gobblerItem = new Gobbler(parentPage, new Shape(), *new Gobbler3d(150 - 15 - ((i % 4) * 30)));
+            for (int i = 0; i < GOBBLERS; i++) {
+
+                int gobblerSize = i % 4; // 0 = HUGE, 1 = LARGE, 2 = MEDIUM, 3 = SMALL
+
+                bool isBlack = i >= (GOBBLERS / 2);
+                int xPosition = SIZE_TILE * 3.5 * (isBlack ? 1 : -1); // 3 Tiles from the center, and a half to center it.
+                int j = isBlack ? i - (GOBBLERS / 2) : i;
+                int zPosition = ((j / 4) - 1) * SIZE_TILE; // divide 12 into 3 piles
+
+                Gobbler *gobblerItem = new Gobbler(parentPage, new Shape(), *new Gobbler3d(SIZE_TILE - PADDING - (gobblerSize * SIZE_DIFF)));
 
                 if (gobblerItem) {
                     gobblerItem->m_matrix = theMatrix;
-                    if (i == 0) { // matrix is singleton
-                        if (parentPage->width() > parentPage->height()) {
-                            gobblerItem->m_matrix->setVertical(false);
-                            gobblerItem->m_matrix->setZoom(parentPage->height() / 900); // 1200
-                        } else {
-                            gobblerItem->m_matrix->setVertical(true);
-                            gobblerItem->m_matrix->setZoom(parentPage->width() / 900); // 800
-                        }
-                        gobblerItem->m_matrix->setCenter(parentPage->width(), parentPage->height());
-                    }
 
-                    gobblerItem->setDepth(i % 4);
-                    gobblerItem->setVisible((i % 4) == 0);
-                    gobblerItem->setSize(i % 4);
-                    gobblerItem->setX3d((i > 11) ? 525 : -525);
+                    gobblerItem->setDepth(gobblerSize);
+                    gobblerItem->setVisible(gobblerSize == HUGE);
+                    gobblerItem->setSize(gobblerSize);
+                    gobblerItem->setX3d(xPosition);
                     gobblerItem->setY3d(0);
-                    gobblerItem->setZ3d(-150 + ((((i > 11) ? i - 12 : i)/ 4) * 150));
+                    gobblerItem->setZ3d(zPosition);
 
-                    gobblerItem->setWhite(i < 12);
-                    gobblerItem->setProperty("id", i);
-                    gobblerItem->setProperty("name", i);
+                    gobblerItem->setWhite(!isBlack);
+                    //gobblerItem->setProperty("id", i);
+                    //gobblerItem->setProperty("name", i);
 
                     gobblerItem->setWidth(parentPage->width());
                     gobblerItem->setHeight(parentPage->height());
@@ -59,5 +67,13 @@ public:
             mediator->startAi(true);
         }
     }
+
+private:
+    static const int ZOOM = 900;
+    static const int GOBBLERS = 24;
+    static const int PADDING = 15;
+    static const int SIZE_DIFF = 30;
+    static const int SIZE_TILE = 150;
+    static const int HUGE = 0;
 };
 #endif // SETUPBOARD_H

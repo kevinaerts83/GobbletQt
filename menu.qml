@@ -80,6 +80,7 @@ Page {
             }
 
             Text {
+                id: whiteScore
                 text: State.whiteCounter
                 font.pixelSize: Math.min(menu.height / 8, Math.min(menu.width * 0.24, 130))
                 Layout.alignment: Qt.AlignHCenter
@@ -314,12 +315,15 @@ Page {
                             State.mode = State.mode + 1;
                             if (State.mode === 3) State.mode = 0;
                             rightButton.requestPaint();
+                            blackScore.text = State.blackCounter;
+                            whiteScore.text = State.whiteCounter;
                         }
                     }
                 }
             }
 
             Text {
+                id: blackScore
                 text: State.blackCounter
                 Layout.alignment: Qt.AlignHCenter
                 font.pixelSize: Math.min(menu.height / 8, Math.min(menu.width * 0.24, 130))
