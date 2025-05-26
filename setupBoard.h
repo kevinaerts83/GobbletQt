@@ -46,7 +46,7 @@ public:
                     gobblerItem->m_matrix = theMatrix;
 
                     gobblerItem->setDepth(gobblerSize);
-                    gobblerItem->setVisible(gobblerSize == HUGE);
+                    gobblerItem->setVisible(gobblerSize == 0);
                     gobblerItem->setSize(gobblerSize);
                     gobblerItem->setX3d(xPosition);
                     gobblerItem->setY3d(0);
@@ -74,6 +74,5 @@ private:
     static const int PADDING = 15;
     static const int SIZE_DIFF = 30;
     static const int SIZE_TILE = 150;
-    static const int HUGE = 0;
 };
 #endif // SETUPBOARD_H
