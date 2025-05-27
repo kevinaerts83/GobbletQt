@@ -11,9 +11,10 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    QQmlApplicationEngine engine;
 
-    qmlRegisterSingletonType<State>("Gobblet", 1, 0, "State", State::instance);
+    qmlRegisterSingletonInstance("Gobblet", 1, 0, "GameState", State::instance());
+
+    QQmlApplicationEngine engine;
 
     SetupBoard setupBoard;
     engine.rootContext()->setContextProperty("setupBoard", &setupBoard);
