@@ -17,7 +17,7 @@ ApplicationWindow {
     }
 
     Connections {
-        target: State
+        target: GameState
         function onBlackCounterChanged() {
             stackView.push("menu.qml");
         }
