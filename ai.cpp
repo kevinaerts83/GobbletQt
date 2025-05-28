@@ -47,6 +47,7 @@ void AI::tryToWin(aiMove& move) {
     for (int row : rows) {
         int maskToCheck = MASKS[row];
         move.setTo(getUnOccupiedTile(maskToCheck, m_visibleBlack));
+
         int size = (tileToNumber(move.to()) & m_visibleWhite) != 0 ? getPawnSize(move.to()) : Size::Empty;
         move.setFrom(getFromTile(size, {row}));
         if (move.from() > -1) {
@@ -492,7 +493,7 @@ int AI::countrZero(int num) {
     }
 
     // Generate a random number between 1 and bitCount
-    int randomBitIndex = getRandom(bitCount);
+    int randomBitIndex = getRandom(bitCount - 1) + 1; // 0 is not allowed
 
     // Locate the chosen 1 bit
     int currentBitIndex = 0;
