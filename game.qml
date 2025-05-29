@@ -21,6 +21,8 @@ Page {
 
     function onOrientationChanged(newOrientation) {
         matrix.setCenter(parent.width, parent.height)
+        mediator.resetItems(parent.width, parent.height)
+        mediator.repaint()
     }
 
     Matrix {
@@ -49,7 +51,7 @@ Page {
 
             }
             onPressed: (mouse)=> {
-                mediator.onClick(mouse.x, mouse.y);
+                mediator.onClick(mouse.x, mouse.y)
             }
         }
 
@@ -58,10 +60,10 @@ Page {
 
             // Update the scale value based on pinch
             onScaleChanged: {
-                gameArea.scaleValue = scale;
-                gameArea.scaleValue = gameArea.scaleValue > 1.3 ? 1.3 : gameArea.scaleValue < 0.5 ? 0.5 : gameArea.scaleValue;
-                matrix.zoom = gameArea.scaleValue;
-                mediator.repaint();
+                gameArea.scaleValue = scale
+                gameArea.scaleValue = gameArea.scaleValue > 1.3 ? 1.3 : gameArea.scaleValue < 0.5 ? 0.5 : gameArea.scaleValue
+                matrix.zoom = gameArea.scaleValue
+                mediator.repaint()
             }
         }
 
@@ -71,33 +73,33 @@ Page {
 
             onActiveChanged: {
                 if (!dragHandler.active) {
-                    gameArea.lastCrossedThresholdX = 0;
-                    gameArea.lastCrossedThresholdY = 0;
+                    gameArea.lastCrossedThresholdX = 0
+                    gameArea.lastCrossedThresholdY = 0
                 }
             }
 
             onTranslationChanged: {
-                const oldX = Math.floor(dragHandler.centroid.position.x / 30);
+                const oldX = Math.floor(dragHandler.centroid.position.x / 30)
                 if (oldX != gameArea.lastCrossedThresholdX) {
-                    matrix.yangle += (oldX < gameArea.lastCrossedThresholdX) ? 10 : -10;
-                    mediator.repaint();
-                    gameArea.lastCrossedThresholdX = oldX;
+                    matrix.yangle += (oldX < gameArea.lastCrossedThresholdX) ? 10 : -10
+                    mediator.repaint()
+                    gameArea.lastCrossedThresholdX = oldX
                 }
 
-                const oldY = Math.floor(dragHandler.centroid.position.y / 30);
+                const oldY = Math.floor(dragHandler.centroid.position.y / 30)
                 if (oldY != gameArea.lastCrossedThresholdY) {
 
-                    const newAngle = (oldY > gameArea.lastCrossedThresholdY) ? 10 : -10;
+                    const newAngle = (oldY > gameArea.lastCrossedThresholdY) ? 10 : -10
                     if ((matrix.xangle + newAngle) < 5) {
-                        matrix.xangle += 3;
+                        matrix.xangle += 3
                     } else if ((matrix.xangle + newAngle) > 90) {
-                        matrix.xangle -= 10;
+                        matrix.xangle -= 10
                     } else {
-                        matrix.xangle += newAngle;
+                        matrix.xangle += newAngle
                     }
 
-                    mediator.repaint();
-                    gameArea.lastCrossedThresholdY = oldY;
+                    mediator.repaint()
+                    gameArea.lastCrossedThresholdY = oldY
                 }
             }
         }
@@ -110,7 +112,7 @@ Page {
         height: parent.height
 
         Component.onCompleted: {
-            mediator.setBoard(this);
+            mediator.setBoard(this)
         }
     }
 
@@ -151,7 +153,7 @@ Page {
             anchors.fill: parent
             onClicked: {
                 onClicked: {
-                    stackView.push("menu.qml");
+                    stackView.push("menu.qml")
                 }
             }
         }

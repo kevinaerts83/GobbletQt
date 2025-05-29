@@ -36,6 +36,7 @@ public slots:
     void setBoard(Board* board);
     void setMatrix(Matrix* matrix);
     void startAi(bool aiTurn);
+    void resetItems(double width, double height);
 
     void repaint();
     void onClick(const double x, const double y);

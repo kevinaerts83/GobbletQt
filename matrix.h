@@ -30,7 +30,7 @@ public:
     void getTransposedMatrix(double matrix [4][4], double result [4][4]);
     void get3dPoint(double result [4], const double x, const double y, const bool stack);
 
-    void setCenter(double width, double height);
+    Q_INVOKABLE void setCenter(double width, double height);
 
     double xangle() const;
     void setXangle(const double &xangle);

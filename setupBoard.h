@@ -18,13 +18,6 @@ public:
         State* state = qobject_cast<State*>(State::instance());
 
         Matrix* theMatrix = parentPage->findChild<Matrix*>("matrix");
-        if (parentPage->width() > parentPage->height()) {
-            theMatrix->setVertical(false);
-            theMatrix->setZoom(parentPage->height() / ZOOM);
-        } else {
-            theMatrix->setVertical(true);
-            theMatrix->setZoom(parentPage->width() / ZOOM);
-        }
         theMatrix->setCenter(parentPage->width(), parentPage->height());
 
         Mediator* mediator = parentPage->findChild<Mediator*>("mediator");
@@ -69,7 +62,6 @@ public:
     }
 
 private:
-    static const int ZOOM = 900;
     static const int GOBBLERS = 24;
     static const int PADDING = 15;
     static const int SIZE_DIFF = 30;

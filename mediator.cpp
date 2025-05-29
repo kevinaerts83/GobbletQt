@@ -286,6 +286,13 @@ void Mediator::startAi(bool aiTurn) {
     }
 }
 
+void Mediator::resetItems(double width, double height) {
+    for (const auto &item : m_list) {
+        item->setWidth(width);
+        item->setHeight(height);
+    }
+}
+
 void Mediator::updateGobbler() {
     m_comm->setLock(true);
 

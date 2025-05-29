@@ -7,7 +7,16 @@ Matrix::Matrix(QObject *parent) : QObject(parent)
 
 }
 
-void Matrix::setCenter(double width, double height) {
+Q_INVOKABLE void Matrix::setCenter(double width, double height) {
+
+    if (width > height) {
+        setVertical(false);
+        setZoom(height / 900);
+    } else {
+        setVertical(true);
+        setZoom(width / 900);
+    }
+
     double centerX = width / 2;
     double centerY = height / 2;
     double centerZ = 0;
