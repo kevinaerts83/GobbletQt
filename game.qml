@@ -15,7 +15,12 @@ Page {
     }
 
     Component.onCompleted: {
-        setupBoard.onGameVisible(game);
+        setupBoard.onGameVisible(game)
+        Screen.orientationChanged.connect(onOrientationChanged)
+    }
+
+    function onOrientationChanged(newOrientation) {
+        matrix.setCenter(parent.width, parent.height)
     }
 
     Matrix {
