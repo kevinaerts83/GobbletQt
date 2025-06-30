@@ -48,6 +48,12 @@ private slots:
     void updateState(int x, int y, int z, int oldTile, int newTile);
     void updateGobbler();
     void afterAnimation();
+    bool isStack(double x);
+    bool isStack(double x, double z, bool margin);
+    int getTileX(int tile);
+    int getTileY(int tile);
+    int roundCoord(double coord);
+    int getBorderZ(int x, double y, int z);
 
     void writeLog();
 
@@ -75,9 +81,11 @@ private:
     int myNewTile;
 
     int m_state [2][4] = {{ 0, 0, 0, 0}, {0, 0, 0, 0}};
-    int m_mask [10] = {61440, 3840, 240, 15, 34952, 17476, 8738, 4369, 33825, 4680};
-    int m_speed = 50;
 
+    constexpr static const int WINNING_NO [10] = {61440, 3840, 240, 15, 34952, 17476, 8738, 4369, 33825, 4680};
+    static const int SPEED = 50;
+    static const int MAX_TILE_INDEX = 15;
+    static const int TIMER_VALUE = 20;
 };
 
 #endif // MEDIATOR_H

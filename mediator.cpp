@@ -11,16 +11,6 @@
 #include "gobbler.h"
 #include "ai.h"
 
-/* TODO
-* sort on y-axis
-* Smaller build
-* Constants
-* Singleton
-* scroll steps
-* Use structs
-* QDocs
-* */
-
 Mediator::Mediator(QObject *parent) : QObject(parent)
 {
     timer = new QTimer(this);
@@ -55,19 +45,16 @@ Gobbler* Mediator::getSelection() const {
 }
 
 void Mediator::setSelectionByTile(int tile) {
-    if (tile > 15) {
-        int theSize = tile - 16;
+    if (tile > MAX_TILE_INDEX) {
+        int theSize = tile - MAX_TILE_INDEX - 1;
         for (const auto& item : getList()) {
-            if (item->depth() == 0
-                && item->size() == theSize
-                && ((isBlackTurn() && item->x3d() > 225) || (!isBlackTurn() && item->x3d() < -225))) {
-
+            if (item->depth() == 0 && item->size() == theSize && isStack(item->x3d())) {
                     setSelection(item);
                     break;
             }
         }
     } else {
-        setSelection(225 - (tile % 4) * 150, 225 - 150 * (tile / 4));
+        setSelection(getTileX(tile), getTileY(tile));
     }
 }
 
@@ -112,12 +99,6 @@ void Mediator::repaint() {
 
     std::sort(m_list.begin(), m_list.end(), Gobbler::compareByZindex);
 
-    /*for (int i = 0; i < m_list.size(); i++) {
-        if (m_list[i]->depth() == 0) {
-            std::cout << m_list[i]->name().toStdString() << " " << m_list[i]->getZIndex() << std::endl;
-        }
-    }*/
-
     for (int i = 0; i < m_list.size(); i++) {
         m_list[i]->setZ(i);
     }
@@ -136,13 +117,13 @@ void Mediator::onClick(const double x, const double y) {
         return;
 
     double coord [4];
-    m_matrix -> get3dPoint(coord, x, y, false);
-    if (abs(coord[0]) > 300 || abs(coord[2]) > 300) {
-        m_matrix -> get3dPoint(coord, x, y, true);
+    m_matrix -> get3dPoint(coord, x, y, false); // from board
+    if (isStack(coord[0], coord[2], true)) {
+        m_matrix -> get3dPoint(coord, x, y, true); // from stack
     }
 
-    int roundX = ceil(coord[0] / 150) * 150 - 75;
-    int roundZ = ceil(coord[2] / 150) * 150 - 75;
+    int roundX = roundCoord(coord[0]);
+    int roundZ = roundCoord(coord[2]);
 
     if (getSelection() != nullptr) {
 
@@ -151,7 +132,7 @@ void Mediator::onClick(const double x, const double y) {
             oldTile = getTileFromCoord(getSelection()->x3d(), getSelection()->z3d());
         }
 
-        if (abs(roundX) > 225 || abs(roundZ) > 225) {
+        if (isStack(roundX, roundZ, false)) {
             setSelection(nullptr);
             repaint();
             return;
@@ -160,7 +141,7 @@ void Mediator::onClick(const double x, const double y) {
         int newTile = getTileFromCoord(roundX, roundZ);
 
         int size = getSelection()->size();
-        int mask = pow(2, newTile);
+        int mask = 1 << newTile;
         for (int i = 0; i <= size; i++) {
             if (((m_state[0][i] | m_state[1][i]) & mask) > 0) {
                 setSelection(nullptr);
@@ -171,7 +152,7 @@ void Mediator::onClick(const double x, const double y) {
 
         updateState(roundX, coord[1], roundZ, oldTile, newTile);
     } else {
-        int borderZ = (abs(roundX) > 225) ? ((coord[2] > 75) ? 150 : ((coord[2] < -75) ? -150 : 0)) : roundZ;
+        int borderZ = getBorderZ(roundX, coord[2], roundZ);
         setSelection(roundX, borderZ);
         repaint();
     }
@@ -200,12 +181,12 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
     }
     if (oldTile > -1) {
         // update state of oldTile
-        m_state[getSelection()->isWhite()][getSelection()->size()] ^= (int)pow(2, oldTile);
+        m_state[getSelection()->isWhite()][getSelection()->size()] ^= (1 << oldTile);
     }
 
     updateDepthOfGobblers(x, z);
 
-    if (oldTile == -1 || oldTile > 15) {
+    if (oldTile == -1 || oldTile > MAX_TILE_INDEX) {
         double a = static_cast<double>(x);
         double b = static_cast<double>(z);
         double angle = (m_matrix->yangle() + (m_matrix->isVertical() ? 90 : 0)) * M_PI / 180;
@@ -224,7 +205,7 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
     boardZ = z;
 
     myNewTile = newTile;
-    timer->start(20);
+    timer->start(TIMER_VALUE);
 }
 
 void Mediator::afterAnimation() {
@@ -236,7 +217,7 @@ void Mediator::afterAnimation() {
     }
 
     // update state of new tile
-    m_state[getSelection()->isWhite()][getSelection()->size()] |= (int) pow(2, myNewTile); //Set new position
+    m_state[getSelection()->isWhite()][getSelection()->size()] |= (1 << myNewTile); //Set new position
 
     if (!getSelection()->model.isOnBoard()) {
         getSelection()->setX3d(boardX);
@@ -282,7 +263,7 @@ void Mediator::startAi(bool aiTurn) {
         setSelectionByTile(move.from());
         // std::cout << move.to() << std::endl;
         int newT = move.to();
-        updateState(225 - (newT % 4) * 150, newY, 225 -  150 * (newT / 4), move.from(), newT);
+        updateState(getTileX(newT), newY, getTileY(newT), move.from(), newT);
     }
 }
 
@@ -302,26 +283,26 @@ void Mediator::updateGobbler() {
 
     if (newX != x) {
         if (newX < x) {
-            x -= (x < (newX + m_speed)) ? (x - newX) : m_speed;
+            x -= (x < (newX + SPEED)) ? (x - newX) : SPEED;
         } else {
-            x += (x > (newX - m_speed)) ? (newX - x) : m_speed;
+            x += (x > (newX - SPEED)) ? (newX - x) : SPEED;
         }
     }
 
     if (newZ != z) {
         if (newZ < z) {
-            z -= (z < (newZ + m_speed)) ? (z - newZ) : m_speed;
+            z -= (z < (newZ + SPEED)) ? (z - newZ) : SPEED;
         } else {
-            z += (z > (newZ - m_speed)) ? (newZ - z) : m_speed;
+            z += (z > (newZ - SPEED)) ? (newZ - z) : SPEED;
         }
     }
 
 
     if (x == newX && z == newZ) {
-        y += (y > (newY - m_speed)) ? (newY - y) : m_speed;
+        y += (y > (newY - SPEED)) ? (newY - y) : SPEED;
     } else {
         if (y > -200) {
-            y -= m_speed * 2;
+            y -= SPEED * 2;
         }
     }
 
@@ -338,7 +319,47 @@ void Mediator::updateGobbler() {
 }
 
 int Mediator::getTileFromCoord(int x, int z) {
-    return 15 - ((x + 225) / 150 + ((z + 225) / 150) * 4);
+    return MAX_TILE_INDEX - ((x + 225) / 150 + ((z + 225) / 150) * 4);
+}
+
+bool Mediator::isStack(double x){
+    return isBlackTurn() ? x > 225 : x < -225;
+}
+
+bool Mediator::isStack(double x, double z, bool margin) {
+    int test = 225 + (margin ? 75 : 0);
+    return abs(x) > test || abs(z) > test;
+}
+
+int Mediator::getTileX(int tile){
+    return 225 - 150 * (tile % 4);
+}
+
+int Mediator::getTileY(int tile){
+    return 225 - 150 * (tile / 4);
+}
+
+int Mediator::roundCoord(double coord) {
+    return ceil(coord / 150) * 150 - 75;
+}
+
+int Mediator::getBorderZ(int x, double y, int z) {
+    int border;
+
+    if (abs(x) > 225) { // is stack
+        if (y > 75) { // outer circle
+            border = 150;
+        } else {
+            if (y < -75) { // inner circle
+                border = -150;
+            } else {
+                border = 0;
+            }
+        }
+    } else {
+        border = z;
+    }
+    return border;
 }
 
 /*
@@ -368,7 +389,7 @@ bool Mediator::checkWinner(bool player) {
 
     bool won = false;
     for (int i = 0; i < 10; i++) {
-        if ((m_mask[i] & number) == m_mask[i]) {
+        if ((WINNING_NO[i] & number) == WINNING_NO[i]) {
             won = true;
             break;
         }
