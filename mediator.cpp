@@ -143,7 +143,7 @@ void Mediator::onClick(const double x, const double y) {
         int size = getSelection()->size();
         int mask = 1 << newTile;
         for (int i = 0; i <= size; i++) {
-            if (((m_state[0][i] | m_state[1][i]) & mask) > 0) {
+            if (((m_state[0][i] | m_state[1][i]) & mask) > 0) { // TODO expand VALIDATION, must be empty if from stack of 3 in a row
                 setSelection(nullptr);
                 repaint();
                 return;

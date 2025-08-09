@@ -167,6 +167,33 @@ Page {
                     }
                 }
             }
+
+            Rectangle {
+                Layout.preferredWidth: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                Layout.preferredHeight: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                radius: Math.min(menu.width, menu.height) / 16  // Make it circular
+                color: "#4CAF50"  // Green background color
+                id: helpButton
+                // Eyes
+                Text {
+                    id: qmark
+                    anchors.centerIn: parent
+                    text: "?"
+                    color: "#FFF"
+                    // choose a scale factor; tweak 0.55 to taste
+                    font.pixelSize: Math.max(12, Math.floor(Math.min(helpButton.width, helpButton.height) * 0.55))
+                    font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        stackView.push("help.qml");
+                    }
+                }
+            }
         }
 
         ColumnLayout {

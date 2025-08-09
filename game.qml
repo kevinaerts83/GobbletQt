@@ -131,7 +131,7 @@ Page {
                 var ctx = getContext("2d");
                 ctx.clearRect(0, 0, width, height); // Clear previous drawings
 
-                ctx.fillStyle = "black";
+                ctx.fillStyle = "white";
 
                 // Define circle properties
                 var circleRadius = 3;
@@ -152,9 +152,7 @@ Page {
         MouseArea {
             anchors.fill: parent
             onClicked: {
-                onClicked: {
-                    stackView.push("menu.qml")
-                }
+                stackView.push("menu.qml")
             }
         }
     }
