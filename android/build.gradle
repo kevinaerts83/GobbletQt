@@ -38,7 +38,8 @@ android {
      *******************************************************/
 
     namespace androidPackageName
-    compileSdkVersion androidCompileSdkVersion
+    /* compileSdkVersion androidCompileSdkVersion */
+    compileSdkVersion 35
     buildToolsVersion androidBuildToolsVersion
     ndkVersion androidNdkVersion
 
@@ -79,7 +80,8 @@ android {
     defaultConfig {
         resConfig "en"
         minSdkVersion qtMinSdkVersion
-        targetSdkVersion qtTargetSdkVersion
+        /* targetSdkVersion qtTargetSdkVersion */
+        targetSdkVersion 35
         ndk.abiFilters = qtTargetAbiList.split(",")
     }
 }
