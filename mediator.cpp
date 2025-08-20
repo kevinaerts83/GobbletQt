@@ -112,9 +112,10 @@ void Mediator::repaint() {
     }
 }
 
-void Mediator::onClick(const double x, const double y) {
-    if (m_comm->lock())
-        return;
+bool Mediator::onClick(const double x, const double y) {
+    if (m_comm->lock()) {
+        return true;
+    }
 
     double coord [4];
     m_matrix -> get3dPoint(coord, x, y, false); // from board
@@ -135,7 +136,7 @@ void Mediator::onClick(const double x, const double y) {
         if (isStack(roundX, roundZ, false)) {
             setSelection(nullptr);
             repaint();
-            return;
+            return true;
         }
 
         int newTile = getTileFromCoord(roundX, roundZ);
@@ -146,7 +147,7 @@ void Mediator::onClick(const double x, const double y) {
             if (((m_state[0][i] | m_state[1][i]) & mask) > 0) { // TODO expand VALIDATION, must be empty if from stack of 3 in a row
                 setSelection(nullptr);
                 repaint();
-                return;
+                return false;
             }
         }
 
@@ -156,6 +157,8 @@ void Mediator::onClick(const double x, const double y) {
         setSelection(roundX, borderZ);
         repaint();
     }
+
+    return true;
 }
 
 void Mediator::updateDepthOfGobblers(int x, int z) {

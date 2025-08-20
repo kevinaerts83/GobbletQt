@@ -35,8 +35,13 @@ Page {
         objectName: "mediator"
     }
 
-    Rectangle
-    {
+    Label {
+        id: errorLabel
+        width: parent.width
+        horizontalAlignment: "AlignHCenter"
+    }
+
+    Rectangle {
         id: gameArea
         anchors.fill: parent
         color: "transparent"
@@ -51,7 +56,11 @@ Page {
 
             }
             onPressed: (mouse)=> {
-                mediator.onClick(mouse.x, mouse.y)
+                if (!mediator.onClick(mouse.x, mouse.y)) {
+                    errorLabel.text = "ERROR OCCURED"
+                } else {
+                    errorLabel.text = ""
+                }
             }
         }
 

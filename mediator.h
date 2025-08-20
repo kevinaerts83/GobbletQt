@@ -39,7 +39,7 @@ public slots:
     void resetItems(double width, double height);
 
     void repaint();
-    void onClick(const double x, const double y);
+    bool onClick(const double x, const double y);
 
 private slots:
     bool checkWinner(bool player);
