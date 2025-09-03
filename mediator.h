@@ -49,11 +49,12 @@ private slots:
     void updateGobbler();
     void afterAnimation();
     bool isStack(double x);
-    bool isStack(double x, double z, bool margin);
+    bool isNextToBoard(double x, double z, bool margin);
     int getTileX(int tile);
     int getTileY(int tile);
     int roundCoord(double coord);
     int getBorderZ(int x, double y, int z);
+    bool isValidMove(int oldTile, int newTile);
 
     void writeLog();
 

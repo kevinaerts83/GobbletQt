@@ -38,6 +38,7 @@ Page {
     Label {
         id: errorLabel
         width: parent.width
+        color: "white"
         horizontalAlignment: "AlignHCenter"
     }
 
@@ -57,7 +58,7 @@ Page {
             }
             onPressed: (mouse)=> {
                 if (!mediator.onClick(mouse.x, mouse.y)) {
-                    errorLabel.text = "ERROR OCCURED"
+                    errorLabel.text = "Place on an empty square or block a win!"
                 } else {
                     errorLabel.text = ""
                 }

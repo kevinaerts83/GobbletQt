@@ -119,7 +119,7 @@ bool Mediator::onClick(const double x, const double y) {
 
     double coord [4];
     m_matrix -> get3dPoint(coord, x, y, false); // from board
-    if (isStack(coord[0], coord[2], true)) {
+    if (isNextToBoard(coord[0], coord[2], true)) {
         m_matrix -> get3dPoint(coord, x, y, true); // from stack
     }
 
@@ -133,22 +133,17 @@ bool Mediator::onClick(const double x, const double y) {
             oldTile = getTileFromCoord(getSelection()->x3d(), getSelection()->z3d());
         }
 
-        if (isStack(roundX, roundZ, false)) {
+        if (isNextToBoard(roundX, roundZ, false)) {
             setSelection(nullptr);
             repaint();
             return true;
         }
 
         int newTile = getTileFromCoord(roundX, roundZ);
-
-        int size = getSelection()->size();
-        int mask = 1 << newTile;
-        for (int i = 0; i <= size; i++) {
-            if (((m_state[0][i] | m_state[1][i]) & mask) > 0) { // TODO expand VALIDATION, must be empty if from stack of 3 in a row
-                setSelection(nullptr);
-                repaint();
-                return false;
-            }
+        if (!isValidMove(oldTile, newTile)) {
+            setSelection(nullptr);
+            repaint();
+            return false;
         }
 
         updateState(roundX, coord[1], roundZ, oldTile, newTile);
@@ -159,6 +154,33 @@ bool Mediator::onClick(const double x, const double y) {
     }
 
     return true;
+}
+
+bool Mediator::isValidMove(int oldTile, int newTile) {
+    int size = getSelection()->size();
+    bool isEmpty = true;
+    bool isBigEnough = false;
+    int mask = 1 << newTile;
+
+
+    for (int i = 0; i <= size; i++) {
+        if (((m_state[0][i] | m_state[1][i]) & mask) > 0) {
+            isEmpty = false;
+            isBigEnough = size > i;
+            break;
+        }
+    }
+
+    // empty square or gobbler from board and big enough
+    if (isEmpty || (oldTile != -1 && isBigEnough)) {
+        return true;
+    }
+
+    if (isBigEnough) {
+        AI m_computer(0);
+        return m_computer.validateStackMove(m_state, isBlackTurn(), newTile);
+    }
+    return false;
 }
 
 void Mediator::updateDepthOfGobblers(int x, int z) {
@@ -329,7 +351,7 @@ bool Mediator::isStack(double x){
     return isBlackTurn() ? x > 225 : x < -225;
 }
 
-bool Mediator::isStack(double x, double z, bool margin) {
+bool Mediator::isNextToBoard(double x, double z, bool margin) {
     int test = 225 + (margin ? 75 : 0);
     return abs(x) > test || abs(z) > test;
 }

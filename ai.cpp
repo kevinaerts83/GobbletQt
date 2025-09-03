@@ -21,14 +21,7 @@ AI::AI(int level) {
 // Move function
 aiMove AI::move(int boardState [2][4]) {
 
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 4; j++) {
-            m_bState[i][j] = boardState[i][j];
-        }
-    }
-
-    setVisibleWhite();
-    setVisibleBlack();
+    init(boardState);
 
     aiMove move;
     tryToWin(move);
@@ -39,6 +32,31 @@ aiMove AI::move(int boardState [2][4]) {
     if (move.validate()) return move;
     attack(move);
     return move;
+}
+
+bool AI::validateStackMove(int boardState [2][4], bool isWhite, int toTile) {
+    init(boardState);
+
+    std::vector<int> allowedRows = rowCheck(3, isWhite, true);
+    std::vector<int> rowsOfTile = getRowsOfTile(toTile);
+
+    return std::any_of(
+        allowedRows.begin(),
+        allowedRows.end(),
+        [&](int val) {
+            return std::find(rowsOfTile.begin(), rowsOfTile.end(), val) != rowsOfTile.end();
+        });
+}
+
+void AI::init(int boardState [2][4]) {
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 4; j++) {
+            m_bState[i][j] = boardState[i][j];
+        }
+    }
+
+    setVisibleWhite();
+    setVisibleBlack();
 }
 
 // Try to win

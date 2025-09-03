@@ -10,9 +10,12 @@ class AI
 public:
     AI(int level);
     aiMove move(int boardState [2][4]);
+    bool validateStackMove(int boardState [2][4], bool isWhite, int toTile);
 
 private:
     int m_level;
+
+    void init(int boardState [2][4]);
 
     void setVisibleWhite();
     void setVisibleBlack();
