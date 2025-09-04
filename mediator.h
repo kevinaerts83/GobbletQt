@@ -20,7 +20,7 @@ class Mediator : public QObject
 
 public:
     Mediator(QObject *parent = 0);
-    QList<Gobbler*> getList() const;
+    const QList<Gobbler*> getList() const;
     bool isBlackTurn() const;
     Gobbler* getSelection() const;
     Board* getBoard() const;

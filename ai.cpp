@@ -67,7 +67,7 @@ void AI::tryToWin(aiMove& move) {
         move.setTo(getUnOccupiedTile(maskToCheck, m_visibleBlack));
 
         int size = (tileToNumber(move.to()) & m_visibleWhite) != 0 ? getPawnSize(move.to()) : Size::Empty;
-        move.setFrom(getFromTile(size, {row}));
+        move.setFrom(getFromTile(move.to(), size, {row}));
         if (move.from() > -1) {
             break;
         }
@@ -93,7 +93,7 @@ void AI::dontLoseCrossing(std::vector<int>& rows, aiMove& move) {
         move.setTo(countrZero(maskCrossing));
         if (getPawnSize(move.to()) != 0) {
             // if large; only a huge gobbler will be picked; exclude rows with 3 whites
-            move.setFrom(getFromTile(Size::Large, findRowsWhiteCouldWin()));
+            move.setFrom(getFromTile(move.to(), Size::Large, findRowsWhiteCouldWin()));
         }
     }
     if (move.from() == -1) {
@@ -107,10 +107,10 @@ void AI::dontLoseBlock(std::vector<int>& rows, aiMove& move) {
     int s = getSmallestWhiteOfRow(MASKS[rows[0]]);
     if (s == Size::Huge) { // all 3 huge pawns
         move.setTo(getUnOccupiedTile(maskToCheck, m_visibleWhite));
-        move.setFrom(getFromTile(Size::Large, rows)); // dontLose function already checked no Huge black pawn is here
+        move.setFrom(getFromTile(move.to(), Size::Large, rows)); // dontLose function already checked no Huge black pawn is here
     } else {
         move.setTo(getToTile(maskToCheck, m_visibleWhiteRows[s])); // get tile with small white
-        move.setFrom(getFromTile(s, rows));
+        move.setFrom(getFromTile(move.to(), s, rows));
     }
 }
 
@@ -162,8 +162,7 @@ void AI::attack(aiMove& move) {
         move.setTo(getTileFromRowUnderAttack(row.first)); // row.first == row id
 
         if (move.to() >= 0) {
-            int s = getPawnSize(move.to());
-            move.setFrom(getFromTile(s, getRowsOfTile(move.to())));
+            move.setFrom(getFromTile(move.to()));
             if (move.from() > -1) {
                 break;
             }
@@ -203,7 +202,7 @@ void AI::randomMove(aiMove& move) {
 void AI::attackFallBack(aiMove& move) {
     int ignore = 0;
     for (int i = 0; i < ROW_SIZE; i += 1) {
-        if (getFromTile(getPawnSize(move.to()), getRowsOfTile(move.to())) == -1) {
+        if (getFromTile(move.to()) == -1) {
             ignore += tileToNumber(move.to());
             move.setTo(getNewToTile(ignore));
         } else {
@@ -248,8 +247,20 @@ int AI::getUnOccupiedTile(int mask, int visiblePawns) {
     return countrZero((mask & visiblePawns) ^ mask);
 }
 
-int AI::getFromTile(int size, std::vector<int> excludeRows) {
-    int stack = getPawnFromStack(size);
+int AI::getFromTile(int moveTo) {
+    int size = getPawnSize(moveTo);
+    int stack = size == Size::Empty ? getPawnFromStack(size) : -1;
+    if (stack >= MAX_TILES) {
+        return stack;
+    } else {
+        std::vector<int> excludeRows = getRowsOfTile(moveTo);
+        return getPawnFromBoard(size, excludeRows);
+    }
+    return -1;
+}
+
+int AI::getFromTile(int moveTo, int size, std::vector<int> excludeRows) {
+    int stack = getPawnSize(moveTo) == Size::Empty ? getPawnFromStack(size) : -1;
     if (stack >= MAX_TILES) {
         return stack;
     } else {

@@ -35,7 +35,8 @@ private:
 
     int getToTile(int mask, int visiblePawns);
     int getUnOccupiedTile(int mask, int visiblePawns);
-    int getFromTile(int size, std::vector<int> excludeRows);
+    int getFromTile(int moveTo);
+    int getFromTile(int moveTo, int size, std::vector<int> excludeRows);
 
     std::vector<int> getRowsOfTile(int tile);
     int getPawnFromStack(int size);

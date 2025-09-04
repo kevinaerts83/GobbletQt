@@ -58,7 +58,7 @@ Page {
             }
             onPressed: (mouse)=> {
                 if (!mediator.onClick(mouse.x, mouse.y)) {
-                    errorLabel.text = "Place on an empty square or block a win!"
+                    errorLabel.text = "Place on an empty square or block a possible win!"
                 } else {
                     errorLabel.text = ""
                 }

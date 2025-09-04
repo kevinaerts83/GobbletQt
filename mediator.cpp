@@ -17,9 +17,9 @@ Mediator::Mediator(QObject *parent) : QObject(parent)
     connect(timer, &QTimer::timeout, this, &Mediator::updateGobbler);
 }
 
-QList<Gobbler*> Mediator::getList() const
+const QList<Gobbler*> Mediator::getList() const
 {
-    return m_list;
+    return std::as_const(m_list);
 }
 
 void Mediator::addItem(Gobbler *gobbler)
@@ -293,7 +293,7 @@ void Mediator::startAi(bool aiTurn) {
 }
 
 void Mediator::resetItems(double width, double height) {
-    for (const auto &item : m_list) {
+    for (const auto &item : std::as_const(m_list)) {
         item->setWidth(width);
         item->setHeight(height);
     }
