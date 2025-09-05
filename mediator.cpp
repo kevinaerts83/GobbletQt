@@ -163,10 +163,10 @@ bool Mediator::isValidMove(int oldTile, int newTile) {
     int mask = 1 << newTile;
 
 
-    for (int i = 0; i <= size; i++) {
+    for (int i = 0; i <= 3; i++) {
         if (((m_state[0][i] | m_state[1][i]) & mask) > 0) {
             isEmpty = false;
-            isBigEnough = size > i;
+            isBigEnough = size < i;
             break;
         }
     }
