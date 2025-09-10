@@ -37,6 +37,10 @@ aiMove AI::move(int boardState [2][4]) {
 bool AI::validateStackMove(int boardState [2][4], bool isWhite, int toTile) {
     init(boardState);
 
+    return validateStackMove(isWhite, toTile);
+}
+
+bool AI::validateStackMove(bool isWhite, int toTile) {
     std::vector<int> allowedRows = rowCheck(3, isWhite, true);
     std::vector<int> rowsOfTile = getRowsOfTile(toTile);
 
@@ -260,7 +264,9 @@ int AI::getFromTile(int moveTo) {
 }
 
 int AI::getFromTile(int moveTo, int size, std::vector<int> excludeRows) {
-    int stack = getPawnSize(moveTo) == Size::Empty ? getPawnFromStack(size) : -1;
+
+    bool isStackAllowed = getPawnSize(moveTo) == Size::Empty || validateStackMove(false, moveTo);
+    int stack = isStackAllowed ? getPawnFromStack(size) : -1;
     if (stack >= MAX_TILES) {
         return stack;
     } else {

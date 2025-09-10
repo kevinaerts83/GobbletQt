@@ -30,6 +30,7 @@ private:
     void randomMove(aiMove& move);
     void attackFallBack(aiMove& move);
 
+    bool validateStackMove(bool isWhite, int toTile);
     int getNewToTile(int ignore);
     int getTileFromRowUnderAttack(int rowToAttack);
 
