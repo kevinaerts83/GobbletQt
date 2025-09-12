@@ -38,9 +38,9 @@ void TestAI::winTakeFromStack() {
 
 void TestAI::winWhiteBlocksWithSize3() {
     AI computer(1);
-    int state2 [2][4] = {{32768, 2048, 128, 0}, {0, 0, 0, 8}};
+    int state2 [2][4] = {{32768, 2048, 129, 0}, {0, 0, 0, 8}};
     aiMove move = computer.move(state2);
-    QCOMPARE(move.from(), 16); // biggest pawn stack
+    QCOMPARE(move.from(), 0);
     QCOMPARE(move.to(), 3);
 }
 

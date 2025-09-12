@@ -265,7 +265,7 @@ int AI::getFromTile(int moveTo) {
 
 int AI::getFromTile(int moveTo, int size, std::vector<int> excludeRows) {
 
-    bool isStackAllowed = getPawnSize(moveTo) == Size::Empty || validateStackMove(false, moveTo);
+    bool isStackAllowed = getPawnSize(moveTo) == Size::Empty || validateStackMove(true, moveTo);
     int stack = isStackAllowed ? getPawnFromStack(size) : -1;
     if (stack >= MAX_TILES) {
         return stack;
