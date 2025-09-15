@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick)
+find_package(Qt6 REQUIRED COMPONENTS Quick Bluetooth)
 
 qt_standard_project_setup()
 
@@ -24,13 +24,21 @@ qt_add_executable(Gobblet WIN32 MACOSX_BUNDLE
     shape3d.cpp shape3d.h
 )
 
-add_library(gobblet_ai
+qt_add_library(gobblet_ai
     ai.cpp ai.h
     aimove.cpp aimove.h
 )
 
+qt_add_library(blues
+    chatclient.cpp chatclient.h
+    chatserver.cpp chatserver.h
+)
+
+target_link_libraries(blues PRIVATE Qt6::Core Qt6::Bluetooth)
+target_link_libraries(Gobblet PRIVATE blues gobblet_ai Qt::Core Qt::Quick Qt6::Bluetooth)
+
 target_include_directories(gobblet_ai PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(Gobblet PRIVATE gobblet_ai)
+target_include_directories(blues PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(RESOURCES qml.qrc)
 
@@ -44,17 +52,11 @@ qt_add_qml_module(Gobblet
         gobbler.qml
     NO_RESOURCE_TARGET_PATH
     QML_FILES help.qml
-    # RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
+    QML_FILES scanblues.qml
 )
 
 target_compile_definitions(Gobblet PRIVATE
     QT_DEPRECATED_WARNINGS
-)
-
-target_link_libraries(Gobblet PRIVATE
-    Qt::Core
-    Qt::Gui
-    Qt::Quick
 )
 
 if(NOT ANDROID)

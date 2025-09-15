@@ -349,6 +349,11 @@ Page {
                 }
             }
 
+            Button {
+                text: "Bluetooth"
+                onClicked: stackView.push("scanblues.qml");
+            }
+
             Text {
                 id: blackScore
                 text: GameState.blackCounter
