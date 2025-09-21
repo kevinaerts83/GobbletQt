@@ -32,9 +32,12 @@ qt_add_library(gobblet_ai
 qt_add_library(blues
     chatclient.cpp chatclient.h
     chatserver.cpp chatserver.h
+    remoteselector.cpp remoteselector.h
+    chat.h chat.cpp
 )
 
 target_link_libraries(blues PRIVATE Qt6::Core Qt6::Bluetooth)
+target_link_libraries(blues PRIVATE Qt6::Core)
 target_link_libraries(Gobblet PRIVATE blues gobblet_ai Qt::Core Qt::Quick Qt6::Bluetooth)
 
 target_include_directories(gobblet_ai PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -53,6 +56,8 @@ qt_add_qml_module(Gobblet
     NO_RESOURCE_TARGET_PATH
     QML_FILES help.qml
     QML_FILES scanblues.qml
+    SOURCES
+    SOURCES
 )
 
 target_compile_definitions(Gobblet PRIVATE
@@ -95,5 +100,6 @@ install(SCRIPT ${deploy_script})
 #)
 
 find_package(Qt6 REQUIRED COMPONENTS Test)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 add_executable(myTest test_ai.cpp)
 target_link_libraries(myTest PRIVATE Qt6::Test gobblet_ai)

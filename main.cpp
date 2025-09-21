@@ -4,9 +4,12 @@
 #include <QQuickItem>
 #include <QQuickView>
 #include <QPainter>
+#include <QtBluetooth/qbluetoothaddress.h>
+#include <QBluetoothLocalDevice>
 
 #include "setupBoard.h"
 #include "state.h"
+#include "chat.h"
 
 int main(int argc, char *argv[])
 {
@@ -18,6 +21,9 @@ int main(int argc, char *argv[])
 
     SetupBoard setupBoard;
     engine.rootContext()->setContextProperty("setupBoard", &setupBoard);
+
+    Chat d;
+    //QObject::connect(&d, &Chat::accepted, &app, &QApplication::quit);
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,

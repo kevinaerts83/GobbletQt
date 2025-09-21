@@ -9,7 +9,7 @@
 using namespace Qt::StringLiterals;
 
 //! [Service UUID]
-static constexpr auto serviceUuid = "e8e10f95-1a70-4b27-9ccf-02010264e9c8"_L1;
+static constexpr auto serviceUuid = "be828aca-6398-4c4c-80cb-2cc15d4734d7"_L1;
 //! [Service UUID]
 
 ChatServer::ChatServer(QObject *parent)
