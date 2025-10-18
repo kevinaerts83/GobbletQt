@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Gobblet 1.0
 
 Page {
     id: scanblues
@@ -16,37 +17,16 @@ Page {
 
     Timer {
         id: refreshTimer
-        interval: 1000    // 1 second
+        interval: 10000    // 10 second
         repeat: true
         running: true
         triggeredOnStart: true
         onTriggered: {
-            // Fetch latest Bluetooth device list
-            // In a real app, call a C++ function or backend here
-            // Example: bluetoothDevices = bluetoothManager.getDevices()
-            console.log("Refreshing device list...")
-            bluetoothDevices = generateDummyDevices() // For demo only
+            bluetoothDevices = Chat.getDevices()
         }
-    }
-
-    function generateDummyDevices() {
-        // Simulate random devices for UI testing
-        var devices = []
-        var count = Math.floor(Math.random() * 5) + 1
-        for (var i = 0; i < count; i++) {
-            devices.push({
-                name: "Device " + (i + 1),
-                address: "00:11:22:33:44:" + (10 + i)
-            })
-        }
-        return devices
     }
 
     RowLayout {
-        Button {
-            text: "Connect"
-            onClicked: stackView.pop();
-        }
         Button {
             text: "Cancel"
             onClicked: stackView.pop();
@@ -89,6 +69,23 @@ Page {
                         color: "#666666"
                     }
                 }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+
+                onClicked: {
+                    console.log("Clicked on device:", modelData.name, modelData.address)
+
+                    // Call C++ function to connect to the device
+                    Chat.connectToDevice(modelData.address)
+                    stackView.pop()
+                }
+
+                onEntered: parent.color = "#e0e0ff"   // Highlight when hovered
+                onExited: parent.color = "#f0f0f0"    // Reset color when mouse leaves
             }
         }
     }

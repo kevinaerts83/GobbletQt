@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+   "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>Gobblet</string>
+    <key>CFBundleName</key>
+    <string>Gobblet</string>
+
+    <!-- Add these Bluetooth permission keys -->
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>This app uses Bluetooth to connect to nearby devices.</string>
+
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>This app requires Bluetooth access to communicate with peripherals.</string>
+</dict>
+</plist>

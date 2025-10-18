@@ -8,16 +8,30 @@ class ChatServer;
 class ChatClient;
 
 //! [declaration]
-class Chat : public QObject
+class BluetoothManager : public QObject
 {
     Q_OBJECT
-
+    Q_PROPERTY(QString clientName READ clientName WRITE setClientName NOTIFY clientNameChanged)
 public:
-    explicit Chat();
-    ~Chat();
+    explicit BluetoothManager();
+    ~BluetoothManager();
+
+    Q_INVOKABLE QVariantList getDevices();  // Exposed to QML
+    Q_INVOKABLE void connectToDevice(const QString &uuidAddress);
+
+    Q_INVOKABLE QString getLocalName();
+
+    QString clientName() const {
+        return m_clientName;
+    }
+
+    void setClientName(QString value) {
+        m_clientName = value;
+    }
 
 signals:
     void sendMessage(const QString &message);
+    void clientNameChanged(QString);
 
 private slots:
     void connectClicked();
@@ -35,5 +49,6 @@ private:
     QList<QBluetoothHostInfo> localAdapters;
 
     QString localName;
+    QString m_clientName;
 };
 //! [declaration]

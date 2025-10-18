@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Gobblet 1.0
+import "."
 
 Page {
     id: menu
@@ -164,6 +165,52 @@ Page {
                     anchors.fill: parent
                     onClicked: {
                         stackView.pop();
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.preferredWidth: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                Layout.preferredHeight: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                radius: Math.min(menu.width, menu.height) / 16  // Make it circular
+                color: "#4CAF50"  // Green background color
+                visible: GameState.mode === 0
+                id: serverBt
+
+                BluetoothIcon {
+                    Layout.alignment: Qt.AlignCenter
+                    width: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                    height: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                    btColor: "white"
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        stackView.push("scanblues.qml");
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.preferredWidth: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                Layout.preferredHeight: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                radius: Math.min(menu.width, menu.height) / 16  // Make it circular
+                color: "#4CAF50"  // Green background color
+                visible: GameState.mode === 0
+                id: clientBt
+
+                BluetoothIcon {
+                    Layout.alignment: Qt.AlignCenter
+                    width: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                    height: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                    btColor: "black"
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        stackView.push("scanblues.qml");
                     }
                 }
             }
@@ -349,9 +396,8 @@ Page {
                 }
             }
 
-            Button {
-                text: "Bluetooth"
-                onClicked: stackView.push("scanblues.qml");
+            Text {
+                text: Chat.clientName;
             }
 
             Text {
@@ -363,4 +409,7 @@ Page {
             }
         }
     }
+
+
+
 }

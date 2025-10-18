@@ -25,11 +25,15 @@ class RemoteSelector : public QObject
 
 public:
     explicit RemoteSelector(const QBluetoothAddress &localAdapter);
+
     ~RemoteSelector();
 
     void startDiscovery(const QBluetoothUuid &uuid);
     void stopDiscovery();
     QBluetoothServiceInfo service() const;
+
+
+     Q_INVOKABLE QVariantList getDevices();  // Exposed to QML
 
 private:
     Ui::RemoteSelector *ui;

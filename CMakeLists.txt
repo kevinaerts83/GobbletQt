@@ -33,7 +33,7 @@ qt_add_library(blues
     chatclient.cpp chatclient.h
     chatserver.cpp chatserver.h
     remoteselector.cpp remoteselector.h
-    chat.h chat.cpp
+    bluetoothManager.h bluetoothManager.cpp
 )
 
 target_link_libraries(blues PRIVATE Qt6::Core Qt6::Bluetooth)
@@ -58,6 +58,8 @@ qt_add_qml_module(Gobblet
     QML_FILES scanblues.qml
     SOURCES
     SOURCES
+    QML_FILES BluetoothIcon.qml
+    RESOURCES Info.plist
 )
 
 target_compile_definitions(Gobblet PRIVATE
@@ -71,10 +73,17 @@ if(NOT ANDROID)
     )
 endif()
 if(ANDROID)
-    set_property(TARGET Gobblet APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/android")
-    set_property(TARGET Gobblet APPEND PROPERTY QT_ANDROID_ABIS "arm64-v8a")
-    set_property(TARGET Gobblet APPEND PROPERTY QT_ANDROID_MIN_SDK_VERSION 21)
-    set_property(TARGET Gobblet APPEND PROPERTY QT_ANDROID_TARGET_SDK_VERSION 34)
+    set_target_properties(Gobblet PROPERTIES
+        QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/android"
+        QT_ANDROID_ABIS "arm64-v8a"
+        QT_ANDROID_MIN_SDK_VERSION 21
+        QT_ANDROID_TARGET_SDK_VERSION 34
+    )
+elseif(APPLE)
+    set_target_properties(Gobblet PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/Info.plist"
+    )
 endif()
 
 qt_generate_deploy_qml_app_script(

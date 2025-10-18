@@ -1,7 +1,7 @@
 // Copyright (C) 2017 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include "chat.h"
+#include "bluetoothManager.h"
 #include "chatclient.h"
 #include "chatserver.h"
 #include "remoteselector.h"
@@ -25,23 +25,40 @@ static constexpr auto serviceUuid = "be828aca-6398-4c4c-80cb-2cc15d4734d7"_L1;
 static constexpr auto reverseUuid = "d734475d-c12c-cb80-4c4c-9863ca8a82be"_L1;
 #endif
 
-Chat::Chat()
+BluetoothManager::BluetoothManager()
 {
     initBluetooth();
 }
 
-Chat::~Chat()
+BluetoothManager::~BluetoothManager()
 {
     qDeleteAll(clients);
 }
 
-void Chat::initBluetooth()
+QVariantList BluetoothManager::getDevices() {
+    const QBluetoothAddress adapter = localAdapters.isEmpty() ?
+                                          QBluetoothAddress() :
+                                          localAdapters.at(0).address();
+
+    RemoteSelector remoteSelector(adapter);
+    return remoteSelector.getDevices();
+}
+
+void BluetoothManager::connectToDevice(const QString &uuidAddress) {
+    setClientName(uuidAddress);
+}
+
+QString BluetoothManager::getLocalName() {
+    return localName;
+}
+
+void BluetoothManager::initBluetooth()
 {
 #if QT_CONFIG(permissions)
     QBluetoothPermission permission{};
     switch (qApp->checkPermission(permission)) {
     case Qt::PermissionStatus::Undetermined:
-        qApp->requestPermission(permission, this, &Chat::initBluetooth);
+        qApp->requestPermission(permission, this, &BluetoothManager::initBluetooth);
         return;
     case Qt::PermissionStatus::Denied:
         return;
@@ -60,9 +77,9 @@ void Chat::initBluetooth()
     //! [Create Chat Server]
     server = new ChatServer(this);
     connect(server, QOverload<const QString &>::of(&ChatServer::clientConnected),
-            this, &Chat::clientConnected);
+            this, &BluetoothManager::clientConnected);
     connect(server, QOverload<const QString &>::of(&ChatServer::clientDisconnected),
-            this,  QOverload<const QString &>::of(&Chat::clientDisconnected));
+            this,  QOverload<const QString &>::of(&BluetoothManager::clientDisconnected));
     server->startServer();
     //! [Create Chat Server]
 
@@ -72,31 +89,31 @@ void Chat::initBluetooth()
 }
 
 //! [clientConnected clientDisconnected]
-void Chat::clientConnected(const QString &name)
+void BluetoothManager::clientConnected(const QString &name)
 {
     //ui->chat->insertPlainText(QString::fromLatin1("%1 has joined chat.\n").arg(name));
 }
 
-void Chat::clientDisconnected(const QString &name)
+void BluetoothManager::clientDisconnected(const QString &name)
 {
     //ui->chat->insertPlainText(QString::fromLatin1("%1 has left.\n").arg(name));
 }
 //! [clientConnected clientDisconnected]
 
 //! [connected]
-void Chat::connected(const QString &name)
+void BluetoothManager::connected(const QString &name)
 {
     //ui->chat->insertPlainText(QString::fromLatin1("Joined chat with %1.\n").arg(name));
 }
 //! [connected]
 
-void Chat::reactOnSocketError(const QString &error)
+void BluetoothManager::reactOnSocketError(const QString &error)
 {
     //ui->chat->insertPlainText(QString::fromLatin1("%1\n").arg(error));
 }
 
 //! [clientDisconnected]
-void Chat::clientDisconnected()
+void BluetoothManager::clientDisconnected()
 {
     ChatClient *client = qobject_cast<ChatClient *>(sender());
     if (client) {
@@ -107,7 +124,7 @@ void Chat::clientDisconnected()
 //! [clientDisconnected]
 
 //! [Connect to remote service]
-void Chat::connectClicked()
+void BluetoothManager::connectClicked()
 {
     //ui->connectButton->setEnabled(false);
 
@@ -136,12 +153,12 @@ void Chat::connectClicked()
         //connect(client, &ChatClient::messageReceived,
         //        this, &Chat::showMessage);
         connect(client, &ChatClient::disconnected,
-                this, QOverload<>::of(&Chat::clientDisconnected));
+                this, QOverload<>::of(&BluetoothManager::clientDisconnected));
         connect(client, QOverload<const QString &>::of(&ChatClient::connected),
-                this, &Chat::connected);
+                this, &BluetoothManager::connected);
         connect(client, &ChatClient::socketErrorOccurred,
-                this, &Chat::reactOnSocketError);
-        connect(this, &Chat::sendMessage, client, &ChatClient::sendMessage);
+                this, &BluetoothManager::reactOnSocketError);
+        connect(this, &BluetoothManager::sendMessage, client, &ChatClient::sendMessage);
         client->startClient(service);
 
         clients.append(client);

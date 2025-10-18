@@ -52,6 +52,22 @@ QBluetoothServiceInfo RemoteSelector::service() const
     return m_service;
 }
 
+QVariantList RemoteSelector::getDevices() {
+    QVariantList devices;
+
+    QVariantMap device1;
+    device1["name"] = "Speaker Pro";
+    device1["address"] = "00:11:22:33:44:55";
+    devices.append(device1);
+
+    QVariantMap device2;
+    device2["name"] = "Wireless Headphones";
+    device2["address"] = "AA:BB:CC:DD:EE:FF";
+    devices.append(device2);
+
+    return devices;
+}
+
 void RemoteSelector::serviceDiscovered(const QBluetoothServiceInfo &serviceInfo)
 {
     const QBluetoothAddress address = serviceInfo.device().address();

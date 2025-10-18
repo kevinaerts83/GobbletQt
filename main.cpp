@@ -1,29 +1,23 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
-#include <QQuickItem>
-#include <QQuickView>
-#include <QPainter>
-#include <QtBluetooth/qbluetoothaddress.h>
-#include <QBluetoothLocalDevice>
 
 #include "setupBoard.h"
 #include "state.h"
-#include "chat.h"
+#include "bluetoothManager.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
     qmlRegisterSingletonInstance("Gobblet", 1, 0, "GameState", State::instance());
+    static BluetoothManager blueTooth;
+    qmlRegisterSingletonInstance("Gobblet", 1, 0, "bluetoothManager", &blueTooth);
 
     QQmlApplicationEngine engine;
 
     SetupBoard setupBoard;
     engine.rootContext()->setContextProperty("setupBoard", &setupBoard);
-
-    Chat d;
-    //QObject::connect(&d, &Chat::accepted, &app, &QApplication::quit);
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
