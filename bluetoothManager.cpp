@@ -34,19 +34,6 @@ BluetoothManager::~BluetoothManager()
     qDeleteAll(clients);
 }
 
-QVariantList BluetoothManager::getDevices() {
-    const QBluetoothAddress adapter = localAdapters.isEmpty() ?
-                                          QBluetoothAddress() :
-                                          localAdapters.at(0).address();
-
-    RemoteSelector remoteSelector(adapter);
-    return remoteSelector.getDevices();
-}
-
-void BluetoothManager::connectToDevice(const QString &uuidAddress) {
-    setClientName(uuidAddress);
-}
-
 void BluetoothManager::initBluetooth()
 {
 #if QT_CONFIG(permissions)
@@ -81,6 +68,19 @@ void BluetoothManager::initBluetooth()
     //! [Get local device name]
     setServerName(QBluetoothLocalDevice().name());
     //! [Get local device name]
+}
+
+QVariantList BluetoothManager::getDevices() {
+    const QBluetoothAddress adapter = localAdapters.isEmpty() ?
+                                          QBluetoothAddress() :
+                                          localAdapters.at(0).address();
+
+    RemoteSelector remoteSelector(adapter);
+    return remoteSelector.getDevices();
+}
+
+void BluetoothManager::connectToDevice(const QString &uuidAddress) {
+    setClientName(uuidAddress);
 }
 
 //! [clientConnected clientDisconnected]
