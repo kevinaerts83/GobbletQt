@@ -12,14 +12,14 @@ class BluetoothManager : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString clientName READ clientName WRITE setClientName NOTIFY clientNameChanged)
+    Q_PROPERTY(QString serverName READ serverName WRITE setServerName NOTIFY serverNameChanged)
 public:
     explicit BluetoothManager();
     ~BluetoothManager();
 
+    Q_INVOKABLE void initBluetooth();
     Q_INVOKABLE QVariantList getDevices();  // Exposed to QML
     Q_INVOKABLE void connectToDevice(const QString &uuidAddress);
-
-    Q_INVOKABLE QString getLocalName();
 
     QString clientName() const {
         return m_clientName;
@@ -27,11 +27,22 @@ public:
 
     void setClientName(QString value) {
         m_clientName = value;
+        emit clientNameChanged();
+    }
+
+    QString serverName() const {
+        return m_serverName;
+    }
+
+    void setServerName(QString value) {
+        m_serverName = value;
+        emit serverNameChanged();
     }
 
 signals:
     void sendMessage(const QString &message);
-    void clientNameChanged(QString);
+    void clientNameChanged();
+    void serverNameChanged();
 
 private slots:
     void connectClicked();
@@ -41,14 +52,12 @@ private slots:
     void connected(const QString &name);
     void reactOnSocketError(const QString &error);
 
-    void initBluetooth();
-
 private:
     ChatServer *server = nullptr;
     QList<ChatClient *> clients;
     QList<QBluetoothHostInfo> localAdapters;
 
-    QString localName;
+    QString m_serverName;
     QString m_clientName;
 };
 //! [declaration]

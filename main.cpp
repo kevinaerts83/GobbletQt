@@ -10,11 +10,11 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
+    QQmlApplicationEngine engine;
+
     qmlRegisterSingletonInstance("Gobblet", 1, 0, "GameState", State::instance());
     static BluetoothManager blueTooth;
-    qmlRegisterSingletonInstance("Gobblet", 1, 0, "bluetoothManager", &blueTooth);
-
-    QQmlApplicationEngine engine;
+    qmlRegisterSingletonInstance("Gobblet", 1, 0, "BluetoothManager", &blueTooth);
 
     SetupBoard setupBoard;
     engine.rootContext()->setContextProperty("setupBoard", &setupBoard);

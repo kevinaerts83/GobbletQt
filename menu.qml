@@ -81,6 +81,13 @@ Page {
             }
 
             Text {
+                text: BluetoothManager.serverName;
+                font.pixelSize: 11
+                Layout.alignment: Qt.AlignHCenter
+                color: "#D0D0D0"
+            }
+
+            Text {
                 id: whiteScore
                 text: GameState.whiteCounter
                 font.pixelSize: Math.min(menu.height / 8, Math.min(menu.width * 0.24, 130))
@@ -174,7 +181,7 @@ Page {
                 Layout.preferredHeight: Math.max(Math.min(menu.width, menu.height) / 8, 50)
                 radius: Math.min(menu.width, menu.height) / 16  // Make it circular
                 color: "#4CAF50"  // Green background color
-                visible: GameState.mode === 0
+                visible: GameState.mode === 0 && !BluetoothManager.serverName
                 id: serverBt
 
                 BluetoothIcon {
@@ -187,7 +194,7 @@ Page {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        stackView.push("scanblues.qml");
+                        BluetoothManager.initBluetooth();
                     }
                 }
             }
@@ -397,7 +404,10 @@ Page {
             }
 
             Text {
-                text: Chat.clientName;
+                text: BluetoothManager.clientName;
+                Layout.alignment: Qt.AlignHCenter
+                font.pixelSize: 11
+                color: "#D0D0D0"
             }
 
             Text {

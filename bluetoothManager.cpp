@@ -27,7 +27,6 @@ static constexpr auto reverseUuid = "d734475d-c12c-cb80-4c4c-9863ca8a82be"_L1;
 
 BluetoothManager::BluetoothManager()
 {
-    initBluetooth();
 }
 
 BluetoothManager::~BluetoothManager()
@@ -46,10 +45,6 @@ QVariantList BluetoothManager::getDevices() {
 
 void BluetoothManager::connectToDevice(const QString &uuidAddress) {
     setClientName(uuidAddress);
-}
-
-QString BluetoothManager::getLocalName() {
-    return localName;
 }
 
 void BluetoothManager::initBluetooth()
@@ -84,7 +79,7 @@ void BluetoothManager::initBluetooth()
     //! [Create Chat Server]
 
     //! [Get local device name]
-    localName = QBluetoothLocalDevice().name();
+    setServerName(QBluetoothLocalDevice().name());
     //! [Get local device name]
 }
 

@@ -22,7 +22,7 @@ Page {
         running: true
         triggeredOnStart: true
         onTriggered: {
-            bluetoothDevices = Chat.getDevices()
+            bluetoothDevices = BluetoothManager.getDevices()
         }
     }
 
@@ -80,7 +80,7 @@ Page {
                     console.log("Clicked on device:", modelData.name, modelData.address)
 
                     // Call C++ function to connect to the device
-                    Chat.connectToDevice(modelData.address)
+                    BluetoothManager.connectToDevice(modelData.address)
                     stackView.pop()
                 }
 

@@ -12,8 +12,7 @@ using namespace Qt::StringLiterals;
 static constexpr auto serviceUuid = "be828aca-6398-4c4c-80cb-2cc15d4734d7"_L1;
 //! [Service UUID]
 
-ChatServer::ChatServer(QObject *parent)
-    :   QObject(parent)
+ChatServer::ChatServer(QObject *parent) : QObject(parent)
 {
 }
 
@@ -94,15 +93,19 @@ void ChatServer::startServer(const QBluetoothAddress& localAdapter)
 void ChatServer::stopServer()
 {
     // Unregister service
-    serviceInfo.unregisterService();
+    if (serviceInfo.isRegistered()) {
+        serviceInfo.unregisterService();
+    }
 
     // Close sockets
     qDeleteAll(clientSockets);
     clientNames.clear();
 
     // Close server
-    delete rfcommServer;
-    rfcommServer = nullptr;
+    if (rfcommServer) {
+        delete rfcommServer;
+        rfcommServer = nullptr;
+    }
 }
 //! [stopServer]
 
