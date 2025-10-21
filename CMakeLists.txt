@@ -79,6 +79,7 @@ if(ANDROID)
         QT_ANDROID_MIN_SDK_VERSION 21
         QT_ANDROID_TARGET_SDK_VERSION 34
     )
+    add_compile_options("-march=armv9-a")
 elseif(APPLE)
     set_target_properties(Gobblet PROPERTIES
         MACOSX_BUNDLE TRUE
