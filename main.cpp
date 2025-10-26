@@ -13,7 +13,17 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
     qmlRegisterSingletonInstance("Gobblet", 1, 0, "GameState", State::instance());
+
     static BluetoothManager blueTooth;
+    QObject::connect(&blueTooth, &BluetoothManager::connected, [](const QString &deviceName) {
+        qDebug() << "Connected to:" << deviceName;
+    });
+    QObject::connect(&blueTooth, &BluetoothManager::showMessage, [](const QString &sender, const QString &message) {
+        qDebug() << sender << "says:" << message;
+    });
+    QObject::connect(&blueTooth, &BluetoothManager::reactOnSocketError, [](const QString &error) {
+        qWarning() << "Error:" << error;
+    });
     qmlRegisterSingletonInstance("Gobblet", 1, 0, "BluetoothManager", &blueTooth);
 
     SetupBoard setupBoard;

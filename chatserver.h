@@ -1,48 +1,49 @@
-// Copyright (C) 2017 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
-
 #ifndef CHATSERVER_H
 #define CHATSERVER_H
 
 #include <QObject>
+#include <QLowEnergyController>
+#include <QLowEnergyService>
+#include <QLowEnergyCharacteristic>
+#include <QLowEnergyAdvertisingData>
+#include <QLowEnergyAdvertisingParameters>
+#include <QBluetoothUuid>
+#include <QDebug>
 
-#include <QBluetoothAddress>
-#include <QBluetoothServiceInfo>
-
-QT_FORWARD_DECLARE_CLASS(QBluetoothServer)
-QT_FORWARD_DECLARE_CLASS(QBluetoothSocket)
-
-//! [declaration]
 class ChatServer : public QObject
 {
     Q_OBJECT
-
 public:
     explicit ChatServer(QObject *parent = nullptr);
-    ~ChatServer();
 
-    void startServer(const QBluetoothAddress &localAdapter = QBluetoothAddress());
+    void startServer();
     void stopServer();
+
+signals:
+    void clientConnected(const QString &deviceName);
+    void clientDisconnected(const QString &deviceName);
+    void messageReceived(const QString &sender, const QString &message);
 
 public slots:
     void sendMessage(const QString &message);
 
-signals:
-    void messageReceived(const QString &sender, const QString &message);
-    void clientConnected(const QString &name);
-    void clientDisconnected(const QString &name);
-
 private slots:
-    void clientConnected();
-    void clientDisconnected();
-    void readSocket();
+    void onCharacteristicWritten(const QLowEnergyCharacteristic &ch, const QByteArray &value);
+    void onConnectionStateChanged(QLowEnergyController::ControllerState state);
 
 private:
-    QBluetoothServer *rfcommServer = nullptr;
-    QBluetoothServiceInfo serviceInfo;
-    QList<QBluetoothSocket *> clientSockets;
-    QMap<QBluetoothSocket *, QString> clientNames;
+    QLowEnergyController *controller = nullptr;
+    QLowEnergyService *service = nullptr;
+
+    QLowEnergyCharacteristic rxChar; // receive from client
+    QLowEnergyCharacteristic txChar; // send to client
+
+    QBluetoothUuid serviceUuid =
+        QBluetoothUuid(QStringLiteral("{be828aca-6398-4c4c-80cb-2cc15d4734d7}"));
+    QBluetoothUuid rxCharUuid =
+        QBluetoothUuid(QStringLiteral("{be828aca-6398-4c4c-80cb-2cc15d4734d7}"));
+    QBluetoothUuid txCharUuid =
+        QBluetoothUuid(QStringLiteral("{be828aca-6398-4c4c-80cb-2cc15d4734d7}"));
 };
-//! [declaration]
 
 #endif // CHATSERVER_H

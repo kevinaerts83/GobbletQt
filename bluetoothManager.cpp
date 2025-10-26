@@ -1,37 +1,15 @@
-// Copyright (C) 2017 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
-
 #include "bluetoothManager.h"
-#include "chatclient.h"
-#include "chatserver.h"
-#include "remoteselector.h"
-
 #include <QDebug>
-
-#include <QBluetoothDeviceInfo>
-#include <QBluetoothLocalDevice>
-#include <QBluetoothUuid>
-
 
 #if QT_CONFIG(permissions)
 #include <QCoreApplication>
 #include <QPermissions>
 #endif
 
-using namespace Qt::StringLiterals;
-
-static constexpr auto serviceUuid = "be828aca-6398-4c4c-80cb-2cc15d4734d7"_L1;
-#ifdef Q_OS_ANDROID
-static constexpr auto reverseUuid = "d734475d-c12c-cb80-4c4c-9863ca8a82be"_L1;
-#endif
-
-BluetoothManager::BluetoothManager()
+BluetoothManager::BluetoothManager(QObject *parent)
+    : QObject(parent)
 {
-}
 
-BluetoothManager::~BluetoothManager()
-{
-    qDeleteAll(clients);
 }
 
 void BluetoothManager::initBluetooth()
@@ -43,153 +21,196 @@ void BluetoothManager::initBluetooth()
         qApp->requestPermission(permission, this, &BluetoothManager::initBluetooth);
         return;
     case Qt::PermissionStatus::Denied:
+        qWarning() << "Bluetooth permission denied";
         return;
     case Qt::PermissionStatus::Granted:
-        break; // proceed to initialization
+        break;
     }
-#endif // QT_CONFIG(permissions)
+#endif
 
-    localAdapters = QBluetoothLocalDevice::allDevices();
-    // make discoverable
-    if (!localAdapters.isEmpty()) {
-        QBluetoothLocalDevice adapter(localAdapters.at(0).address());
-        adapter.setHostMode(QBluetoothLocalDevice::HostDiscoverable);
-    }
+    qDebug() << "Initializing BLE ChatServer...";
 
-    //! [Create Chat Server]
-    server = new ChatServer(this);
-    connect(server, QOverload<const QString &>::of(&ChatServer::clientConnected),
-            this, &BluetoothManager::clientConnected);
-    connect(server, QOverload<const QString &>::of(&ChatServer::clientDisconnected),
-            this,  QOverload<const QString &>::of(&BluetoothManager::clientDisconnected));
+    // No need for QBluetoothLocalDevice::HostDiscoverable — BLE advertising replaces that
+
+    ChatServer *server = new ChatServer(this);
+    connect(server, &ChatServer::messageReceived,
+            this, &BluetoothManager::showMessage);
+    connect(server, &ChatServer::clientConnected,
+            this, &BluetoothManager::connected);
+    connect(server, &ChatServer::clientDisconnected,
+            this, &BluetoothManager::clientDisconnected);
+    connect(this, &BluetoothManager::sendMessage,
+            server, &ChatServer::sendMessage);
+
     server->startServer();
-    //! [Create Chat Server]
 
-    //! [Get local device name]
-    setServerName(QBluetoothLocalDevice().name());
-    //! [Get local device name]
+    setServerName("Gobblet Online");
+}
+
+void BluetoothManager::initClient()
+{
+    discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
+
+    connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
+            this, &BluetoothManager::deviceDiscovered);
+    connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished,
+            this, &BluetoothManager::discoveryFinished);
+    connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::canceled,
+            this, []() { qDebug() << "Discovery canceled."; });
+}
+
+void BluetoothManager::startDiscovery()
+{
+    if (discoveryAgent == nullptr) {
+        initClient();
+    }
+
+    qDebug() << "Starting BLE device discovery...";
+    foundDevices.clear();
+    discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
+}
+
+void BluetoothManager::stopDiscovery()
+{
+    if (discoveryAgent->isActive())
+        discoveryAgent->stop();
+}
+
+void BluetoothManager::deviceDiscovered(const QBluetoothDeviceInfo &info)
+{
+    if (!(info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration))
+        return;
+
+    qDebug() << "Found BLE device:" << info.name() << info.address().toString();
+    foundDevices.append(info);
+
+    stopDiscovery();
+    // Example: Auto-connect to first device whose name matches "MyBLEDevice"
+    //if (info.name().contains("Gobblet Online", Qt::CaseInsensitive)) {
+    //    stopDiscovery();
+    //    connectToDevice(info);
+    //}
+}
+
+void BluetoothManager::discoveryFinished()
+{
+    qDebug() << "BLE device discovery finished.";
+    if (foundDevices.isEmpty())
+        qDebug() << "No BLE devices found.";
+}
+
+void BluetoothManager::connectWithAddress(const QString &address)
+{
+    for (const QBluetoothDeviceInfo &d : std::as_const(foundDevices)) {
+        if (d.address().toString().contains(address, Qt::CaseInsensitive)) {
+            stopDiscovery();
+            connectToDevice(d);
+            break;
+        }
+    }
+}
+
+void BluetoothManager::connectToDevice(const QBluetoothDeviceInfo &device)
+{
+    qDebug() << "Connecting to device:" << device.name();
+
+    if (client) {
+        client->disconnect(this);   // disconnect all signals
+        client->deleteLater();
+        client = nullptr;
+    }
+    client = new ChatClient(this);
+
+    connect(client, &ChatClient::messageReceived, this, &BluetoothManager::showMessage);
+    connect(client, &ChatClient::disconnected, this, &BluetoothManager::clientDisconnected);
+    connect(client, &ChatClient::connected, this, &BluetoothManager::connected);
+    connect(client, &ChatClient::socketErrorOccurred, this, &BluetoothManager::reactOnSocketError);
+    connect(this, &BluetoothManager::sendMessage, client, &ChatClient::sendMessage);
+
+    // Start BLE connection
+    client->startClient(device, serviceUuid, rxCharUuid, txCharUuid);
+
+    setClientName("Connected");
 }
 
 QVariantList BluetoothManager::getDevices() {
-    const QBluetoothAddress adapter = localAdapters.isEmpty() ?
-                                          QBluetoothAddress() :
-                                          localAdapters.at(0).address();
 
-    RemoteSelector remoteSelector(adapter);
-    return remoteSelector.getDevices();
-}
+    startDiscovery();
 
-void BluetoothManager::connectToDevice(const QString &uuidAddress) {
-    setClientName(uuidAddress);
-}
-
-//! [clientConnected clientDisconnected]
-void BluetoothManager::clientConnected(const QString &name)
-{
-    //ui->chat->insertPlainText(QString::fromLatin1("%1 has joined chat.\n").arg(name));
-}
-
-void BluetoothManager::clientDisconnected(const QString &name)
-{
-    //ui->chat->insertPlainText(QString::fromLatin1("%1 has left.\n").arg(name));
-}
-//! [clientConnected clientDisconnected]
-
-//! [connected]
-void BluetoothManager::connected(const QString &name)
-{
-    //ui->chat->insertPlainText(QString::fromLatin1("Joined chat with %1.\n").arg(name));
-}
-//! [connected]
-
-void BluetoothManager::reactOnSocketError(const QString &error)
-{
-    //ui->chat->insertPlainText(QString::fromLatin1("%1\n").arg(error));
-}
-
-//! [clientDisconnected]
-void BluetoothManager::clientDisconnected()
-{
-    ChatClient *client = qobject_cast<ChatClient *>(sender());
-    if (client) {
-        clients.removeOne(client);
-        client->deleteLater();
+    QVariantList devices;
+    for (const QBluetoothDeviceInfo &d : std::as_const(foundDevices)) {
+        QVariantMap device;
+        // Example: extracting name and address from QBluetoothServiceInfo
+        device["name"] = d.name();
+        device["address"] = d.address().toString();
+        devices.append(device);
     }
+
+    return devices;
 }
-//! [clientDisconnected]
 
-//! [Connect to remote service]
-void BluetoothManager::connectClicked()
+
+
+/*
+
+
+void BluetoothManager::startBleDiscovery(const QBluetoothUuid &serviceUuid)
 {
-    //ui->connectButton->setEnabled(false);
+    qDebug() << "Starting BLE device discovery...";
 
-    // scan for services
-    const QBluetoothAddress adapter = localAdapters.isEmpty() ?
-                                          QBluetoothAddress() :
-                                          localAdapters.at(0).address();
+    // Create a discovery agent to find BLE devices
+    auto *discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
+    connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
+            this, [this, serviceUuid](const QBluetoothDeviceInfo &info) {
+                if (info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration) {
+                    qDebug() << "Found BLE device:" << info.name() << info.address().toString();
 
-    RemoteSelector remoteSelector(adapter);
-#ifdef Q_OS_ANDROID
-    // QTBUG-61392
-    Q_UNUSED(serviceUuid);
-    remoteSelector.startDiscovery(QBluetoothUuid(reverseUuid));
-#else
-    remoteSelector.startDiscovery(QBluetoothUuid(serviceUuid));
-#endif
-    //if (remoteSelector.exec() == QDialog::Accepted) {
-        QBluetoothServiceInfo service = remoteSelector.service();
+                    // Optionally, filter by known device name or address
+                    // if (info.name().contains("MyDevice")) {
 
-        qDebug() << "Connecting to service" << service.serviceName()
-                 << "on" << service.device().name();
+                    discoveryAgent()->stop();
 
-        // Create client
-        ChatClient *client = new ChatClient(this);
+                    // Create a controller for the BLE device
+                    auto *controller = QLowEnergyController::createCentral(info, this);
 
-        //connect(client, &ChatClient::messageReceived,
-        //        this, &Chat::showMessage);
-        connect(client, &ChatClient::disconnected,
-                this, QOverload<>::of(&BluetoothManager::clientDisconnected));
-        connect(client, QOverload<const QString &>::of(&ChatClient::connected),
-                this, &BluetoothManager::connected);
-        connect(client, &ChatClient::socketErrorOccurred,
-                this, &BluetoothManager::reactOnSocketError);
-        connect(this, &BluetoothManager::sendMessage, client, &ChatClient::sendMessage);
-        client->startClient(service);
+                    connect(controller, &QLowEnergyController::connected, this, [this, controller]() {
+                        qDebug() << "Connected to BLE device, discovering services...";
+                        controller->discoverServices();
+                    });
 
-        clients.append(client);
-    //}
+                    connect(controller, &QLowEnergyController::serviceDiscovered, this, [this, serviceUuid, controller](const QBluetoothUuid &foundUuid) {
+                        qDebug() << "Service discovered:" << foundUuid.toString();
+                        if (foundUuid == serviceUuid) {
+                            qDebug() << "Target BLE service found!";
+                            controller->connectToService(foundUuid);
+                        }
+                    });
 
-    //ui->connectButton->setEnabled(true);
-}
-//! [Connect to remote service]
+                    connect(controller, &QLowEnergyController::discoveryFinished, this, []() {
+                        qDebug() << "Service discovery finished.";
+                    });
 
-/*! [sendClicked]
-void Chat::sendClicked()
-{
-    ui->sendButton->setEnabled(false);
-    ui->sendText->setEnabled(false);
+                    connect(controller, &QLowEnergyController::errorOccurred, this, [](QLowEnergyController::Error error) {
+                        qWarning() << "Controller error:" << error;
+                    });
 
-    showMessage(localName, ui->sendText->text());
-    emit sendMessage(ui->sendText->text());
+                    connect(controller, &QLowEnergyController::disconnected, this, []() {
+                        qDebug() << "BLE device disconnected.";
+                    });
 
-    ui->sendText->clear();
+                    controller->connectToDevice();
+                    // }
+                }
+            });
 
-    ui->sendText->setEnabled(true);
-    ui->sendButton->setEnabled(true);
-#if defined(Q_OS_ANDROID) || defined(Q_OS_IOS)
-    // avoid keyboard automatically popping up again on mobile devices
-    ui->sendButton->setFocus();
-#else
-    ui->sendText->setFocus();
-#endif
-}
-*/
+    connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished, this, []() {
+        qDebug() << "BLE discovery finished.";
+    });
 
-/*! [showMessage]
-void Chat::showMessage(const QString &sender, const QString &message)
-{
-    ui->chat->moveCursor(QTextCursor::End);
-    ui->chat->insertPlainText(QString::fromLatin1("%1: %2\n").arg(sender, message));
-    ui->chat->ensureCursorVisible();
+    connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::canceled, this, []() {
+        qDebug() << "BLE discovery canceled.";
+    });
+
+    discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
 }
 */

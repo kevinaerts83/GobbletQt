@@ -17,7 +17,7 @@ Page {
 
     Timer {
         id: refreshTimer
-        interval: 10000    // 10 second
+        interval: 2000    // 2 second
         repeat: true
         running: true
         triggeredOnStart: true
@@ -80,7 +80,7 @@ Page {
                     console.log("Clicked on device:", modelData.name, modelData.address)
 
                     // Call C++ function to connect to the device
-                    BluetoothManager.connectToDevice(modelData.address)
+                    BluetoothManager.connectWithAddress(modelData.address)
                     stackView.pop()
                 }
 

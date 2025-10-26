@@ -589,7 +589,7 @@ std::vector<int> AI::rowCheck(int maxCount, bool isWhite, bool removeRowsWithSiz
 
 // Write log (simulating the console.log in C++)
 void AI::writeLog() {
-    auto toBinaryString = [](int n) {
+    /*auto toBinaryString = [](int n) {
         return std::bitset<16>(n).to_string();
     };
     std::cout << "black" << std::endl;
@@ -599,5 +599,5 @@ void AI::writeLog() {
     std::cout << "white" << std::endl;
     for (int i = 0; i < 4; ++i) {
         std::cout << toBinaryString(m_bState[1][i]) << std::endl;
-    }
+    }*/
 }

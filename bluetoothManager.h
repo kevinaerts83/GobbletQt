@@ -1,25 +1,25 @@
-// Copyright (C) 2017 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+#ifndef BLUETOOTHMANAGER_H
+#define BLUETOOTHMANAGER_H
 
 #include <QObject>
-#include <QBluetoothHostInfo>
+#include <QBluetoothDeviceDiscoveryAgent>
+#include <QBluetoothDeviceInfo>
+#include <QBluetoothUuid>
+#include <QVector>
+#include "chatclient.h"
+#include "chatserver.h"
 
-class ChatServer;
-class ChatClient;
-
-//! [declaration]
 class BluetoothManager : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString clientName READ clientName WRITE setClientName NOTIFY clientNameChanged)
     Q_PROPERTY(QString serverName READ serverName WRITE setServerName NOTIFY serverNameChanged)
 public:
-    explicit BluetoothManager();
-    ~BluetoothManager();
+    explicit BluetoothManager(QObject *parent = nullptr);
 
     Q_INVOKABLE void initBluetooth();
     Q_INVOKABLE QVariantList getDevices();  // Exposed to QML
-    Q_INVOKABLE void connectToDevice(const QString &uuidAddress);
+    Q_INVOKABLE void connectWithAddress(const QString &address);
 
     QString clientName() const {
         return m_clientName;
@@ -39,25 +39,43 @@ public:
         emit serverNameChanged();
     }
 
+    void connectToDevice(const QBluetoothDeviceInfo &device);
+    void initClient();
+    void startDiscovery();
+    void stopDiscovery();
+
 signals:
+    void connected(const QString &deviceName);
+    void clientDisconnected();
+    void showMessage(const QString &sender, const QString &message);
+    void reactOnSocketError(const QString &error);
     void sendMessage(const QString &message);
+
     void clientNameChanged();
     void serverNameChanged();
 
 private slots:
-    void connectClicked();
-    void clientConnected(const QString &name);
-    void clientDisconnected(const QString &name);
-    void clientDisconnected();
-    void connected(const QString &name);
-    void reactOnSocketError(const QString &error);
+    void deviceDiscovered(const QBluetoothDeviceInfo &info);
+    void discoveryFinished();
+    //void connectToDevice(const QBluetoothDeviceInfo &device);
 
 private:
     ChatServer *server = nullptr;
-    QList<ChatClient *> clients;
-    QList<QBluetoothHostInfo> localAdapters;
+    ChatClient *client = nullptr;
+
+    QBluetoothDeviceDiscoveryAgent *discoveryAgent = nullptr;
+    QVector<QBluetoothDeviceInfo> foundDevices;
 
     QString m_serverName;
     QString m_clientName;
+
+    // Replace with your device’s actual UUIDs    
+    const QBluetoothUuid serviceUuid =
+        QBluetoothUuid(QStringLiteral("{be828aca-6398-4c4c-80cb-2cc15d4734d7}"));
+    const QBluetoothUuid rxCharUuid =
+        QBluetoothUuid(QStringLiteral("{be828aca-6398-4c4c-80cb-2cc15d4734d7}"));
+    const QBluetoothUuid txCharUuid =
+        QBluetoothUuid(QStringLiteral("{be828aca-6398-4c4c-80cb-2cc15d4734d7}"));
 };
-//! [declaration]
+
+#endif // BLUETOOTHMANAGER_H

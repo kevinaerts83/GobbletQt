@@ -1,167 +1,109 @@
-// Copyright (C) 2017 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
-
 #include "chatserver.h"
 
-#include <QBluetoothServer>
-#include <QBluetoothSocket>
+#include <QLowEnergyCharacteristic>
+#include <QLowEnergyCharacteristicData>
+#include <QLowEnergyDescriptorData>
+#include <QLowEnergyServiceData>
 
-using namespace Qt::StringLiterals;
-
-//! [Service UUID]
-static constexpr auto serviceUuid = "be828aca-6398-4c4c-80cb-2cc15d4734d7"_L1;
-//! [Service UUID]
-
-ChatServer::ChatServer(QObject *parent) : QObject(parent)
+ChatServer::ChatServer(QObject *parent)
+    : QObject(parent)
 {
 }
 
-ChatServer::~ChatServer()
+void ChatServer::startServer()
 {
-    stopServer();
+    qDebug() << "Starting BLE ChatServer (peripheral)...";
+
+    controller = QLowEnergyController::createPeripheral(this);
+
+    // === Define characteristics ===
+    QLowEnergyCharacteristicData rxData;
+    rxData.setUuid(rxCharUuid);
+    rxData.setValue(QByteArray());
+    rxData.setProperties(QLowEnergyCharacteristic::Write |
+                         QLowEnergyCharacteristic::WriteNoResponse);
+
+    QLowEnergyCharacteristicData txData;
+    txData.setUuid(txCharUuid);
+    txData.setValue(QByteArray());
+    txData.setProperties(QLowEnergyCharacteristic::Notify);
+
+    // Notification descriptor (mandatory for notify)
+    QLowEnergyDescriptorData ccc(
+        QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration,
+        QByteArray(2, 0));
+    txData.addDescriptor(ccc);
+
+    // === Define service ===
+    QLowEnergyServiceData serviceData;
+    serviceData.setType(QLowEnergyServiceData::ServiceTypePrimary);
+    serviceData.setUuid(serviceUuid);
+    serviceData.addCharacteristic(rxData);
+    serviceData.addCharacteristic(txData);
+
+    service = controller->addService(serviceData);
+
+    connect(service, &QLowEnergyService::characteristicWritten,
+            this, &ChatServer::onCharacteristicWritten);
+    connect(controller, &QLowEnergyController::stateChanged,
+            this, &ChatServer::onConnectionStateChanged);
+
+    // === Advertising ===
+    QLowEnergyAdvertisingData advertisingData;
+    advertisingData.setDiscoverability(QLowEnergyAdvertisingData::DiscoverabilityGeneral);
+    advertisingData.setIncludePowerLevel(true);
+    advertisingData.setLocalName("BLE ChatServer");
+    advertisingData.setServices({serviceUuid});
+
+    controller->startAdvertising(QLowEnergyAdvertisingParameters(),
+                                 advertisingData, advertisingData);
+
+    qDebug() << "BLE ChatServer advertising service" << serviceUuid.toString();
 }
 
-void ChatServer::startServer(const QBluetoothAddress& localAdapter)
-{
-    if (rfcommServer)
-        return;
-
-    //! [Create the server]
-    rfcommServer = new QBluetoothServer(QBluetoothServiceInfo::RfcommProtocol, this);
-    connect(rfcommServer, &QBluetoothServer::newConnection,
-            this, QOverload<>::of(&ChatServer::clientConnected));
-    bool result = rfcommServer->listen(localAdapter);
-    if (!result) {
-        qWarning() << "Cannot bind chat server to" << localAdapter.toString();
-        return;
-    }
-    //! [Create the server]
-
-    //serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceRecordHandle, (uint)0x00010010);
-
-    QBluetoothServiceInfo::Sequence profileSequence;
-    QBluetoothServiceInfo::Sequence classId;
-    classId << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::ServiceClassUuid::SerialPort));
-    classId << QVariant::fromValue(quint16(0x100));
-    profileSequence.append(QVariant::fromValue(classId));
-    serviceInfo.setAttribute(QBluetoothServiceInfo::BluetoothProfileDescriptorList,
-                             profileSequence);
-
-    classId.clear();
-    classId << QVariant::fromValue(QBluetoothUuid(serviceUuid));
-    classId << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::ServiceClassUuid::SerialPort));
-
-    serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceClassIds, classId);
-
-    //! [Service name, description and provider]
-    serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceName, tr("Bt Chat Server"));
-    serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceDescription,
-                             tr("Example bluetooth chat server"));
-    serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceProvider, tr("qt-project.org"));
-    //! [Service name, description and provider]
-
-    //! [Service UUID set]
-    serviceInfo.setServiceUuid(QBluetoothUuid(serviceUuid));
-    //! [Service UUID set]
-
-    //! [Service Discoverability]
-    const auto groupUuid = QBluetoothUuid(QBluetoothUuid::ServiceClassUuid::PublicBrowseGroup);
-    QBluetoothServiceInfo::Sequence publicBrowse;
-    publicBrowse << QVariant::fromValue(groupUuid);
-    serviceInfo.setAttribute(QBluetoothServiceInfo::BrowseGroupList, publicBrowse);
-    //! [Service Discoverability]
-
-    //! [Protocol descriptor list]
-    QBluetoothServiceInfo::Sequence protocolDescriptorList;
-    QBluetoothServiceInfo::Sequence protocol;
-    protocol << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::ProtocolUuid::L2cap));
-    protocolDescriptorList.append(QVariant::fromValue(protocol));
-    protocol.clear();
-    protocol << QVariant::fromValue(QBluetoothUuid(QBluetoothUuid::ProtocolUuid::Rfcomm))
-             << QVariant::fromValue(quint8(rfcommServer->serverPort()));
-    protocolDescriptorList.append(QVariant::fromValue(protocol));
-    serviceInfo.setAttribute(QBluetoothServiceInfo::ProtocolDescriptorList,
-                             protocolDescriptorList);
-    //! [Protocol descriptor list]
-
-    //! [Register service]
-    serviceInfo.registerService(localAdapter);
-    //! [Register service]
-}
-
-//! [stopServer]
 void ChatServer::stopServer()
 {
-    // Unregister service
-    if (serviceInfo.isRegistered()) {
-        serviceInfo.unregisterService();
+    if (controller) {
+        controller->stopAdvertising();
+        controller->disconnectFromDevice();
+        controller->deleteLater();
+        controller = nullptr;
     }
+    qDebug() << "BLE ChatServer stopped.";
+}
 
-    // Close sockets
-    qDeleteAll(clientSockets);
-    clientNames.clear();
-
-    // Close server
-    if (rfcommServer) {
-        delete rfcommServer;
-        rfcommServer = nullptr;
+void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &ch, const QByteArray &value)
+{
+    if (ch.uuid() == rxCharUuid) {
+        QString message = QString::fromUtf8(value);
+        qDebug() << "Received from client:" << message;
+        emit messageReceived("Client", message);
     }
 }
-//! [stopServer]
 
-//! [sendMessage]
 void ChatServer::sendMessage(const QString &message)
 {
-    QByteArray text = message.toUtf8() + '\n';
+    if (!service) return;
 
-    for (QBluetoothSocket *socket : std::as_const(clientSockets))
-        socket->write(text);
-}
-//! [sendMessage]
-
-//! [clientConnected]
-void ChatServer::clientConnected()
-{
-    QBluetoothSocket *socket = rfcommServer->nextPendingConnection();
-    if (!socket)
-        return;
-
-    connect(socket, &QBluetoothSocket::readyRead, this, &ChatServer::readSocket);
-    connect(socket, &QBluetoothSocket::disconnected,
-            this, QOverload<>::of(&ChatServer::clientDisconnected));
-    clientSockets.append(socket);
-    clientNames[socket] = socket->peerName();
-    emit clientConnected(socket->peerName());
-}
-//! [clientConnected]
-
-//! [clientDisconnected]
-void ChatServer::clientDisconnected()
-{
-    QBluetoothSocket *socket = qobject_cast<QBluetoothSocket *>(sender());
-    if (!socket)
-        return;
-
-    emit clientDisconnected(clientNames[socket]);
-
-    clientSockets.removeOne(socket);
-    clientNames.remove(socket);
-
-    socket->deleteLater();
-}
-//! [clientDisconnected]
-
-//! [readSocket]
-void ChatServer::readSocket()
-{
-    QBluetoothSocket *socket = qobject_cast<QBluetoothSocket *>(sender());
-    if (!socket)
-        return;
-
-    while (socket->canReadLine()) {
-        QByteArray line = socket->readLine().trimmed();
-        emit messageReceived(clientNames[socket],
-                             QString::fromUtf8(line.constData(), line.length()));
+    const auto chars = service->characteristics();
+    for (const auto &c : chars) {
+        if (c.uuid() == txCharUuid) {
+            qDebug() << "Sending message to clients:" << message;
+            service->writeCharacteristic(c, message.toUtf8());
+        }
     }
 }
-//! [readSocket]
+
+void ChatServer::onConnectionStateChanged(QLowEnergyController::ControllerState state)
+{
+    switch (state) {
+    case QLowEnergyController::UnconnectedState:
+        emit clientDisconnected("Unknown");
+        break;
+    case QLowEnergyController::ConnectedState:
+        emit clientConnected("BLE Client");
+        break;
+    default:
+        break;
+    }
+}
