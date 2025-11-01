@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Shapes
 import QtQuick.Controls
+import Gobblet 1.0
 
 Page {
     id: game
@@ -21,18 +22,13 @@ Page {
 
     function onOrientationChanged(newOrientation) {
         matrix.setCenter(parent.width, parent.height)
-        mediator.resetItems(parent.width, parent.height)
-        mediator.repaint()
+        Mediator.resetItems(parent.width, parent.height)
+        Mediator.repaint()
     }
 
     Matrix {
         id: matrix
         objectName: "matrix"
-    }
-
-    Mediator {
-        id: mediator
-        objectName: "mediator"
     }
 
     Label {
@@ -57,7 +53,7 @@ Page {
 
             }
             onPressed: (mouse)=> {
-                if (!mediator.onClick(mouse.x, mouse.y)) {
+                if (!Mediator.onClick(mouse.x, mouse.y)) {
                     errorLabel.text = "Place on an empty square or block a possible win!"
                 } else {
                     errorLabel.text = ""
@@ -73,7 +69,7 @@ Page {
                 gameArea.scaleValue = scale
                 gameArea.scaleValue = gameArea.scaleValue > 1.3 ? 1.3 : gameArea.scaleValue < 0.5 ? 0.5 : gameArea.scaleValue
                 matrix.zoom = gameArea.scaleValue
-                mediator.repaint()
+                Mediator.repaint()
             }
         }
 
@@ -92,7 +88,7 @@ Page {
                 const oldX = Math.floor(dragHandler.centroid.position.x / 30)
                 if (oldX != gameArea.lastCrossedThresholdX) {
                     matrix.yangle += (oldX < gameArea.lastCrossedThresholdX) ? 10 : -10
-                    mediator.repaint()
+                    Mediator.repaint()
                     gameArea.lastCrossedThresholdX = oldX
                 }
 
@@ -108,7 +104,7 @@ Page {
                         matrix.xangle += newAngle
                     }
 
-                    mediator.repaint()
+                    Mediator.repaint()
                     gameArea.lastCrossedThresholdY = oldY
                 }
             }
@@ -122,7 +118,7 @@ Page {
         height: parent.height
 
         Component.onCompleted: {
-            mediator.setBoard(this)
+            Mediator.setBoard(this)
         }
     }
 

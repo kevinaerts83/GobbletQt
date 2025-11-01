@@ -4,6 +4,7 @@
 #include <QtQuick/QQuickItem>
 #include <QVector>
 #include <QObject>
+#include "bluetoothManager.h"
 #include "gobbler.h"
 #include "board.h"
 #include "state.h"
@@ -19,7 +20,7 @@ class Mediator : public QObject
     QML_ELEMENT
 
 public:
-    Mediator(QObject *parent = 0);
+    Mediator(BluetoothManager *manager, QObject *parent = 0);
     const QList<Gobbler*> getList() const;
     bool isBlackTurn() const;
     Gobbler* getSelection() const;
@@ -33,13 +34,16 @@ public slots:
     void setSelectionByTile(int tile);
     void setSelection(int roundX, int borderZ);
     void setSelection(Gobbler* gobbler);
-    void setBoard(Board* board);
     void setMatrix(Matrix* matrix);
     void startAi(bool aiTurn);
-    void resetItems(double width, double height);
 
+    void resetItems(double width, double height);
+    void setBoard(Board* board);
     void repaint();
     bool onClick(const double x, const double y);
+
+    void onMessageReceived(const QString &sender, const QString &message);
+    void sendMessage(const QString &msg);
 
 private slots:
     bool checkWinner(bool player);
@@ -64,6 +68,7 @@ signals:
     void selectionChanged();
 
 private:
+    BluetoothManager *m_manager;
     QList<Gobbler*> m_list;
     bool m_blackTurn = false;
     Gobbler* m_selection = nullptr;

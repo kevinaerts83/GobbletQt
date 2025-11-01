@@ -8,13 +8,18 @@
 #include <QQmlComponent>
 #include <QQmlContext>
 
+#include "bluetoothManager.h"
 #include "gobbler.h"
 #include "../gobblet_ai/ai.h"
 
-Mediator::Mediator(QObject *parent) : QObject(parent)
+Mediator::Mediator(BluetoothManager *manager, QObject *parent) : QObject(parent), m_manager(manager)
 {
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Mediator::updateGobbler);
+
+    // Connect to manager’s signal
+    QObject::connect(m_manager, &BluetoothManager::showMessage,
+                     this, &Mediator::onMessageReceived);
 }
 
 const QList<Gobbler*> Mediator::getList() const
@@ -147,6 +152,7 @@ bool Mediator::onClick(const double x, const double y) {
         }
 
         updateState(roundX, coord[1], roundZ, oldTile, newTile);
+        sendMessage(QString("%1/%2").arg(oldTile).arg(newTile));
     } else {
         int borderZ = getBorderZ(roundX, coord[2], roundZ);
         setSelection(roundX, borderZ);
@@ -154,6 +160,21 @@ bool Mediator::onClick(const double x, const double y) {
     }
 
     return true;
+}
+
+void Mediator::onMessageReceived(const QString &sender, const QString &message)
+{
+    QStringList parts = message.split('/');
+    int from = parts[0].toInt();
+    int to = parts[1].toInt();
+    setSelectionByTile(from);
+    updateState(getTileX(to), newY, getTileY(to), from, to);
+}
+
+void Mediator::sendMessage(const QString &msg)
+{
+    if (m_manager)
+        m_manager->sendMessage(msg);
 }
 
 bool Mediator::isValidMove(int oldTile, int newTile) {

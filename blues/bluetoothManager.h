@@ -57,7 +57,6 @@ signals:
 private slots:
     void deviceDiscovered(const QBluetoothDeviceInfo &info);
     void discoveryFinished();
-    //void connectToDevice(const QBluetoothDeviceInfo &device);
 
 private:
     ChatServer *server = nullptr;

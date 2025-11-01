@@ -10,8 +10,8 @@
 class SetupBoard : public QObject {
     Q_OBJECT
 public:
-    explicit SetupBoard(QObject *parent = nullptr)
-        : QObject(parent) {}
+    explicit SetupBoard(Mediator *mediator, QObject *parent = nullptr)
+        : QObject(parent), m_mediator(mediator) {}
 
     Q_INVOKABLE void onGameVisible(QQuickItem *parentPage) {
 
@@ -20,10 +20,9 @@ public:
         Matrix* theMatrix = parentPage->findChild<Matrix*>("matrix");
         theMatrix->setCenter(parentPage->width(), parentPage->height());
 
-        Mediator* mediator = parentPage->findChild<Mediator*>("mediator");
-        mediator->setMatrix(theMatrix);
-        if (mediator && mediator->getList().size() == 0) {
-            mediator->m_comm = state;
+        m_mediator->setMatrix(theMatrix);
+        if (m_mediator && m_mediator->getList().size() == 0) {
+            m_mediator->m_comm = state;
             for (int i = 0; i < GOBBLERS; i++) {
 
                 int gobblerSize = i % 4; // 0 = HUGE, 1 = LARGE, 2 = MEDIUM, 3 = SMALL
@@ -52,16 +51,17 @@ public:
                     gobblerItem->setWidth(parentPage->width());
                     gobblerItem->setHeight(parentPage->height());
 
-                    mediator->addItem(gobblerItem);
+                    m_mediator->addItem(gobblerItem);
                 }
             }
         }
         if (state->isBlackTurn()) {
-            mediator->startAi(true);
+            m_mediator->startAi(true);
         }
     }
 
 private:
+    Mediator *m_mediator;
     static const int GOBBLERS = 24;
     static const int PADDING = 15;
     static const int SIZE_DIFF = 30;

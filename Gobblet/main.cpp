@@ -26,7 +26,10 @@ int main(int argc, char *argv[])
     });
     qmlRegisterSingletonInstance("Gobblet", 1, 0, "BluetoothManager", &blueTooth);
 
-    SetupBoard setupBoard;
+    static Mediator mediator(&blueTooth);
+    qmlRegisterSingletonInstance("Gobblet", 1, 0, "Mediator", &mediator);
+
+    SetupBoard setupBoard(&mediator);
     engine.rootContext()->setContextProperty("setupBoard", &setupBoard);
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
