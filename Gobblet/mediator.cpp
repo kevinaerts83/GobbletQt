@@ -9,7 +9,7 @@
 #include <QQmlContext>
 
 #include "gobbler.h"
-#include "ai.h"
+#include "../gobblet_ai/ai.h"
 
 Mediator::Mediator(QObject *parent) : QObject(parent)
 {

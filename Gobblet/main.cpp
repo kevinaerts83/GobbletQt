@@ -4,7 +4,7 @@
 
 #include "setupBoard.h"
 #include "state.h"
-#include "bluetoothManager.h"
+#include "../blues/bluetoothManager.h"
 
 int main(int argc, char *argv[])
 {
