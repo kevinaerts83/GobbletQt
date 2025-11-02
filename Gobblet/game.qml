@@ -31,6 +31,17 @@ Page {
         objectName: "matrix"
     }
 
+    Board {
+        id: board
+        matrix: matrix
+        width: parent.width
+        height: parent.height
+
+        Component.onCompleted: {
+            Mediator.setBoard(this)
+        }
+    }
+
     Label {
         id: errorLabel
         width: parent.width
@@ -108,17 +119,6 @@ Page {
                     gameArea.lastCrossedThresholdY = oldY
                 }
             }
-        }
-    }
-
-    Board {
-        id: board
-        matrix: matrix
-        width: parent.width
-        height: parent.height
-
-        Component.onCompleted: {
-            Mediator.setBoard(this)
         }
     }
 

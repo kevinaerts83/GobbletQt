@@ -22,6 +22,15 @@ Mediator::Mediator(BluetoothManager *manager, QObject *parent) : QObject(parent)
                      this, &Mediator::onMessageReceived);
 }
 
+void Mediator::reset()
+{
+    m_list.clear();
+    std::memset(m_state, 0, sizeof(m_state));
+    m_blackTurn = false;
+    m_selection = nullptr;
+    m_lock = false;
+}
+
 const QList<Gobbler*> Mediator::getList() const
 {
     return std::as_const(m_list);

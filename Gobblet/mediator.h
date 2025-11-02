@@ -21,6 +21,7 @@ class Mediator : public QObject
 
 public:
     Mediator(BluetoothManager *manager, QObject *parent = 0);
+    void reset();
     const QList<Gobbler*> getList() const;
     bool isBlackTurn() const;
     Gobbler* getSelection() const;

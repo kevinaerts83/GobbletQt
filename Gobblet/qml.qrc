@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>gobbler.qml</file>
         <file>menu.qml</file>
         <file>game.qml</file>
     </qresource>

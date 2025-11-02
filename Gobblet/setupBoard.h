@@ -20,6 +20,7 @@ public:
         Matrix* theMatrix = parentPage->findChild<Matrix*>("matrix");
         theMatrix->setCenter(parentPage->width(), parentPage->height());
 
+        m_mediator->reset();
         m_mediator->setMatrix(theMatrix);
         if (m_mediator && m_mediator->getList().size() == 0) {
             m_mediator->m_comm = state;
