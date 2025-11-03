@@ -161,7 +161,10 @@ bool Mediator::onClick(const double x, const double y) {
         }
 
         updateState(roundX, coord[1], roundZ, oldTile, newTile);
-        sendMessage(QString("%1/%2").arg(oldTile).arg(newTile));
+        if (m_comm->mode() == 0) {
+            bool isBlack = !m_comm->lock() && isBlackTurn();
+            sendMessage(QString("%1/%2/%3").arg(isBlack).arg(oldTile).arg(newTile));
+        }
     } else {
         int borderZ = getBorderZ(roundX, coord[2], roundZ);
         setSelection(roundX, borderZ);
@@ -174,10 +177,13 @@ bool Mediator::onClick(const double x, const double y) {
 void Mediator::onMessageReceived(const QString &sender, const QString &message)
 {
     QStringList parts = message.split('/');
-    int from = parts[0].toInt();
-    int to = parts[1].toInt();
-    setSelectionByTile(from);
-    updateState(getTileX(to), newY, getTileY(to), from, to);
+    bool isBlack = QVariant(parts[0]).toBool();
+    if (isBlack == (!m_comm->lock() && isBlackTurn())) {
+        int from = parts[1].toInt();
+        int to = parts[2].toInt();
+        setSelectionByTile(from);
+        updateState(getTileX(to), newY, getTileY(to), from, to);
+    }
 }
 
 void Mediator::sendMessage(const QString &msg)
