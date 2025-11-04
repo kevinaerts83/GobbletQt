@@ -6,6 +6,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+# Silence QTP0002 warning safely
+if (COMMAND qt_policy)
+    qt_policy(SET QTP0002 NEW)
+endif()
+
 # --- Find Qt ---
 find_package(Qt6 REQUIRED COMPONENTS Core Quick Bluetooth Test)
 qt_standard_project_setup()
@@ -22,6 +27,17 @@ set_target_properties(gobblet_ai blues Gobblet PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-set_target_properties(Gobblet PROPERTIES
-    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Info.plist
-)
+set_property(GLOBAL PROPERTY QT_ANDROID_APPLICATION_TARGET Gobblet)
+
+# This dummy target is used to make Qt Creator show additional files
+#add_custom_target(extra_files ALL SOURCES
+#    android/AndroidManifest.xml
+#    android/build.gradle
+#    android/gradle.properties
+#    android/gradle/wrapper/gradle-wrapper.jar
+#    android/gradle/wrapper/gradle-wrapper.properties
+#    android/gradlew
+#    android/gradlew.bat
+#    android/res/values/libs.xml
+#    android/res/xml/qtprovider_paths.xml
+#)
