@@ -14,6 +14,19 @@ BluetoothManager::BluetoothManager(QObject *parent)
 
 void BluetoothManager::initBluetooth()
 {
+//    const QVector<QString> permissions = {
+//        "android.permission.BLUETOOTH_CONNECT",
+//        "android.permission.BLUETOOTH_SCAN",
+//        "android.permission.ACCESS_FINE_LOCATION"
+//    };
+//    for (const QString &permission : permissions) {
+//        auto result = QtAndroidPrivate::requestPermission(permission);
+//        if (result == QtAndroidPrivate::PermissionResult::Denied) {
+//            qWarning() << "Permission denied:" << permission;
+//        }
+//    }
+
+
 #if defined(Q_OS_ANDROID) || defined(Q_OS_IOS)
     QBluetoothPermission permission{};
     switch (qApp->checkPermission(permission)) {

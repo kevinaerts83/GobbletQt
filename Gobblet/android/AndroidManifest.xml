@@ -8,11 +8,22 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <!-- %%INSERT_FEATURES -->
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
-    <!-- <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34" /> -->
-    <uses-sdk android:minSdkVersion="30"/>
     <supports-screens android:anyDensity="true" android:largeScreens="true" android:normalScreens="true" android:smallScreens="true"/>
-    <application android:name="org.qtproject.qt.android.bindings.QtApplication" android:hardwareAccelerated="true" android:label="GobbletMR" android:requestLegacyExternalStorage="true" android:allowBackup="true" android:fullBackupOnly="false" android:icon="@drawable/icon">
-        <activity android:name="org.qtproject.qt.android.bindings.QtActivity" android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density" android:launchMode="singleTop" android:screenOrientation="sensor" android:exported="true" android:label="Gobblet MR">
+
+    <application android:name="org.qtproject.qt.android.bindings.QtApplication"
+                android:hardwareAccelerated="true"
+                android:label="GobbletMR"
+                android:requestLegacyExternalStorage="true"
+                android:allowBackup="true"
+                android:fullBackupOnly="false"
+                android:icon="@drawable/icon">
+
+        <activity android:name="org.qtproject.qt.android.bindings.QtActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize|screenLayout|smallestScreenSize|density|locale|fontScale|uiMode"
+            android:launchMode="singleTop"
+            android:screenOrientation="sensor"
+            android:exported="true"
+            android:label="Gobblet MR">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -25,4 +36,5 @@
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/qtprovider_paths"/>
         </provider>
     </application>
+    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34"/>
 </manifest>

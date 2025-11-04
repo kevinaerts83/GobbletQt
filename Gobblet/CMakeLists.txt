@@ -50,7 +50,7 @@ endif()
 if(ANDROID)
     set_target_properties(Gobblet PROPERTIES
         QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android"
-        QT_ANDROID_ABIS "arm64-v8a;x86_64"
+        QT_ANDROID_ABIS "arm64-v8a"
         QT_ANDROID_MIN_SDK_VERSION 21
         QT_ANDROID_TARGET_SDK_VERSION 34
     )
