@@ -14,14 +14,13 @@ BluetoothManager::BluetoothManager(QObject *parent)
 
 void BluetoothManager::initBluetooth()
 {
-#if QT_CONFIG(permissions)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_IOS)
     QBluetoothPermission permission{};
     switch (qApp->checkPermission(permission)) {
     case Qt::PermissionStatus::Undetermined:
         qApp->requestPermission(permission, this, &BluetoothManager::initBluetooth);
         return;
     case Qt::PermissionStatus::Denied:
-        qWarning() << "Bluetooth permission denied";
         return;
     case Qt::PermissionStatus::Granted:
         break;
@@ -66,7 +65,9 @@ void BluetoothManager::startDiscovery()
     }
 
     qDebug() << "Starting BLE device discovery...";
-    foundDevices.clear();
+    if (foundDevices.count() > 5) {
+        foundDevices.clear();
+    }
     discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
 }
 

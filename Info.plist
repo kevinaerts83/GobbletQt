@@ -3,16 +3,14 @@
    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleIdentifier</key>
-    <string>Gobblet</string>
-    <key>CFBundleName</key>
-    <string>Gobblet</string>
+   <key>CFBundleName</key>
+   <string>Gobblet</string>
 
-    <!-- Add these Bluetooth permission keys -->
-    <key>NSBluetoothAlwaysUsageDescription</key>
-    <string>This app uses Bluetooth to connect to nearby devices.</string>
+   <!-- Add these Bluetooth permission keys -->
+   <key>NSBluetoothAlwaysUsageDescription</key>
+   <string>This app uses Bluetooth to connect to nearby BLE devices.</string>
 
-    <key>NSBluetoothPeripheralUsageDescription</key>
-    <string>This app requires Bluetooth access to communicate with peripherals.</string>
+   <key>NSBluetoothPeripheralUsageDescription</key>
+   <string>This app uses Bluetooth to advertise and communicate with BLE devices.</string>
 </dict>
 </plist>
