@@ -1,7 +1,6 @@
 #ifndef MEDIATOR_H
 #define MEDIATOR_H
 
-#include <QtQuick/QQuickItem>
 #include <QVector>
 #include <QObject>
 #include "bluetoothManager.h"
@@ -17,7 +16,6 @@ class Mediator : public QObject
     Q_PROPERTY(Gobbler* selection READ getSelection NOTIFY selectionChanged)
     Q_PROPERTY(Board* board READ getBoard CONSTANT)
     Q_PROPERTY(State* state MEMBER m_comm)
-    QML_ELEMENT
 
 public:
     Mediator(BluetoothManager *manager, QObject *parent = 0);
