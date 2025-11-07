@@ -39,25 +39,22 @@ target_link_libraries(Gobblet
         Qt6::Bluetooth
 )
 
-target_compile_definitions(Gobblet PRIVATE QT_DEPRECATED_WARNINGS)
-
-if(NOT ANDROID)
-    install(TARGETS Gobblet
-        BUNDLE DESTINATION .
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    )
-endif()
 if(ANDROID)
     set_target_properties(Gobblet PROPERTIES
-        QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android"
+        QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/android"
         QT_ANDROID_ABIS "arm64-v8a"
-        QT_ANDROID_MIN_SDK_VERSION 21
-        QT_ANDROID_TARGET_SDK_VERSION 34
+        QT_ANDROID_MIN_SDK_VERSION 28
+        QT_ANDROID_TARGET_SDK_VERSION 35
     )
-    add_compile_options("-march=armv9-a")
+    #qt_android_generate_deployment_settings(Gobblet)
 elseif(APPLE)
     set_target_properties(Gobblet PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/Info.plist"
+    )
+else()
+    install(TARGETS Gobblet
+        BUNDLE DESTINATION .
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 endif()
