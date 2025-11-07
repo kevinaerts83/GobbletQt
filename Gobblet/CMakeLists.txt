@@ -1,5 +1,7 @@
 # Gobblet/CMakeLists.txt
-qt_add_executable(Gobblet WIN32 MACOSX_BUNDLE
+qt_add_executable(Gobblet
+    MANUAL_FINALIZATION
+    WIN32 MACOSX_BUNDLE
     main.cpp
     state.cpp state.h
     board.cpp board.h
@@ -11,6 +13,16 @@ qt_add_executable(Gobblet WIN32 MACOSX_BUNDLE
     setupBoard.h
     shape.cpp shape.h
     shape3d.cpp shape3d.h
+)
+
+# Link everything together
+target_link_libraries(Gobblet
+    PRIVATE
+        blues
+        gobblet_ai
+        Qt6::Core
+        Qt6::Quick
+        Qt6::Bluetooth
 )
 
 # QML module setup
@@ -29,20 +41,11 @@ qt_add_qml_module(Gobblet
     NO_RESOURCE_TARGET_PATH
 )
 
-# Link everything together
-target_link_libraries(Gobblet
-    PRIVATE
-        blues
-        gobblet_ai
-        Qt6::Core
-        Qt6::Quick
-        Qt6::Bluetooth
-)
-
 if(ANDROID)
+    message(STATUS "*************** ANDROID SETTINGS ******************")
     set_target_properties(Gobblet PROPERTIES
         QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/android"
-        QT_ANDROID_ABIS "arm64-v8a"
+        QT_ANDROID_ABIS "arm64-v8a;x86_64"
         QT_ANDROID_MIN_SDK_VERSION 28
         QT_ANDROID_TARGET_SDK_VERSION 35
     )
@@ -58,3 +61,5 @@ else()
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 endif()
+
+qt_finalize_executable(Gobblet)
