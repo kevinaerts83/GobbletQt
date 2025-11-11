@@ -39,11 +39,11 @@ private:
     QLowEnergyCharacteristic txChar; // send to client
 
     QBluetoothUuid serviceUuid =
-        QBluetoothUuid(QStringLiteral("{be828aca-6398-4c4c-80cb-2cc15d4734d7}"));
+        QBluetoothUuid(QStringLiteral("{12345678-6398-4c4c-80cb-2cc15d4734d7}"));
     QBluetoothUuid rxCharUuid =
-        QBluetoothUuid(QStringLiteral("{be828aca-6398-4c4c-80cb-2cc15d4734d7}"));
+        QBluetoothUuid(QStringLiteral("{beefbbbb-6398-4c4c-80cb-2cc15d4734d7}"));
     QBluetoothUuid txCharUuid =
-        QBluetoothUuid(QStringLiteral("{be828aca-6398-4c4c-80cb-2cc15d4734d7}"));
+        QBluetoothUuid(QStringLiteral("{feedaaaa-6398-4c4c-80cb-2cc15d4734d7}"));
 };
 
 #endif // CHATSERVER_H
