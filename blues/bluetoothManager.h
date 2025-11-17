@@ -68,13 +68,13 @@ private:
     QString m_serverName;
     QString m_clientName;
 
-    // Replace with your device’s actual UUIDs    
+    // Replace with your device’s actual UUIDs
     const QBluetoothUuid serviceUuid =
-        QBluetoothUuid(QStringLiteral("{be828aca-6398-4c4c-80cb-2cc15d4734d7}"));
+        QBluetoothUuid(QStringLiteral("{12345678-6398-4c4c-80cb-2cc15d4734d7}"));
     const QBluetoothUuid rxCharUuid =
-        QBluetoothUuid(QStringLiteral("{be828aca-6398-4c4c-80cb-2cc15d4734d7}"));
+        QBluetoothUuid(QStringLiteral("{beefbbbb-6398-4c4c-80cb-2cc15d4734d7}"));
     const QBluetoothUuid txCharUuid =
-        QBluetoothUuid(QStringLiteral("{be828aca-6398-4c4c-80cb-2cc15d4734d7}"));
+        QBluetoothUuid(QStringLiteral("{feedaaaa-6398-4c4c-80cb-2cc15d4734d7}"));
 };
 
 #endif // BLUETOOTHMANAGER_H

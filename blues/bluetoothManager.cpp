@@ -42,8 +42,6 @@ void BluetoothManager::initBluetooth()
 
     qDebug() << "Initializing BLE ChatServer...";
 
-    // No need for QBluetoothLocalDevice::HostDiscoverable — BLE advertising replaces that
-
     ChatServer *server = new ChatServer(this);
     connect(server, &ChatServer::messageReceived,
             this, &BluetoothManager::showMessage);
@@ -63,12 +61,17 @@ void BluetoothManager::initClient()
 {
     discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
 
+    // Optional: give macOS enough time
+    discoveryAgent->setLowEnergyDiscoveryTimeout(10000);
+
     connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
             this, &BluetoothManager::deviceDiscovered);
+
     connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished,
             this, &BluetoothManager::discoveryFinished);
+
     connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::canceled,
-            this, []() { qDebug() << "Discovery canceled."; });
+            this, &BluetoothManager::discoveryFinished); // macOS workaround
 }
 
 void BluetoothManager::startDiscovery()
@@ -86,8 +89,7 @@ void BluetoothManager::startDiscovery()
 
 void BluetoothManager::stopDiscovery()
 {
-    if (discoveryAgent->isActive())
-        discoveryAgent->stop();
+    discoveryAgent->stop();
 }
 
 void BluetoothManager::deviceDiscovered(const QBluetoothDeviceInfo &info)
@@ -99,11 +101,6 @@ void BluetoothManager::deviceDiscovered(const QBluetoothDeviceInfo &info)
     foundDevices.append(info);
 
     stopDiscovery();
-    // Example: Auto-connect to first device whose name matches "MyBLEDevice"
-    //if (info.name().contains("Gobblet Online", Qt::CaseInsensitive)) {
-    //    stopDiscovery();
-    //    connectToDevice(info);
-    //}
 }
 
 void BluetoothManager::discoveryFinished()

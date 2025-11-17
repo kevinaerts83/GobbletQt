@@ -14,43 +14,65 @@ void ChatClient::startClient(const QBluetoothDeviceInfo &deviceInfo,
     this->rxUuid = rxCharUuid;
     this->txUuid = txCharUuid;
 
+    if (controller) {
+        controller->disconnectFromDevice();
+        controller->deleteLater();
+    }
+
     qDebug() << "Connecting to BLE device:" << deviceInfo.name();
 
     controller = QLowEnergyController::createCentral(deviceInfo, this);
 
-    connect(controller, &QLowEnergyController::connected, this, [this, deviceInfo]() {
-        qDebug() << "Connected to device. Discovering services...";
-        emit connected(deviceInfo.name());
-        controller->discoverServices();
+    // Controller signals
+    connect(controller, &QLowEnergyController::connected,
+        this, &ChatClient::onControllerConnected);
+    //connect(controller, &QLowEnergyController::discoveryFinished,
+    //    this, &ChatClient::onServiceDiscoveryFinished);
+    connect(controller, &QLowEnergyController::errorOccurred, this, [this]() {
+        qDebug() << "BLE an error occurred";
     });
-
-    connect(controller, &QLowEnergyController::discoveryFinished, this, [this, &serviceUuid]() {
-        qDebug() << "Service discovery finished.";
-        if (!controller->services().contains(serviceUuid)) {
-            emit socketErrorOccurred("Target BLE service not found on device");
-            controller->disconnectFromDevice();
-            return;
-        }
-
-        qDebug() << "Connecting to BLE service" << serviceUuid.toString();
-        service = controller->createServiceObject(serviceUuid, this);
-        if (!service) {
-            emit socketErrorOccurred("Failed to create BLE service object");
-            return;
-        }
-
-        connect(service, &QLowEnergyService::stateChanged, this, &ChatClient::serviceStateChanged);
-        connect(service, &QLowEnergyService::characteristicChanged, this, &ChatClient::characteristicChanged);
-        service->discoverDetails();
-    });
-
-    connect(controller, &QLowEnergyController::errorOccurred, this, &ChatClient::controllerErrorOccurred);
     connect(controller, &QLowEnergyController::disconnected, this, [this]() {
         qDebug() << "BLE device disconnected.";
         emit disconnected();
     });
-
+    connect(controller, &QLowEnergyController::serviceDiscovered,
+        this, &::ChatClient::serviceDiscovered);
+    // Start connecting
     controller->connectToDevice();
+}
+
+void ChatClient::onControllerConnected()
+{
+    qDebug() << "Controller connected. Starting service discovery...";
+    emit connected(controller->remoteName());
+    controller->discoverServices();   // REQUIRED ON MACOS
+}
+
+void ChatClient::serviceDiscovered(const QBluetoothUuid &uuid)
+{
+    qDebug() << "Service discovered:" << uuid;
+
+    if (uuid != serviceUuid) {
+        qDebug() << "Uuid doesn't match";
+        return;
+    }
+
+    qDebug() << "Target BLE service discovered, creating service object...";
+
+    service = controller->createServiceObject(serviceUuid, this);
+
+    if (!service) {
+        emit socketErrorOccurred("Failed to create BLE service object after discovery");
+        return;
+    }
+
+    connect(service, &QLowEnergyService::stateChanged,
+            this, &ChatClient::serviceStateChanged);
+
+    connect(service, &QLowEnergyService::characteristicChanged,
+            this, &ChatClient::characteristicChanged);
+
+    service->discoverDetails();
 }
 
 void ChatClient::serviceStateChanged(QLowEnergyService::ServiceState newState)

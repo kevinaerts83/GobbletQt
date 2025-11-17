@@ -31,6 +31,9 @@ public slots:
     void sendMessage(const QString &message);
 
 private slots:
+    void onControllerConnected();
+    void serviceDiscovered(const QBluetoothUuid &uuid);
+
     void serviceStateChanged(QLowEnergyService::ServiceState newState);
     void characteristicChanged(const QLowEnergyCharacteristic &c, const QByteArray &value);
     void controllerErrorOccurred(QLowEnergyController::Error error);

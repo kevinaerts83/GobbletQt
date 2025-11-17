@@ -29,7 +29,10 @@ Page {
     RowLayout {
         Button {
             text: "Cancel"
-            onClicked: stackView.pop();
+            onClicked: {
+                BluetoothManager.stopDiscovery()
+                stackView.pop()
+            }
         }
     }
 

@@ -18,11 +18,11 @@ add_subdirectory(Gobblet)
 set_property(GLOBAL PROPERTY QT_ANDROID_APPLICATION_TARGET Gobblet)
 
 # --- Output folders for all targets ---
-#set_target_properties(gobblet_ai blues Gobblet PROPERTIES
-#   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
-#   LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
-#   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-#)
+set_target_properties(gobblet_ai blues Gobblet PROPERTIES
+   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+   LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
 
 # This dummy target is used to make Qt Creator show additional files
 #add_custom_target(extra_files ALL SOURCES

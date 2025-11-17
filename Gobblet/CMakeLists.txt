@@ -1,6 +1,6 @@
 # Gobblet/CMakeLists.txt
 qt_add_executable(Gobblet
-    MANUAL_FINALIZATION
+    #MANUAL_FINALIZATION
     WIN32 MACOSX_BUNDLE
     main.cpp
     state.cpp state.h
@@ -62,4 +62,4 @@ else()
     )
 endif()
 
-qt_finalize_executable(Gobblet)
+#qt_finalize_executable(Gobblet)
