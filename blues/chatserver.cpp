@@ -10,23 +10,31 @@ ChatServer::ChatServer(QObject *parent)
 {
 }
 
+ChatServer::~ChatServer()
+{
+    stopServer();
+}
+
 void ChatServer::startServer()
 {
     qDebug() << "Starting BLE ChatServer (peripheral)...";
 
     controller = QLowEnergyController::createPeripheral(this);
 
+    connect(controller, &QLowEnergyController::stateChanged,
+            this, &ChatServer::onConnectionStateChanged);
+
     // === Define characteristics ===
     QLowEnergyCharacteristicData rxData;
     rxData.setUuid(rxCharUuid);
-    rxData.setValue(QByteArray());
     rxData.setProperties(QLowEnergyCharacteristic::Write |
                          QLowEnergyCharacteristic::WriteNoResponse);
+    rxData.setValue(QByteArray());
 
     QLowEnergyCharacteristicData txData;
     txData.setUuid(txCharUuid);
-    txData.setValue(QByteArray());
     txData.setProperties(QLowEnergyCharacteristic::Notify);
+    txData.setValue(QByteArray());
 
     // Notification descriptor (mandatory for notify)
     QLowEnergyDescriptorData ccc(
@@ -36,8 +44,8 @@ void ChatServer::startServer()
 
     // === Define service ===
     QLowEnergyServiceData serviceData;
-    serviceData.setType(QLowEnergyServiceData::ServiceTypePrimary);
     serviceData.setUuid(serviceUuid);
+    serviceData.setType(QLowEnergyServiceData::ServiceTypePrimary);
     serviceData.addCharacteristic(rxData);
     serviceData.addCharacteristic(txData);
 
@@ -45,14 +53,13 @@ void ChatServer::startServer()
 
     connect(service, &QLowEnergyService::characteristicWritten,
             this, &ChatServer::onCharacteristicWritten);
-    connect(controller, &QLowEnergyController::stateChanged,
-            this, &ChatServer::onConnectionStateChanged);
+
 
     // === Advertising ===
     QLowEnergyAdvertisingData advertisingData;
     advertisingData.setDiscoverability(QLowEnergyAdvertisingData::DiscoverabilityGeneral);
-    advertisingData.setIncludePowerLevel(true);
     advertisingData.setLocalName("BLE ChatServer");
+    advertisingData.setIncludePowerLevel(true);
     advertisingData.setServices({serviceUuid});
 
     controller->startAdvertising(QLowEnergyAdvertisingParameters(),
@@ -94,11 +101,16 @@ void ChatServer::sendMessage(const QString &message)
     }
 }
 
+void ChatServer::serverError(const QString &message)
+{
+    qDebug() << "Server error:" << message;
+}
+
 void ChatServer::onConnectionStateChanged(QLowEnergyController::ControllerState state)
 {
     switch (state) {
     case QLowEnergyController::UnconnectedState:
-        emit clientDisconnected("Unknown");
+        emit clientDisconnected("BLE Client");
         break;
     case QLowEnergyController::ConnectedState:
         emit clientConnected("BLE Client");

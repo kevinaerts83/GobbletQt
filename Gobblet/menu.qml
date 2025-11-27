@@ -194,7 +194,7 @@ Page {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        BluetoothManager.initBluetooth();
+                        BluetoothManager.startServer();
                     }
                 }
             }

@@ -15,17 +15,17 @@ class ChatServer : public QObject
     Q_OBJECT
 public:
     explicit ChatServer(QObject *parent = nullptr);
+    ~ChatServer();
 
     void startServer();
     void stopServer();
+    void sendMessage(const QString &message);
+    void serverError(const QString &message);
 
 signals:
     void clientConnected(const QString &deviceName);
     void clientDisconnected(const QString &deviceName);
     void messageReceived(const QString &sender, const QString &message);
-
-public slots:
-    void sendMessage(const QString &message);
 
 private slots:
     void onCharacteristicWritten(const QLowEnergyCharacteristic &ch, const QByteArray &value);

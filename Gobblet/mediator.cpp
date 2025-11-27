@@ -18,8 +18,8 @@ Mediator::Mediator(BluetoothManager *manager, QObject *parent) : QObject(parent)
     connect(timer, &QTimer::timeout, this, &Mediator::updateGobbler);
 
     // Connect to manager’s signal
-    QObject::connect(m_manager, &BluetoothManager::showMessage,
-                     this, &Mediator::onMessageReceived);
+    QObject::connect(m_manager, &BluetoothManager::clientMessage, this, &Mediator::onMessageReceived);
+    QObject::connect(m_manager, &BluetoothManager::serverMessage, this, &Mediator::onMessageReceived);
 }
 
 void Mediator::reset()

@@ -5,6 +5,27 @@ ChatClient::ChatClient(QObject *parent)
 {
 }
 
+ChatClient::~ChatClient()
+{
+    cleanupController();
+}
+
+void ChatClient::cleanupController()
+{
+    if (service) {
+        service->disconnect(this);
+        service->deleteLater();
+        service = nullptr;
+    }
+
+    if (controller) {
+        controller->disconnect(this);
+        controller->disconnectFromDevice();
+        controller->deleteLater();
+        controller = nullptr;
+    }
+}
+
 void ChatClient::startClient(const QBluetoothDeviceInfo &deviceInfo,
                              const QBluetoothUuid &serviceUuid,
                              const QBluetoothUuid &rxCharUuid,
@@ -14,10 +35,7 @@ void ChatClient::startClient(const QBluetoothDeviceInfo &deviceInfo,
     this->rxUuid = rxCharUuid;
     this->txUuid = txCharUuid;
 
-    if (controller) {
-        controller->disconnectFromDevice();
-        controller->deleteLater();
-    }
+    cleanupController();
 
     qDebug() << "Connecting to BLE device:" << deviceInfo.name();
 
@@ -26,8 +44,12 @@ void ChatClient::startClient(const QBluetoothDeviceInfo &deviceInfo,
     // Controller signals
     connect(controller, &QLowEnergyController::connected,
         this, &ChatClient::onControllerConnected);
-    //connect(controller, &QLowEnergyController::discoveryFinished,
-    //    this, &ChatClient::onServiceDiscoveryFinished);
+    connect(controller, &QLowEnergyController::serviceDiscovered,
+        this, &::ChatClient::onServiceDiscovered);
+
+    connect(controller, &QLowEnergyController::discoveryFinished, this, [this]() {
+        qDebug() << "BLE discovery finished";
+    });
     connect(controller, &QLowEnergyController::errorOccurred, this, [this]() {
         qDebug() << "BLE an error occurred";
     });
@@ -35,10 +57,23 @@ void ChatClient::startClient(const QBluetoothDeviceInfo &deviceInfo,
         qDebug() << "BLE device disconnected.";
         emit disconnected();
     });
-    connect(controller, &QLowEnergyController::serviceDiscovered,
-        this, &::ChatClient::serviceDiscovered);
+
+
     // Start connecting
     controller->connectToDevice();
+}
+
+void ChatClient::disconnectClient()
+{
+    if (controller)
+        controller->disconnectFromDevice();
+}
+
+void ChatClient::onControllerDisconnected()
+{
+    qDebug() << "Controller disconnected";
+    emit disconnected();
+    cleanupController();
 }
 
 void ChatClient::onControllerConnected()
@@ -48,7 +83,7 @@ void ChatClient::onControllerConnected()
     controller->discoverServices();   // REQUIRED ON MACOS
 }
 
-void ChatClient::serviceDiscovered(const QBluetoothUuid &uuid)
+void ChatClient::onServiceDiscovered(const QBluetoothUuid &uuid)
 {
     qDebug() << "Service discovered:" << uuid;
 
@@ -118,16 +153,4 @@ void ChatClient::sendMessage(const QString &message)
     QByteArray data = message.toUtf8();
     service->writeCharacteristic(txChar, data, QLowEnergyService::WriteWithoutResponse);
     qDebug() << "Sent message:" << message;
-}
-
-void ChatClient::controllerErrorOccurred(QLowEnergyController::Error error)
-{
-    QString err;
-    switch (error) {
-    case QLowEnergyController::ConnectionError: err = "Connection error"; break;
-    case QLowEnergyController::RemoteHostClosedError: err = "Remote closed connection"; break;
-    default: err = QString("Error %1").arg(error); break;
-    }
-    qWarning() << "Controller error:" << err;
-    emit socketErrorOccurred(err);
 }

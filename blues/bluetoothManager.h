@@ -16,8 +16,12 @@ class BluetoothManager : public QObject
     Q_PROPERTY(QString serverName READ serverName WRITE setServerName NOTIFY serverNameChanged)
 public:
     explicit BluetoothManager(QObject *parent = nullptr);
+    ~BluetoothManager();
 
-    Q_INVOKABLE void initBluetooth();
+    // Server (peripheral)
+    Q_INVOKABLE void startServer();
+    Q_INVOKABLE void stopServer();
+
     Q_INVOKABLE QVariantList getDevices();  // Exposed to QML
     Q_INVOKABLE void connectWithAddress(const QString &address);
 
@@ -39,32 +43,37 @@ public:
         emit serverNameChanged();
     }
 
+    // Client (central)
     void connectToDevice(const QBluetoothDeviceInfo &device);
     void initClient();
     void startDiscovery();
     void stopDiscovery();
+    void onDeviceDiscovered(const QBluetoothDeviceInfo &info);
 
 signals:
-    void connected(const QString &deviceName);
-    void clientDisconnected();
-    void showMessage(const QString &sender, const QString &message);
+    // Server side
+    void serverMessage(const QString &sender, const QString &message);
     void reactOnSocketError(const QString &error);
-    void sendMessage(const QString &message);
+    void onServerError(const QString &message);
+
+    // Client side
+    void clientConnected(const QString &deviceName);
+    void clientDisconnected();
+    void clientMessage(const QString &from, const QString &msg);
 
     void clientNameChanged();
     void serverNameChanged();
+    void sendMessage(const QString &message);
 
 private slots:
-    void deviceDiscovered(const QBluetoothDeviceInfo &info);
     void discoveryFinished();
 
 private:
+    QBluetoothDeviceDiscoveryAgent *discoveryAgent = nullptr;
     ChatServer *server = nullptr;
     ChatClient *client = nullptr;
 
-    QBluetoothDeviceDiscoveryAgent *discoveryAgent = nullptr;
     QVector<QBluetoothDeviceInfo> foundDevices;
-
     QString m_serverName;
     QString m_clientName;
 
