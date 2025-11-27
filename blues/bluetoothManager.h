@@ -24,6 +24,7 @@ public:
 
     Q_INVOKABLE QVariantList getDevices();  // Exposed to QML
     Q_INVOKABLE void connectWithAddress(const QString &address);
+    Q_INVOKABLE void stopDiscovery();
 
     QString clientName() const {
         return m_clientName;
@@ -47,7 +48,6 @@ public:
     void connectToDevice(const QBluetoothDeviceInfo &device);
     void initClient();
     void startDiscovery();
-    void stopDiscovery();
     void onDeviceDiscovered(const QBluetoothDeviceInfo &info);
 
 signals:

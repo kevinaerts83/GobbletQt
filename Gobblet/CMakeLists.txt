@@ -1,19 +1,36 @@
 # Gobblet/CMakeLists.txt
-qt_add_executable(Gobblet
-    MANUAL_FINALIZATION
-    WIN32 MACOSX_BUNDLE
-    main.cpp
-    state.cpp state.h
-    board.cpp board.h
-    board3d.cpp board3d.h
-    gobbler.cpp gobbler.h
-    gobbler3d.cpp gobbler3d.h
-    matrix.cpp matrix.h
-    mediator.cpp mediator.h
-    setupBoard.h
-    shape.cpp shape.h
-    shape3d.cpp shape3d.h
-)
+if(ANDROID)
+    qt_add_executable(Gobblet
+        MANUAL_FINALIZATION
+        WIN32 MACOSX_BUNDLE
+        main.cpp
+        state.cpp state.h
+        board.cpp board.h
+        board3d.cpp board3d.h
+        gobbler.cpp gobbler.h
+        gobbler3d.cpp gobbler3d.h
+        matrix.cpp matrix.h
+        mediator.cpp mediator.h
+        setupBoard.h
+        shape.cpp shape.h
+        shape3d.cpp shape3d.h
+    )
+else()
+    qt_add_executable(Gobblet
+        WIN32 MACOSX_BUNDLE
+        main.cpp
+        state.cpp state.h
+        board.cpp board.h
+        board3d.cpp board3d.h
+        gobbler.cpp gobbler.h
+        gobbler3d.cpp gobbler3d.h
+        matrix.cpp matrix.h
+        mediator.cpp mediator.h
+        setupBoard.h
+        shape.cpp shape.h
+        shape3d.cpp shape3d.h
+    )
+endif()
 
 # Link everything together
 target_link_libraries(Gobblet
@@ -62,4 +79,6 @@ else()
     )
 endif()
 
-qt_finalize_executable(Gobblet)
+if(ANDROID)
+    qt_finalize_executable(Gobblet)
+endif()
