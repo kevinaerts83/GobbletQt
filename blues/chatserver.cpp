@@ -33,14 +33,12 @@ void ChatServer::startServer()
 
     QLowEnergyCharacteristicData txData;
     txData.setUuid(txCharUuid);
-    txData.setProperties(QLowEnergyCharacteristic::Notify);
+    txData.setProperties(QLowEnergyCharacteristic::Notify | QLowEnergyCharacteristic::Read);
     txData.setValue(QByteArray());
-
-    // Notification descriptor (mandatory for notify)
-    QLowEnergyDescriptorData ccc(
-        QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration,
-        QByteArray(2, 0));
-    txData.addDescriptor(ccc);
+    //QLowEnergyDescriptorData ccc(
+    //    QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration,
+    //    QByteArray(2, 0));
+    //txData.addDescriptor(ccc);
 
     // === Define service ===
     QLowEnergyServiceData serviceData;

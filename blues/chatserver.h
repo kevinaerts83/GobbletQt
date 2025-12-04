@@ -19,8 +19,8 @@ public:
 
     void startServer();
     void stopServer();
-    void sendMessage(const QString &message);
     void serverError(const QString &message);
+    void sendMessage(const QString &message);
 
 signals:
     void clientConnected(const QString &deviceName);

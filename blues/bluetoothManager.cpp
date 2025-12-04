@@ -55,11 +55,10 @@ void BluetoothManager::startServer()
             this, &BluetoothManager::clientConnected);
     connect(server, &ChatServer::clientDisconnected,
             this, &BluetoothManager::clientDisconnected);
-    connect(server, &ChatServer::serverError,
-            this, &BluetoothManager::onServerError);
-
-    connect(this, &BluetoothManager::sendMessage,
-            server, &ChatServer::sendMessage);
+    //connect(server, &ChatServer::serverError,
+    //        this, &BluetoothManager::onServerError);
+    //connect(this, &BluetoothManager::sendMessage,
+    //        server, &ChatServer::sendMessage);
 
 
     server->startServer();
