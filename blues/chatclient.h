@@ -4,10 +4,8 @@
 #include <QObject>
 #include <QLowEnergyController>
 #include <QLowEnergyService>
-#include <QLowEnergyCharacteristic>
-#include <QLowEnergyDescriptor>
 #include <QBluetoothDeviceInfo>
-#include <QDebug>
+#include <QBluetoothUuid>
 
 class ChatClient : public QObject
 {
@@ -22,30 +20,32 @@ public:
                      const QBluetoothUuid &rxCharUuid,
                      const QBluetoothUuid &txCharUuid);
 
-    void disconnectClient();
-    void sendMessage(const QString &message);
-
 signals:
-    void connected(const QString &deviceName);
+    void connected();
     void disconnected();
     void messageReceived(const QString &sender, const QString &message);
     void socketErrorOccurred(const QString &error);
 
+public slots:
+    void sendMessage(const QString &message);
+
 private slots:
-    void onControllerConnected();
-    void onControllerDisconnected();
-    void onServiceDiscovered(const QBluetoothUuid &uuid);
+    void controllerStateChanged(QLowEnergyController::ControllerState state);
+    void serviceDiscovered(const QBluetoothUuid &gatt);
+    void serviceDetailsDiscovered();
+    void updateNotification(const QLowEnergyCharacteristic &info, const QByteArray &value);
 
     void serviceStateChanged(QLowEnergyService::ServiceState newState);
-    void characteristicChanged(const QLowEnergyCharacteristic &c, const QByteArray &value);
 
 private:
     void cleanupController();
 
     QLowEnergyController *controller = nullptr;
     QLowEnergyService *service = nullptr;
+
     QLowEnergyCharacteristic rxChar; // for reading
     QLowEnergyCharacteristic txChar; // for writing
+
     QBluetoothUuid serviceUuid;
     QBluetoothUuid rxUuid;
     QBluetoothUuid txUuid;

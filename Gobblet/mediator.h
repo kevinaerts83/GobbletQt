@@ -41,7 +41,7 @@ public slots:
     void repaint();
     bool onClick(const double x, const double y);
 
-    void onMessageReceived(const QString &sender, const QString &message);
+    void onMessageReceived(const QString &from, const QString &msg);
     void sendMessage(const QString &msg);
 
 private slots:

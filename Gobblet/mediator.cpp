@@ -174,9 +174,9 @@ bool Mediator::onClick(const double x, const double y) {
     return true;
 }
 
-void Mediator::onMessageReceived(const QString &sender, const QString &message)
+void Mediator::onMessageReceived(const QString &from, const QString &msg)
 {
-    QStringList parts = message.split('/');
+    QStringList parts = msg.split('/');
     bool isBlack = QVariant(parts[0]).toBool();
     if (isBlack == (!m_comm->lock() && isBlackTurn())) {
         int from = parts[1].toInt();

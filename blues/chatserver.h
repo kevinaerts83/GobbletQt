@@ -17,15 +17,19 @@ public:
     explicit ChatServer(QObject *parent = nullptr);
     ~ChatServer();
 
-    void startServer();
+    void startServer(const QBluetoothUuid &serviceUuid,
+                     const QBluetoothUuid &rxCharUuid,
+                     const QBluetoothUuid &txCharUuid);
     void stopServer();
-    void serverError(const QString &message);
-    void sendMessage(const QString &message);
 
 signals:
     void clientConnected(const QString &deviceName);
     void clientDisconnected(const QString &deviceName);
     void messageReceived(const QString &sender, const QString &message);
+    void serverError(const QString &message);
+
+public slots:
+    void sendMessage(const QString &message);
 
 private slots:
     void onCharacteristicWritten(const QLowEnergyCharacteristic &ch, const QByteArray &value);
@@ -38,12 +42,8 @@ private:
     QLowEnergyCharacteristic rxChar; // receive from client
     QLowEnergyCharacteristic txChar; // send to client
 
-    QBluetoothUuid serviceUuid =
-        QBluetoothUuid(QStringLiteral("{12345678-6398-4c4c-80cb-2cc15d4734d7}"));
-    QBluetoothUuid rxCharUuid =
-        QBluetoothUuid(QStringLiteral("{beefbbbb-6398-4c4c-80cb-2cc15d4734d7}"));
-    QBluetoothUuid txCharUuid =
-        QBluetoothUuid(QStringLiteral("{feedaaaa-6398-4c4c-80cb-2cc15d4734d7}"));
+    QBluetoothUuid rxUuid;
+    QBluetoothUuid txUuid;
 };
 
 #endif // CHATSERVER_H

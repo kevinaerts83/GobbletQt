@@ -24,6 +24,7 @@ public:
 
     Q_INVOKABLE QVariantList getDevices();  // Exposed to QML
     Q_INVOKABLE void connectWithAddress(const QString &address);
+    Q_INVOKABLE void startDiscovery();
     Q_INVOKABLE void stopDiscovery();
 
     QString clientName() const {
@@ -44,31 +45,27 @@ public:
         emit serverNameChanged();
     }
 
-    // Client (central)
-    void connectToDevice(const QBluetoothDeviceInfo &device);
-    void initClient();
-    void startDiscovery();
-    void onDeviceDiscovered(const QBluetoothDeviceInfo &info);
-
 signals:
-    // Server side
-    void serverMessage(const QString &sender, const QString &message);
-    void reactOnSocketError(const QString &error);
-    void onServerError(const QString &message);
+    void sendMessage(const QString &message);
+    void serverError(const QString& message);
 
-    // Client side
-    void clientConnected(const QString &deviceName);
-    void clientDisconnected();
+    // to be processed in the mediator
     void clientMessage(const QString &from, const QString &msg);
+    void serverMessage(const QString &from, const QString &msg);
 
     void clientNameChanged();
     void serverNameChanged();
-    void sendMessage(const QString &message);
+
+public slots:
+    void onDeviceDiscovered(const QBluetoothDeviceInfo &info);
+    void onServerError(const QString &message);
 
 private slots:
     void discoveryFinished();
 
 private:
+    void connectToDevice(const QBluetoothDeviceInfo &device);
+
     QBluetoothDeviceDiscoveryAgent *discoveryAgent = nullptr;
     ChatServer *server = nullptr;
     ChatClient *client = nullptr;

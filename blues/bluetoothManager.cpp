@@ -11,13 +11,9 @@ BluetoothManager::BluetoothManager(QObject *parent)
 
 BluetoothManager::~BluetoothManager()
 {
-    if (discoveryAgent) {
-        discoveryAgent->stop();
-        discoveryAgent->deleteLater();
-        discoveryAgent = nullptr;
-    }
+    stopDiscovery();
+    stopServer();
 }
-
 
 void BluetoothManager::startServer()
 {
@@ -33,17 +29,19 @@ void BluetoothManager::startServer()
             if (p.status() == Qt::PermissionStatus::Granted) {
                 this->startServer();  // retry
             } else {
-                emit onServerError("Bluetooth permission denied");
+                emit serverError("Bluetooth permission denied");
             }
         });
         return;
     }
 
     if (status == Qt::PermissionStatus::Denied) {
-        emit onServerError("Bluetooth permission denied");
+        emit serverError("Bluetooth permission denied");
         return;
     }
 #endif
+
+    stopServer();
 
     qDebug() << "Initializing BLE ChatServer...";
 
@@ -51,63 +49,56 @@ void BluetoothManager::startServer()
 
     connect(server, &ChatServer::messageReceived,
             this, &BluetoothManager::serverMessage);
-    connect(server, &ChatServer::clientConnected,
-            this, &BluetoothManager::clientConnected);
-    connect(server, &ChatServer::clientDisconnected,
-            this, &BluetoothManager::clientDisconnected);
-    //connect(server, &ChatServer::serverError,
-    //        this, &BluetoothManager::onServerError);
-    //connect(this, &BluetoothManager::sendMessage,
-    //        server, &ChatServer::sendMessage);
+    connect(server, &ChatServer::clientConnected, this, [](const QString &){ qDebug() << "Client connected"; });
+    connect(server, &ChatServer::clientDisconnected, this, [](const QString &){ qDebug() << "Client disconnected"; });
+    connect(server, &ChatServer::serverError,
+            this, &BluetoothManager::onServerError);
+    connect(this, &BluetoothManager::sendMessage,
+            server, &ChatServer::sendMessage);
 
-
-    server->startServer();
+    server->startServer(serviceUuid, rxCharUuid, txCharUuid);
 
     setServerName("Gobblet Online");
 }
 
 void BluetoothManager::stopServer()
 {
-    if (!server)
-        return;
-    server->stopServer();
-    server->deleteLater();
-    server = nullptr;
+    if (server) {
+        server->stopServer();
+        server->deleteLater();
+        server = nullptr;
+    }
 }
 
-void BluetoothManager::initClient()
+void BluetoothManager::startDiscovery()
 {
+    stopDiscovery();
     discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
 
     // Optional: give macOS enough time
-    discoveryAgent->setLowEnergyDiscoveryTimeout(10000);
+    discoveryAgent->setLowEnergyDiscoveryTimeout(8000);
 
     connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
-        this, &BluetoothManager::onDeviceDiscovered);
+            this, &BluetoothManager::onDeviceDiscovered);
 
     connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::finished,
             this, &BluetoothManager::discoveryFinished);
 
     connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::canceled,
             this, &BluetoothManager::discoveryFinished); // macOS workaround
-}
-
-void BluetoothManager::startDiscovery()
-{
-    if (discoveryAgent == nullptr) {
-        initClient();
-    }
 
     qDebug() << "Starting BLE device discovery...";
-    if (foundDevices.count() > 5) {
-        foundDevices.clear();
-    }
+
     discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
 }
 
 void BluetoothManager::stopDiscovery()
 {
-    if (discoveryAgent) discoveryAgent->stop();
+    if (discoveryAgent) {
+        discoveryAgent->stop();
+        discoveryAgent->deleteLater();
+        discoveryAgent = nullptr;
+    }
 }
 
 void BluetoothManager::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
@@ -117,8 +108,6 @@ void BluetoothManager::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
 
     qDebug() << "Found BLE device:" << info.name() << info.address().toString();
     foundDevices.append(info);
-
-    stopDiscovery();
 }
 
 void BluetoothManager::discoveryFinished()
@@ -150,10 +139,9 @@ void BluetoothManager::connectToDevice(const QBluetoothDeviceInfo &device)
     }
     client = new ChatClient(this);
 
+    connect(client, &ChatClient::connected, this, [](){ qDebug() << "Client connected to remote"; });
+    connect(client, &ChatClient::disconnected, this, [](){ qDebug() << "Client disconnected"; });
     connect(client, &ChatClient::messageReceived, this, &BluetoothManager::clientMessage);
-    connect(client, &ChatClient::disconnected, this, &BluetoothManager::clientDisconnected);
-    connect(client, &ChatClient::connected, this, &BluetoothManager::clientConnected);
-    connect(client, &ChatClient::socketErrorOccurred, this, &BluetoothManager::reactOnSocketError);
     connect(this, &BluetoothManager::sendMessage, client, &ChatClient::sendMessage);
 
     // Start BLE connection
@@ -163,9 +151,6 @@ void BluetoothManager::connectToDevice(const QBluetoothDeviceInfo &device)
 }
 
 QVariantList BluetoothManager::getDevices() {
-
-    startDiscovery();
-
     QVariantList devices;
     for (const QBluetoothDeviceInfo &d : std::as_const(foundDevices)) {
         QVariantMap device;
@@ -174,6 +159,13 @@ QVariantList BluetoothManager::getDevices() {
         device["address"] = d.address().toString();
         devices.append(device);
     }
+    // start discovery if empty
+    if (foundDevices.isEmpty()) startDiscovery();
 
     return devices;
+}
+
+void BluetoothManager::onServerError(const QString &message)
+{
+    qWarning() << "[BluetoothManager] Server error:" << message;
 }
