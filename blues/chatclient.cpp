@@ -122,7 +122,7 @@ void ChatClient::serviceStateChanged(QLowEnergyService::ServiceState newState)
 void ChatClient::serviceDetailsDiscovered()
 {
     if (!service) return;
-    if (service->state() != QLowEnergyService::ServiceDiscovered) return;
+    if (service->state() != QLowEnergyService::RemoteServiceDiscovered) return;
 
     // locate characteristics
     const auto chars = service->characteristics();
@@ -147,7 +147,7 @@ void ChatClient::serviceDetailsDiscovered()
         }
     }
 
-    if (service->state() == QLowEnergyService::ServiceDiscovered) {
+    if (service->state() == QLowEnergyService::RemoteServiceDiscovered) {
         emit connected();
     }
 }
