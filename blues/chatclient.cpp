@@ -1,5 +1,8 @@
 #include "chatclient.h"
 
+#include <QLowEnergyDescriptor>
+#include <QDebug>
+
 ChatClient::ChatClient(QObject *parent)
     : QObject(parent)
 {
@@ -31,38 +34,47 @@ void ChatClient::startClient(const QBluetoothDeviceInfo &deviceInfo,
                              const QBluetoothUuid &rxCharUuid,
                              const QBluetoothUuid &txCharUuid)
 {
+    cleanupController();
+
     this->serviceUuid = serviceUuid;
     this->rxUuid = rxCharUuid;
     this->txUuid = txCharUuid;
 
-    cleanupController();
-
-    qDebug() << "Connecting to BLE device:" << deviceInfo.name();
+    qDebug() << "[ChatClient] Connecting to:" << deviceInfo.name();
 
     controller = QLowEnergyController::createCentral(deviceInfo, this);
 
     connect(controller, &QLowEnergyController::stateChanged,
             this, &ChatClient::controllerStateChanged);
-    connect(controller, &QLowEnergyController::serviceDiscovered,
-        this, &::ChatClient::serviceDiscovered);
-    connect(controller, &QLowEnergyController::discoveryFinished,
-            this, &ChatClient::serviceDetailsDiscovered);
 
-    // Start connecting
+    connect(controller, &QLowEnergyController::serviceDiscovered,
+            this, &ChatClient::serviceDiscovered);
+
+    connect(controller, &QLowEnergyController::discoveryFinished,
+            this, &ChatClient::serviceScanFinished);
+
+    connect(controller, &QLowEnergyController::errorOccurred,
+            this, [this](QLowEnergyController::Error error) {
+                emit socketErrorOccurred(QStringLiteral("Controller error: %1").arg(error));
+            });
+
     controller->connectToDevice();
-    controller->discoverServices();
 }
 
 void ChatClient::controllerStateChanged(QLowEnergyController::ControllerState state)
 {
     switch (state) {
     case QLowEnergyController::ConnectedState:
-        qDebug() << "[ChatClient] Connected to device, discovering services";
+        qDebug() << "[ChatClient] Connected. Discovering services...";
+        controller->discoverServices();
         break;
+
     case QLowEnergyController::UnconnectedState:
+        qDebug() << "[ChatClient] Disconnected";
         emit disconnected();
         cleanupController();
         break;
+
     default:
         break;
     }
@@ -70,19 +82,16 @@ void ChatClient::controllerStateChanged(QLowEnergyController::ControllerState st
 
 void ChatClient::serviceDiscovered(const QBluetoothUuid &uuid)
 {
-    qDebug() << "Service discovered:" << uuid;
+    qDebug() << "[ChatClient] Service discovered:" << uuid.toString();
 
-    if (uuid != serviceUuid) {
-        qDebug() << "Uuid doesn't match";
+    if (uuid != serviceUuid)
         return;
-    }
 
-    qDebug() << "Target BLE service discovered, creating service object...";
+    qDebug() << "[ChatClient] Target service found";
 
-    service = controller->createServiceObject(serviceUuid, this);
-
+    service = controller->createServiceObject(uuid, this);
     if (!service) {
-        emit socketErrorOccurred("Failed to create BLE service object after discovery");
+        emit socketErrorOccurred("Failed to create service object");
         return;
     }
 
@@ -90,82 +99,74 @@ void ChatClient::serviceDiscovered(const QBluetoothUuid &uuid)
             this, &ChatClient::serviceStateChanged);
 
     connect(service, &QLowEnergyService::characteristicChanged,
-            this, &ChatClient::updateNotification);
+            this, &ChatClient::characteristicChanged);
+
+    connect(service, &QLowEnergyService::errorOccurred,
+            this, [this](QLowEnergyService::ServiceError error) {
+                emit socketErrorOccurred(QStringLiteral("Service error: %1").arg(error));
+            });
 
     service->discoverDetails();
 }
 
-void ChatClient::serviceStateChanged(QLowEnergyService::ServiceState newState)
+void ChatClient::serviceScanFinished()
 {
-    if (newState == QLowEnergyService::RemoteServiceDiscovered) {
-        qDebug() << "BLE service discovered successfully.";
-
-        rxChar = service->characteristic(rxUuid);
-        txChar = service->characteristic(txUuid);
-
-        if (!rxChar.isValid() || !txChar.isValid()) {
-            emit socketErrorOccurred("Missing RX/TX characteristics in service");
-            return;
-        }
-
-        // Enable notifications for RX
-        QLowEnergyDescriptor notificationDesc = rxChar.descriptor(
-            QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration);
-        if (notificationDesc.isValid()) {
-            service->writeDescriptor(notificationDesc, QByteArray::fromHex("0100"));
-        }
-
-        qDebug() << "BLE ChatClient ready. RX/TX characteristics configured.";
-    }
+    qDebug() << "[ChatClient] Service scan finished";
 }
 
-void ChatClient::serviceDetailsDiscovered()
+void ChatClient::serviceStateChanged(QLowEnergyService::ServiceState state)
 {
-    if (!service) return;
-    if (service->state() != QLowEnergyService::RemoteServiceDiscovered) return;
+    if (state != QLowEnergyService::RemoteServiceDiscovered)
+        return;
 
-    // locate characteristics
-    const auto chars = service->characteristics();
-    for (const auto &c : chars) {
-        if (c.uuid() == txUuid) {
-            txChar = c;
-            // subscribe to notifications if supported
-            if (txChar.properties() & QLowEnergyCharacteristic::Notify) {
-                connect(service, &QLowEnergyService::characteristicChanged,
-                        this, &ChatClient::updateNotification);
-                // write CCC descriptor to enable notifications (core behavior)
-                const auto descs = txChar.descriptors();
-                for (const auto &d : descs) {
-                    if (d.uuid() == QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration) {
-                        service->writeDescriptor(d, QByteArray::fromHex("0100"));
-                        break;
-                    }
-                }
-            }
-        } else if (c.uuid() == rxUuid) {
-            rxChar = c; // we'll write to this to send data to the server
-        }
+    qDebug() << "[ChatClient] Service details discovered";
+
+    rxChar = service->characteristic(rxUuid);
+    txChar = service->characteristic(txUuid);
+
+    if (!rxChar.isValid() || !txChar.isValid()) {
+        emit socketErrorOccurred("RX or TX characteristic missing");
+        return;
     }
 
-    if (service->state() == QLowEnergyService::RemoteServiceDiscovered) {
-        emit connected();
+    // Enable notifications on TX (server -> client)
+    QLowEnergyDescriptor ccc =
+        txChar.descriptor(QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration);
+
+    if (ccc.isValid()) {
+        service->writeDescriptor(ccc, QByteArray::fromHex("0100"));
+        qDebug() << "[ChatClient] Notifications enabled";
+    } else {
+        qWarning() << "[ChatClient] CCC descriptor not found";
     }
+
+    emit connected();
 }
 
-void ChatClient::updateNotification(const QLowEnergyCharacteristic &c, const QByteArray &value)
+void ChatClient::characteristicChanged(const QLowEnergyCharacteristic &characteristic,
+                                       const QByteArray &value)
 {
-    if (c.uuid() == rxUuid) {
-        QString message = QString::fromUtf8(value);
-        qDebug() << "Received message:" << message;
-        emit messageReceived("Remote", message);
-    }
+    if (characteristic.uuid() != txUuid)
+        return;
+
+    const QString message = QString::fromUtf8(value);
+    qDebug() << "[ChatClient] Received notification:" << message;
+
+    emit messageReceived("Remote", message);
 }
 
 void ChatClient::sendMessage(const QString &message)
 {
-    if (!service || !txChar.isValid()) {
-        qWarning() << "Cannot send message: BLE service or TX characteristic invalid";
+    if (!service || !rxChar.isValid()) {
+        qWarning() << "[ChatClient] Cannot send message: RX invalid";
         return;
     }
-    service->writeCharacteristic(rxChar, message.toUtf8(), QLowEnergyService::WriteWithResponse);
+
+    qDebug() << "[ChatClient] Sending message:" << message;
+
+    service->writeCharacteristic(
+        rxChar,
+        message.toUtf8(),
+        QLowEnergyService::WriteWithResponse
+        );
 }

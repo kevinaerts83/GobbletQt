@@ -3,6 +3,34 @@
 #include <QCoreApplication>
 #include <QBluetoothPermission>
 
+/*
+
+createCentral()
+   ↓
+connectToDevice()
+   ↓
+ConnectedState
+   ↓
+discoverServices()
+   ↓
+serviceDiscovered(uuid)
+   ↓
+createServiceObject()
+   ↓
+discoverDetails()
+   ↓
+ServiceDiscovered
+   ↓
+RX/TX characteristics valid
+
+You → ask Qt to connect
+Qt → connects
+Qt → asks device for services
+Device → responds
+Qt → emits serviceDiscovered(uuid)
+You → react
+ */
+
 BluetoothManager::BluetoothManager(QObject *parent)
     : QObject(parent)
 {
@@ -106,6 +134,17 @@ void BluetoothManager::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
     if (!(info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration))
         return;
 
+    const QString name = info.name();
+    if (name.isEmpty())
+        return;
+
+    // Exclude devices with the same name
+    for (const QBluetoothDeviceInfo &d : std::as_const(foundDevices)) {
+        if (d.name() == name) {
+            return; // already known
+        }
+    }
+
     qDebug() << "Found BLE device:" << info.name() << info.address().toString();
     foundDevices.append(info);
 }
@@ -154,7 +193,6 @@ QVariantList BluetoothManager::getDevices() {
     QVariantList devices;
     for (const QBluetoothDeviceInfo &d : std::as_const(foundDevices)) {
         QVariantMap device;
-        // Example: extracting name and address from QBluetoothServiceInfo
         device["name"] = d.name();
         device["address"] = d.address().toString();
         devices.append(device);

@@ -1,9 +1,10 @@
 #include "chatserver.h"
 
-#include <QLowEnergyCharacteristic>
+#include <QLowEnergyAdvertisingData>
+#include <QLowEnergyAdvertisingParameters>
 #include <QLowEnergyCharacteristicData>
-#include <QLowEnergyDescriptorData>
 #include <QLowEnergyServiceData>
+#include <QDebug>
 
 ChatServer::ChatServer(QObject *parent)
     : QObject(parent)
@@ -19,33 +20,44 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
                              const QBluetoothUuid &rxCharUuid,
                              const QBluetoothUuid &txCharUuid)
 {
+    if (controller) {
+        qWarning() << "BLE ChatServer already running";
+        return;
+    }
+
     qDebug() << "Starting BLE ChatServer (peripheral)...";
 
-    this->rxUuid = rxCharUuid;
-    this->txUuid = txCharUuid;
+    rxUuid = rxCharUuid;
+    txUuid = txCharUuid;
 
+    // === Create peripheral controller ===
     controller = QLowEnergyController::createPeripheral(this);
 
     connect(controller, &QLowEnergyController::stateChanged,
             this, &ChatServer::onConnectionStateChanged);
 
-    // === Define characteristics ===
+    connect(controller, &QLowEnergyController::errorOccurred,
+            this, [this](QLowEnergyController::Error error) {
+                emit serverError(QStringLiteral("Controller error: %1").arg(error));
+            });
+
+    // === RX characteristic (client -> server) ===
     QLowEnergyCharacteristicData rxData;
-    rxData.setUuid(rxCharUuid);
+    rxData.setUuid(rxUuid);
     rxData.setProperties(QLowEnergyCharacteristic::Write |
                          QLowEnergyCharacteristic::WriteNoResponse);
     rxData.setValue(QByteArray());
 
+    // === TX characteristic (server -> client) ===
     QLowEnergyCharacteristicData txData;
-    txData.setUuid(txCharUuid);
-    txData.setProperties(QLowEnergyCharacteristic::Notify | QLowEnergyCharacteristic::Read);
+    txData.setUuid(txUuid);
+    txData.setProperties(QLowEnergyCharacteristic::Notify |
+                         QLowEnergyCharacteristic::Read);
     txData.setValue(QByteArray());
-    //QLowEnergyDescriptorData ccc(
-    //    QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration,
-    //    QByteArray(2, 0));
-    //txData.addDescriptor(ccc);
 
-    // === Define service ===
+    // DO NOT add CCC descriptor manually (macOS breaks)
+
+    // === Service definition ===
     QLowEnergyServiceData serviceData;
     serviceData.setType(QLowEnergyServiceData::ServiceTypePrimary);
     serviceData.setUuid(serviceUuid);
@@ -55,39 +67,61 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
     service = controller->addService(serviceData);
 
     if (!service) {
-        emit serverError("Failed to add service");
+        emit serverError("Failed to create BLE service");
+        stopServer();
         return;
     }
+
+    connect(service, &QLowEnergyService::stateChanged,
+            this, [](QLowEnergyService::ServiceState state) {
+                qDebug() << "Service state changed:" << state;
+            });
 
     connect(service, &QLowEnergyService::characteristicWritten,
             this, &ChatServer::onCharacteristicWritten);
 
-    // === Advertising ===
-    QLowEnergyAdvertisingData adv;
-    adv.setLocalName("BLE ChatServer");
-    adv.setDiscoverability(QLowEnergyAdvertisingData::DiscoverabilityGeneral);
-    adv.setServices({serviceUuid});
-    controller->startAdvertising(QLowEnergyAdvertisingParameters(), adv, adv);
+    // === Advertising parameters (CRITICAL for Windows/macOS) ===
+    QLowEnergyAdvertisingParameters params;
+    params.setMode(QLowEnergyAdvertisingParameters::AdvInd);
+    params.setInterval(100, 200); // milliseconds
 
-    qDebug() << "BLE ChatServer advertising service" << serviceUuid.toString();
+    // Advertising packet (name)
+    QLowEnergyAdvertisingData advertisingData;
+    advertisingData.setLocalName("BLE ChatServer");
+    advertisingData.setDiscoverability(
+        QLowEnergyAdvertisingData::DiscoverabilityGeneral);
+
+    // Scan response (service UUID)
+    QLowEnergyAdvertisingData scanResponse;
+    scanResponse.setServices({ serviceUuid });
+
+    controller->startAdvertising(params, advertisingData, scanResponse);
+
+    qDebug() << "Advertising BLE service:" << serviceUuid.toString();
 }
 
 void ChatServer::stopServer()
 {
-    if (controller) {
-        controller->stopAdvertising();
-        controller->disconnectFromDevice();
-        controller->deleteLater();
-        controller = nullptr;
-        service = nullptr;
-    }
-    qDebug() << "BLE ChatServer stopped.";
+    if (!controller)
+        return;
+
+    qDebug() << "Stopping BLE ChatServer";
+
+    controller->stopAdvertising();
+
+    controller->deleteLater();
+    controller = nullptr;
+    service = nullptr;
 }
 
-void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &ch, const QByteArray &value)
+void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &characteristic,
+                                         const QByteArray &value)
 {
-    if (ch.uuid() == rxUuid) {
-        QString message = QString::fromUtf8(value);
+    if (!characteristic.isValid())
+        return;
+
+    if (characteristic.uuid() == rxUuid) {
+        const QString message = QString::fromUtf8(value);
         qDebug() << "Received from client:" << message;
         emit messageReceived("Client", message);
     }
@@ -96,35 +130,53 @@ void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &ch, con
 void ChatServer::sendMessage(const QString &message)
 {
     if (!service) {
-        qWarning() << "Cannot send message: service invalid";
+        qWarning() << "Cannot send message: service not available";
         return;
     }
 
-    auto chars = service->characteristics();
-    for (const auto &c : std::as_const(chars)) {
+    const auto characteristics = service->characteristics();
+    for (const auto &c : characteristics) {
         if (c.uuid() == txUuid) {
+
+            if (!c.isValid()) {
+                qWarning() << "TX characteristic invalid";
+                return;
+            }
 
             if (!(c.properties() & QLowEnergyCharacteristic::Notify)) {
                 qWarning() << "TX characteristic does not support Notify";
                 return;
             }
 
-            qDebug() << "Sending notification:" << message;
+            qDebug() << "Sending BLE notification:" << message;
 
-            service->writeCharacteristic(c, message.toUtf8(), QLowEnergyService::WriteWithResponse);
+            // WriteWithResponse triggers Notify update safely on all platforms
+            service->writeCharacteristic(
+                c,
+                message.toUtf8(),
+                QLowEnergyService::WriteWithResponse
+                );
+
+            return;
         }
     }
+
+    qWarning() << "TX characteristic not found";
 }
 
 void ChatServer::onConnectionStateChanged(QLowEnergyController::ControllerState state)
 {
     switch (state) {
-    case QLowEnergyController::UnconnectedState:
-        emit clientDisconnected("BLE Client");
-        break;
     case QLowEnergyController::ConnectedState:
-        emit clientConnected("BLE Client");
+        qDebug() << "BLE central connected";
+        emit clientConnected("BLE Central");
         break;
+
+    case QLowEnergyController::UnconnectedState:
+        qDebug() << "BLE central disconnected";
+        emit clientDisconnected("BLE Central");
+        break;
+
     default:
         break;
     }

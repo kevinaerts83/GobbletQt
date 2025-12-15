@@ -14,7 +14,7 @@ public:
     explicit ChatClient(QObject *parent = nullptr);
     ~ChatClient();
 
-    // Start the BLE connection process
+    // Start the BLE connection process (central role)
     void startClient(const QBluetoothDeviceInfo &deviceInfo,
                      const QBluetoothUuid &serviceUuid,
                      const QBluetoothUuid &rxCharUuid,
@@ -27,15 +27,19 @@ signals:
     void socketErrorOccurred(const QString &error);
 
 public slots:
+    // Send message to server (write to RX characteristic)
     void sendMessage(const QString &message);
 
 private slots:
+    // Controller lifecycle
     void controllerStateChanged(QLowEnergyController::ControllerState state);
-    void serviceDiscovered(const QBluetoothUuid &gatt);
-    void serviceDetailsDiscovered();
-    void updateNotification(const QLowEnergyCharacteristic &info, const QByteArray &value);
+    void serviceDiscovered(const QBluetoothUuid &uuid);
+    void serviceScanFinished();
 
-    void serviceStateChanged(QLowEnergyService::ServiceState newState);
+    // Service lifecycle
+    void serviceStateChanged(QLowEnergyService::ServiceState state);
+    void characteristicChanged(const QLowEnergyCharacteristic &characteristic,
+                               const QByteArray &value);
 
 private:
     void cleanupController();
@@ -43,9 +47,11 @@ private:
     QLowEnergyController *controller = nullptr;
     QLowEnergyService *service = nullptr;
 
-    QLowEnergyCharacteristic rxChar; // for reading
-    QLowEnergyCharacteristic txChar; // for writing
+    // GATT characteristics
+    QLowEnergyCharacteristic rxChar; // client -> server (Write)
+    QLowEnergyCharacteristic txChar; // server -> client (Notify)
 
+    // UUIDs
     QBluetoothUuid serviceUuid;
     QBluetoothUuid rxUuid;
     QBluetoothUuid txUuid;
