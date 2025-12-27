@@ -46,7 +46,9 @@ public:
     }
 
 signals:
-    void sendMessage(const QString &message);
+    void sendToServer(const QString &message);   // client RX
+    void sendToClient(const QString &message);   // server TX
+
     void serverError(const QString& message);
 
     // to be processed in the mediator

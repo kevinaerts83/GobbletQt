@@ -81,7 +81,7 @@ void BluetoothManager::startServer()
     connect(server, &ChatServer::clientDisconnected, this, [](const QString &){ qDebug() << "Client disconnected"; });
     connect(server, &ChatServer::serverError,
             this, &BluetoothManager::onServerError);
-    connect(this, &BluetoothManager::sendMessage,
+    connect(this, &BluetoothManager::sendToServer,
             server, &ChatServer::sendMessage);
 
     server->startServer(serviceUuid, rxCharUuid, txCharUuid);
@@ -181,7 +181,7 @@ void BluetoothManager::connectToDevice(const QBluetoothDeviceInfo &device)
     connect(client, &ChatClient::connected, this, [](){ qDebug() << "Client connected to remote"; });
     connect(client, &ChatClient::disconnected, this, [](){ qDebug() << "Client disconnected"; });
     connect(client, &ChatClient::messageReceived, this, &BluetoothManager::clientMessage);
-    connect(this, &BluetoothManager::sendMessage, client, &ChatClient::sendMessage);
+    connect(this, &BluetoothManager::sendToClient, client, &ChatClient::sendMessage);
 
     // Start BLE connection
     client->startClient(device, serviceUuid, rxCharUuid, txCharUuid);

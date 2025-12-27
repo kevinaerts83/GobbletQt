@@ -56,13 +56,13 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
                          QLowEnergyCharacteristic::Read);
     txData.setValue(QByteArray());
 
-    QLowEnergyDescriptorData ccc(
+    // DO NOT add CCC descriptor manually (macOS breaks)
+    /*QLowEnergyDescriptorData ccc(
         QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration,
         QByteArray(2, 0x00)
         );
     txData.addDescriptor(ccc);
-
-    // DO NOT add CCC descriptor manually (macOS breaks)
+    */
 
     // === Service definition ===
     QLowEnergyServiceData serviceData;
@@ -131,7 +131,8 @@ void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &charact
         qDebug() << "Received from client:" << message;
         emit messageReceived("Client", message);
     } else {
-        qDebug() << "[Server] Ignoring write to non-RX characteristic";
+        qDebug() << "[Server] write source:"
+                 << (characteristic.uuid() == rxUuid ? "CLIENT (RX)" : "SERVER (TX)");
     }
 }
 
@@ -162,7 +163,7 @@ void ChatServer::sendMessage(const QString &message)
             service->writeCharacteristic(
                 c,
                 message.toUtf8(),
-                QLowEnergyService::WriteWithResponse
+                QLowEnergyService::WriteWithoutResponse
                 );
 
             return;

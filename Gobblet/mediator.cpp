@@ -188,8 +188,13 @@ void Mediator::onMessageReceived(const QString &from, const QString &msg)
 
 void Mediator::sendMessage(const QString &msg)
 {
-    if (m_manager)
-        m_manager->sendMessage(msg);
+    if (m_manager) {
+        if (isBlackTurn()) {
+            m_manager->sendToServer(msg);
+        } else {
+            m_manager->sendToClient(msg);
+        }
+    }
 }
 
 bool Mediator::isValidMove(int oldTile, int newTile) {
