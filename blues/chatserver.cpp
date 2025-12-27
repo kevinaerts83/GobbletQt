@@ -5,6 +5,7 @@
 #include <QLowEnergyCharacteristicData>
 #include <QLowEnergyServiceData>
 #include <QDebug>
+#include <QLowEnergyDescriptorData>
 
 ChatServer::ChatServer(QObject *parent)
     : QObject(parent)
@@ -54,6 +55,12 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
     txData.setProperties(QLowEnergyCharacteristic::Notify |
                          QLowEnergyCharacteristic::Read);
     txData.setValue(QByteArray());
+
+    QLowEnergyDescriptorData ccc(
+        QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration,
+        QByteArray(2, 0x00)
+        );
+    txData.addDescriptor(ccc);
 
     // DO NOT add CCC descriptor manually (macOS breaks)
 
@@ -148,7 +155,7 @@ void ChatServer::sendMessage(const QString &message)
                 return;
             }
 
-            qDebug() << "Sending BLE notification:" << message;
+            qDebug() << "Sending BLE notification:" << message << "props:" << c.properties();
 
             // WriteWithResponse triggers Notify update safely on all platforms
             service->writeCharacteristic(

@@ -67,6 +67,13 @@ if(ANDROID)
         QT_ANDROID_TARGET_SDK_VERSION 35
     )
     #qt_android_generate_deployment_settings(Gobblet)
+elseif(IOS)
+    set_target_properties(Gobblet PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_GUI_IDENTIFIER be.kevinaerts.gobblet
+        XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER be.kevinaerts.gobblet
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/Info.plist"
+    )
 elseif(APPLE)
     set_target_properties(Gobblet PROPERTIES
         MACOSX_BUNDLE TRUE

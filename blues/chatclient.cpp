@@ -116,10 +116,21 @@ void ChatClient::serviceScanFinished()
 
 void ChatClient::serviceStateChanged(QLowEnergyService::ServiceState state)
 {
-    if (state != QLowEnergyService::RemoteServiceDiscovered)
+    if (state != QLowEnergyService::RemoteServiceDiscovered) {
+        qDebug() << "[ChatClient] No service details discovered!";
         return;
+    }
 
     qDebug() << "[ChatClient] Service details discovered";
+
+    for (const auto &c : service->characteristics()) {
+        qDebug() << "[Client] Char UUID:" << c.uuid()
+        << "props:" << c.properties();
+
+        for (const auto &d : c.descriptors()) {
+            qDebug() << "    [Client] Descriptor:" << d.uuid();
+        }
+    }
 
     rxChar = service->characteristic(rxUuid);
     txChar = service->characteristic(txUuid);
@@ -146,13 +157,18 @@ void ChatClient::serviceStateChanged(QLowEnergyService::ServiceState state)
 void ChatClient::characteristicChanged(const QLowEnergyCharacteristic &characteristic,
                                        const QByteArray &value)
 {
-    if (characteristic.uuid() != txUuid)
-        return;
+    qDebug() << "[Client] Notification received:"
+             << characteristic.uuid()
+             << "value:" << value.toHex();
 
-    const QString message = QString::fromUtf8(value);
-    qDebug() << "[ChatClient] Received notification:" << message;
+    if (characteristic.uuid() == txUuid) {
+        const QString message = QString::fromUtf8(value);
+        qDebug() << "[ChatClient] Received notification:" << message;
 
-    emit messageReceived("Remote", message);
+        emit messageReceived("Remote", message);
+    } else {
+        qDebug() << "txUuid not valid";
+    }
 }
 
 void ChatClient::sendMessage(const QString &message)

@@ -6,6 +6,18 @@
    <key>CFBundleName</key>
    <string>Gobblet</string>
 
+   <key>CFBundleIdentifier</key>
+   <string>be.kevinaerts.gobblet</string>
+
+   <key>CFBundleVersion</key>
+   <string>1.0</string>
+
+   <key>CFBundleShortVersionString</key>
+   <string>1.0</string>
+
+   <key>CFBundleExecutable</key>
+   <string>Gobblet</string>
+
    <!-- Add these Bluetooth permission keys -->
    <key>NSBluetoothAlwaysUsageDescription</key>
    <string>This app uses Bluetooth to connect to nearby BLE devices.</string>

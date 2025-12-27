@@ -17,6 +17,11 @@ add_subdirectory(Gobblet)
 
 set_property(GLOBAL PROPERTY QT_ANDROID_APPLICATION_TARGET Gobblet)
 
+if(IOS)
+    set(CMAKE_OSX_SYSROOT iphoneos)
+    set(CMAKE_OSX_ARCHITECTURES arm64)
+endif()
+
 # --- Output folders for all targets ---
 if(NOT ANDROID)
 set_target_properties(gobblet_ai blues Gobblet PROPERTIES
