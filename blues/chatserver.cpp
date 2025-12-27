@@ -124,13 +124,14 @@ void ChatServer::stopServer()
 void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &characteristic,
                                          const QByteArray &value)
 {
-    if (!characteristic.isValid())
-        return;
+    qDebug() << "[Server] characteristicWritten:" << characteristic.uuid() << "value:" << value.toHex();
 
     if (characteristic.uuid() == rxUuid) {
         const QString message = QString::fromUtf8(value);
         qDebug() << "Received from client:" << message;
         emit messageReceived("Client", message);
+    } else {
+        qDebug() << "[Server] Ignoring write to non-RX characteristic";
     }
 }
 

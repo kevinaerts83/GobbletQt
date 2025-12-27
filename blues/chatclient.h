@@ -38,11 +38,13 @@ private slots:
 
     // Service lifecycle
     void serviceStateChanged(QLowEnergyService::ServiceState state);
-    void characteristicChanged(const QLowEnergyCharacteristic &characteristic,
+    void updateNotification(const QLowEnergyCharacteristic &characteristic,
                                const QByteArray &value);
 
 private:
     void cleanupController();
+    bool serviceFound = false;
+    bool serviceObjectCreated = false;
 
     QLowEnergyController *controller = nullptr;
     QLowEnergyService *service = nullptr;
