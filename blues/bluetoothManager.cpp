@@ -167,15 +167,19 @@ void BluetoothManager::connectWithAddress(const QString &address)
     }
 }
 
+void BluetoothManager::stopClient() {
+    if (client) {
+        client->disconnect(this); // disconnect all signals
+        client->deleteLater();
+        client = nullptr;
+    }
+}
+
 void BluetoothManager::connectToDevice(const QBluetoothDeviceInfo &device)
 {
     qDebug() << "Connecting to device:" << device.name();
 
-    if (client) {
-        client->disconnect(this);   // disconnect all signals
-        client->deleteLater();
-        client = nullptr;
-    }
+    stopClient();
     client = new ChatClient(this);
 
     connect(client, &ChatClient::connected, this, [](){ qDebug() << "Client connected to remote"; });
@@ -186,7 +190,7 @@ void BluetoothManager::connectToDevice(const QBluetoothDeviceInfo &device)
     // Start BLE connection
     client->startClient(device, serviceUuid, rxCharUuid, txCharUuid);
 
-    setClientName("Connected");
+    setClientName(device.name());
 }
 
 QVariantList BluetoothManager::getDevices() {

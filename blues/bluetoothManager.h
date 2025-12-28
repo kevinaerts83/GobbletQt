@@ -21,6 +21,7 @@ public:
     // Server (peripheral)
     Q_INVOKABLE void startServer();
     Q_INVOKABLE void stopServer();
+    Q_INVOKABLE void stopClient();
 
     Q_INVOKABLE QVariantList getDevices();  // Exposed to QML
     Q_INVOKABLE void connectWithAddress(const QString &address);

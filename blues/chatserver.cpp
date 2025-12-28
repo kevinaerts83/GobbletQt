@@ -45,15 +45,13 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
     // === RX characteristic (client -> server) ===
     QLowEnergyCharacteristicData rxData;
     rxData.setUuid(rxUuid);
-    rxData.setProperties(QLowEnergyCharacteristic::Write |
-                         QLowEnergyCharacteristic::WriteNoResponse);
+    rxData.setProperties(QLowEnergyCharacteristic::Write); // | QLowEnergyCharacteristic::WriteNoResponse
     rxData.setValue(QByteArray());
 
     // === TX characteristic (server -> client) ===
     QLowEnergyCharacteristicData txData;
     txData.setUuid(txUuid);
-    txData.setProperties(QLowEnergyCharacteristic::Notify |
-                         QLowEnergyCharacteristic::Read);
+    txData.setProperties(QLowEnergyCharacteristic::Notify); // | QLowEnergyCharacteristic::Read
     txData.setValue(QByteArray());
 
     // DO NOT add CCC descriptor manually (macOS breaks)
@@ -94,7 +92,7 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
 
     // Advertising packet (name)
     QLowEnergyAdvertisingData advertisingData;
-    advertisingData.setLocalName("BLE ChatServer");
+    advertisingData.setLocalName("Gobblet server");
     advertisingData.setDiscoverability(
         QLowEnergyAdvertisingData::DiscoverabilityGeneral);
 

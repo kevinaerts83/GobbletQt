@@ -181,7 +181,7 @@ Page {
                 Layout.preferredHeight: Math.max(Math.min(menu.width, menu.height) / 8, 50)
                 radius: Math.min(menu.width, menu.height) / 16  // Make it circular
                 color: "#4CAF50"  // Green background color
-                visible: GameState.mode === 0 && !BluetoothManager.serverName
+                visible: GameState.mode === 0
                 id: serverBt
 
                 BluetoothIcon {
@@ -194,7 +194,12 @@ Page {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        BluetoothManager.startServer();
+                        if (BluetoothManager.serverName) {
+                            BluetoothManager.serverName = null;
+                            BluetoothManager.stopServer();
+                        } else {
+                            BluetoothManager.startServer();
+                        }
                     }
                 }
             }
@@ -217,7 +222,12 @@ Page {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        stackView.push("scanblues.qml");
+                        if (BluetoothManager.clientName) {
+                            BluetoothManager.clientName = null;
+                            BluetoothManager.stopClient();
+                        } else {
+                            stackView.push("scanblues.qml");
+                        }
                     }
                 }
             }
