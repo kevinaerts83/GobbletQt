@@ -156,10 +156,10 @@ void BluetoothManager::discoveryFinished()
         qDebug() << "No BLE devices found.";
 }
 
-void BluetoothManager::connectWithAddress(const QString &address)
+void BluetoothManager::connectWithName(const QString &name)
 {
     for (const QBluetoothDeviceInfo &d : std::as_const(foundDevices)) {
-        if (d.address().toString().contains(address, Qt::CaseInsensitive)) {
+        if (d.name().contains(name, Qt::CaseInsensitive)) {
             stopDiscovery();
             connectToDevice(d);
             break;

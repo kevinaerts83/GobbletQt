@@ -24,7 +24,7 @@ public:
     Q_INVOKABLE void stopClient();
 
     Q_INVOKABLE QVariantList getDevices();  // Exposed to QML
-    Q_INVOKABLE void connectWithAddress(const QString &address);
+    Q_INVOKABLE void connectWithName(const QString &name);
     Q_INVOKABLE void startDiscovery();
     Q_INVOKABLE void stopDiscovery();
 

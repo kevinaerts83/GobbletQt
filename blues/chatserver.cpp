@@ -129,7 +129,7 @@ void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &charact
         qDebug() << "Received from client:" << message;
         emit messageReceived("Client", message);
     } else {
-        qDebug() << "[Server] write source:"
+        qDebug() << "[Server] Don't send message due to wrong channel: "
                  << (characteristic.uuid() == rxUuid ? "CLIENT (RX)" : "SERVER (TX)");
     }
 }
@@ -158,11 +158,8 @@ void ChatServer::sendMessage(const QString &message)
             qDebug() << "Sending BLE notification:" << message << "props:" << c.properties();
 
             // WriteWithResponse triggers Notify update safely on all platforms
-            service->writeCharacteristic(
-                c,
-                message.toUtf8(),
-                QLowEnergyService::WriteWithoutResponse
-                );
+            // service->writeCharacteristic(c, message.toUtf8(), QLowEnergyService::WriteWithoutResponse);
+            service->writeCharacteristic(txChar, message.toUtf8(), QLowEnergyService::WriteWithoutResponse);
 
             return;
         }

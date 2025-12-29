@@ -80,10 +80,10 @@ Page {
                 cursorShape: Qt.PointingHandCursor
 
                 onClicked: {
-                    console.log("Clicked on device:", modelData.name, modelData.address)
+                    //console.log("Clicked on device:", modelData.name, modelData.address)
 
                     // Call C++ function to connect to the device
-                    BluetoothManager.connectWithAddress(modelData.address)
+                    BluetoothManager.connectWithName(modelData.name)
                     stackView.pop()
                 }
 
