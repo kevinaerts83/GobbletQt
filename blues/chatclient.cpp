@@ -138,7 +138,7 @@ void ChatClient::serviceScanFinished()
             this, &ChatClient::serviceStateChanged);
 
     connect(service, &QLowEnergyService::characteristicChanged,
-            this, &ChatClient::characteristicChanged);
+            this, &ChatClient::updateNotification);
 
     service->discoverDetails();
 #endif
