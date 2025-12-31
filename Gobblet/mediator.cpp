@@ -190,9 +190,9 @@ void Mediator::sendMessage(const QString &msg)
 {
     if (m_manager) {
         if (m_manager->serverName() == nullptr) {
-            m_manager->sendToServer(msg);
-        } else {
             m_manager->sendToClient(msg);
+        } else {
+            m_manager->sendToServer(msg);
         }
     }
 }

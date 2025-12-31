@@ -5,7 +5,6 @@
 #include <QLowEnergyCharacteristicData>
 #include <QLowEnergyServiceData>
 #include <QDebug>
-#include <QLowEnergyDescriptorData>
 
 ChatServer::ChatServer(QObject *parent)
     : QObject(parent)
@@ -31,7 +30,6 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
     rxUuid = rxCharUuid;
     txUuid = txCharUuid;
 
-    // === Create peripheral controller ===
     controller = QLowEnergyController::createPeripheral(this);
 
     connect(controller, &QLowEnergyController::stateChanged,
@@ -42,27 +40,18 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
                 emit serverError(QStringLiteral("Controller error: %1").arg(error));
             });
 
-    // === RX characteristic (client -> server) ===
+    // RX (client -> server)
     QLowEnergyCharacteristicData rxData;
     rxData.setUuid(rxUuid);
-    rxData.setProperties(QLowEnergyCharacteristic::Write); // | QLowEnergyCharacteristic::WriteNoResponse
+    rxData.setProperties(QLowEnergyCharacteristic::Write);
     rxData.setValue(QByteArray());
 
-    // === TX characteristic (server -> client) ===
+    // TX (server -> client)
     QLowEnergyCharacteristicData txData;
     txData.setUuid(txUuid);
-    txData.setProperties(QLowEnergyCharacteristic::Notify); // | QLowEnergyCharacteristic::Read
+    txData.setProperties(QLowEnergyCharacteristic::Notify);
     txData.setValue(QByteArray());
 
-    // DO NOT add CCC descriptor manually (macOS breaks)
-    /*QLowEnergyDescriptorData ccc(
-        QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration,
-        QByteArray(2, 0x00)
-        );
-    txData.addDescriptor(ccc);
-    */
-
-    // === Service definition ===
     QLowEnergyServiceData serviceData;
     serviceData.setType(QLowEnergyServiceData::ServiceTypePrimary);
     serviceData.setUuid(serviceUuid);
@@ -70,37 +59,42 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
     serviceData.addCharacteristic(txData);
 
     service = controller->addService(serviceData);
-
     if (!service) {
         emit serverError("Failed to create BLE service");
         stopServer();
         return;
     }
 
-    connect(service, &QLowEnergyService::stateChanged,
-            this, [](QLowEnergyService::ServiceState state) {
-                qDebug() << "Service state changed:" << state;
-            });
+    // 🔑 CACHE CHARACTERISTICS (CRITICAL)
+    for (const auto &c : service->characteristics()) {
+        if (c.uuid() == rxUuid)
+            rxChar = c;
+        else if (c.uuid() == txUuid)
+            txChar = c;
+    }
+
+    if (!rxChar.isValid() || !txChar.isValid()) {
+        emit serverError("RX or TX characteristic missing after service creation");
+        stopServer();
+        return;
+    }
 
     connect(service, &QLowEnergyService::characteristicWritten,
             this, &ChatServer::onCharacteristicWritten);
 
-    // === Advertising parameters (CRITICAL for Windows/macOS) ===
+    // Advertising
     QLowEnergyAdvertisingParameters params;
     params.setMode(QLowEnergyAdvertisingParameters::AdvInd);
-    params.setInterval(100, 200); // milliseconds
+    params.setInterval(100, 200);
 
-    // Advertising packet (name)
-    QLowEnergyAdvertisingData advertisingData;
-    advertisingData.setLocalName("Gobblet server");
-    advertisingData.setDiscoverability(
-        QLowEnergyAdvertisingData::DiscoverabilityGeneral);
+    QLowEnergyAdvertisingData adv;
+    adv.setLocalName("Gobblet server");
+    adv.setDiscoverability(QLowEnergyAdvertisingData::DiscoverabilityGeneral);
 
-    // Scan response (service UUID)
-    QLowEnergyAdvertisingData scanResponse;
-    scanResponse.setServices({ serviceUuid });
+    QLowEnergyAdvertisingData scanResp;
+    scanResp.setServices({ serviceUuid });
 
-    controller->startAdvertising(params, advertisingData, scanResponse);
+    controller->startAdvertising(params, adv, scanResp);
 
     qDebug() << "Advertising BLE service:" << serviceUuid.toString();
 }
@@ -113,59 +107,43 @@ void ChatServer::stopServer()
     qDebug() << "Stopping BLE ChatServer";
 
     controller->stopAdvertising();
-
     controller->deleteLater();
+
     controller = nullptr;
     service = nullptr;
+    rxChar = QLowEnergyCharacteristic();
+    txChar = QLowEnergyCharacteristic();
 }
 
 void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &characteristic,
                                          const QByteArray &value)
 {
-    qDebug() << "[Server] characteristicWritten:" << characteristic.uuid() << "value:" << value.toHex();
+    qDebug() << "[Server] characteristicWritten:"
+             << characteristic.uuid()
+             << "value:" << value.toHex();
 
     if (characteristic.uuid() == rxUuid) {
         const QString message = QString::fromUtf8(value);
-        qDebug() << "Received from client:" << message;
+        qDebug() << "[Server] Received from client:" << message;
         emit messageReceived("Client", message);
-    } else {
-        qDebug() << "[Server] Don't send message due to wrong channel: "
-                 << (characteristic.uuid() == rxUuid ? "CLIENT (RX)" : "SERVER (TX)");
     }
 }
 
 void ChatServer::sendMessage(const QString &message)
 {
-    if (!service) {
-        qWarning() << "Cannot send message: service not available";
+    if (!service || !txChar.isValid()) {
+        qWarning() << "Cannot send message: TX characteristic invalid";
         return;
     }
 
-    const auto characteristics = service->characteristics();
-    for (const auto &c : characteristics) {
-        if (c.uuid() == txUuid) {
+    qDebug() << "Sending BLE notification:" << message;
 
-            if (!c.isValid()) {
-                qWarning() << "TX characteristic invalid";
-                return;
-            }
-
-            if (!(c.properties() & QLowEnergyCharacteristic::Notify)) {
-                qWarning() << "TX characteristic does not support Notify";
-                return;
-            }
-
-            qDebug() << "Sending BLE notification:" << message << "props:" << c.properties();
-
-            // WriteWithResponse triggers Notify update safely on all platforms
-            // service->writeCharacteristic(c, message.toUtf8(), QLowEnergyService::WriteWithoutResponse);
-            service->writeCharacteristic(txChar, message.toUtf8(), QLowEnergyService::WriteWithoutResponse);
-
-            return;
-        }
-    }
-
-    qWarning() << "TX characteristic not found";
+    // 🔑 THIS IS THE ONLY CORRECT WAY (iOS/macOS compatible)
+    service->writeCharacteristic(
+        txChar,
+        message.toUtf8(),
+        QLowEnergyService::WriteWithoutResponse
+        );
 }
 
 void ChatServer::onConnectionStateChanged(QLowEnergyController::ControllerState state)
