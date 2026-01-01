@@ -43,7 +43,7 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
     // RX (client -> server)
     QLowEnergyCharacteristicData rxData;
     rxData.setUuid(rxUuid);
-    rxData.setProperties(QLowEnergyCharacteristic::Write);
+    rxData.setProperties(QLowEnergyCharacteristic::Write | QLowEnergyCharacteristic::WriteNoResponse);
     rxData.setValue(QByteArray());
 
     // TX (server -> client)

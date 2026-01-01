@@ -220,11 +220,12 @@ void ChatClient::sendMessage(const QString &message)
     qDebug() << "[ChatClient] Sending to RX:" << message;
 
     // Choose WriteWithoutResponse if supported (and required on iOS)
-    QLowEnergyService::WriteMode mode =
+    /*QLowEnergyService::WriteMode mode =
         (props & QLowEnergyCharacteristic::WriteNoResponse)
             ? QLowEnergyService::WriteWithoutResponse
-            : QLowEnergyService::WriteWithResponse;
+            : QLowEnergyService::WriteWithResponse;*/
 
-    service->writeCharacteristic(rxChar, message.toUtf8(), mode);
+    service->writeCharacteristic(rxChar, message.toUtf8(), QLowEnergyService::WriteWithoutResponse);
+    //service->writeCharacteristic(rxChar, message.toUtf8(), mode);
 }
 

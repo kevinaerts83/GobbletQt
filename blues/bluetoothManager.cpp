@@ -29,6 +29,14 @@ Qt → asks device for services
 Device → responds
 Qt → emits serviceDiscovered(uuid)
 You → react
+
+RX (client → server)
+- WriteWithoutResponse
+- WriteNoResponse property
+
+TX (server → client)
+- Notify
+- CCC auto-added by system
  */
 
 BluetoothManager::BluetoothManager(QObject *parent)
