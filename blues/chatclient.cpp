@@ -209,12 +209,22 @@ void ChatClient::sendMessage(const QString &message)
         return;
     }
 
-    qDebug() << "[ChatClient] Sending message:" << message;
+    // Check if RX supports write or write without response
+    auto props = rxChar.properties();
+    if (!(props & QLowEnergyCharacteristic::Write) &&
+        !(props & QLowEnergyCharacteristic::WriteNoResponse)) {
+        qWarning() << "[ChatClient] RX characteristic does not support write!";
+        return;
+    }
 
-    // 🔑 iOS-compatible write (REQUIRED)
-    service->writeCharacteristic(
-        rxChar,
-        message.toUtf8(),
-        QLowEnergyService::WriteWithoutResponse
-        );
+    qDebug() << "[ChatClient] Sending to RX:" << message;
+
+    // Choose WriteWithoutResponse if supported (and required on iOS)
+    QLowEnergyService::WriteMode mode =
+        (props & QLowEnergyCharacteristic::WriteNoResponse)
+            ? QLowEnergyService::WriteWithoutResponse
+            : QLowEnergyService::WriteWithResponse;
+
+    service->writeCharacteristic(rxChar, message.toUtf8(), mode);
 }
+
