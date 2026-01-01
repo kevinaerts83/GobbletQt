@@ -115,18 +115,17 @@ void ChatServer::stopServer()
     txChar = QLowEnergyCharacteristic();
 }
 
-void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &characteristic,
+void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &c,
                                          const QByteArray &value)
 {
-    qDebug() << "[Server] characteristicWritten:"
-             << characteristic.uuid()
-             << "value:" << value.toHex();
-
-    if (characteristic.uuid() == rxUuid) {
-        const QString message = QString::fromUtf8(value);
-        qDebug() << "[Server] Received from client:" << message;
-        emit messageReceived("Client", message);
+    if (c.uuid() != rxUuid) {
+        // This is OUR OWN TX write — ignore it
+        return;
     }
+
+    const QString msg = QString::fromUtf8(value);
+    qDebug() << "[Server] Received from client:" << msg;
+    emit messageReceived("Client", msg);
 }
 
 void ChatServer::sendMessage(const QString &message)
