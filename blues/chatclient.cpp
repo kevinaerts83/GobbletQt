@@ -211,9 +211,10 @@ void ChatClient::sendMessage(const QString &message)
 
     qDebug() << "[ChatClient] Sending message:" << message;
 
+    // 🔑 iOS-compatible write (REQUIRED)
     service->writeCharacteristic(
         rxChar,
         message.toUtf8(),
-        QLowEnergyService::WriteWithResponse
+        QLowEnergyService::WriteWithoutResponse
         );
 }

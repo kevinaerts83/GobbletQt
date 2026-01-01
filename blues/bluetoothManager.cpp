@@ -79,12 +79,11 @@ void BluetoothManager::startServer()
             this, &BluetoothManager::serverMessage);
     connect(server, &ChatServer::clientConnected, this, [](const QString &){ qDebug() << "Client connected"; });
     connect(server, &ChatServer::clientDisconnected, this, [](const QString &){ qDebug() << "Client disconnected"; });
-    connect(server, &ChatServer::serverError,
-            this, &BluetoothManager::onServerError);
-    connect(this, &BluetoothManager::sendToServer,
-            server, &ChatServer::sendMessage);
+    connect(server, &ChatServer::serverError, this, &BluetoothManager::onServerError);
+    connect(this, &BluetoothManager::sendToClient, server, &ChatServer::sendMessage);
 
     server->startServer(serviceUuid, rxCharUuid, txCharUuid);
+    m_role = Role::Server;
 
     setServerName("Gobblet Online");
 }
@@ -96,6 +95,7 @@ void BluetoothManager::stopServer()
         server->deleteLater();
         server = nullptr;
     }
+    m_role = Role::None;
 }
 
 void BluetoothManager::startDiscovery()
@@ -173,6 +173,7 @@ void BluetoothManager::stopClient() {
         client->deleteLater();
         client = nullptr;
     }
+    m_role = Role::None;
 }
 
 void BluetoothManager::connectToDevice(const QBluetoothDeviceInfo &device)
@@ -185,10 +186,11 @@ void BluetoothManager::connectToDevice(const QBluetoothDeviceInfo &device)
     connect(client, &ChatClient::connected, this, [](){ qDebug() << "Client connected to remote"; });
     connect(client, &ChatClient::disconnected, this, [](){ qDebug() << "Client disconnected"; });
     connect(client, &ChatClient::messageReceived, this, &BluetoothManager::clientMessage);
-    connect(this, &BluetoothManager::sendToClient, client, &ChatClient::sendMessage);
+    connect(this, &BluetoothManager::sendToServer, client, &ChatClient::sendMessage);
 
     // Start BLE connection
     client->startClient(device, serviceUuid, rxCharUuid, txCharUuid);
+    m_role = Role::Client;
 
     setClientName(device.name());
 }

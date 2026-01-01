@@ -188,12 +188,15 @@ void Mediator::onMessageReceived(const QString &from, const QString &msg)
 
 void Mediator::sendMessage(const QString &msg)
 {
-    if (m_manager) {
-        if (m_manager->serverName() == nullptr) {
-            m_manager->sendToClient(msg);
-        } else {
-            m_manager->sendToServer(msg);
-        }
+    if (!m_manager)
+        return;
+
+    if (m_manager->role() == Role::Client) {
+        // client → server (RX write)
+        m_manager->sendToServer(msg);
+    } else if (m_manager->role() == Role::Server) {
+        // server → client (TX notify)
+        m_manager->sendToClient(msg);
     }
 }
 

@@ -9,6 +9,12 @@
 #include "chatclient.h"
 #include "chatserver.h"
 
+enum class Role {
+    None,
+    Server,
+    Client
+};
+
 class BluetoothManager : public QObject
 {
     Q_OBJECT
@@ -46,6 +52,8 @@ public:
         emit serverNameChanged();
     }
 
+    Role role() const { return m_role; }
+
 signals:
     void sendToServer(const QString &message);   // client RX
     void sendToClient(const QString &message);   // server TX
@@ -76,6 +84,7 @@ private:
     QVector<QBluetoothDeviceInfo> foundDevices;
     QString m_serverName;
     QString m_clientName;
+    Role m_role = Role::None;
 
     const QBluetoothUuid serviceUuid =
         QBluetoothUuid(QStringLiteral("{12345678-6398-4c4c-80cb-2cc15d4734d7}"));
