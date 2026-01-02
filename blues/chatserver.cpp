@@ -5,6 +5,7 @@
 #include <QLowEnergyCharacteristicData>
 #include <QLowEnergyServiceData>
 #include <QDebug>
+#include <qlowenergydescriptordata.h>
 
 ChatServer::ChatServer(QObject *parent)
     : QObject(parent)
@@ -51,6 +52,9 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
     txData.setUuid(txUuid);
     txData.setProperties(QLowEnergyCharacteristic::Notify);
     txData.setValue(QByteArray());
+    // **ADD CCC descriptor**
+    QLowEnergyDescriptorData ccc(QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration, QByteArray(2, 0x00));
+    txData.addDescriptor(ccc);
 
     QLowEnergyServiceData serviceData;
     serviceData.setType(QLowEnergyServiceData::ServiceTypePrimary);
