@@ -17,7 +17,7 @@ Page {
 
     Timer {
         id: refreshTimer
-        interval: 2000    // 2 second
+        interval: 10000 // 10 second
         repeat: true
         running: true
         triggeredOnStart: true

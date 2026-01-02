@@ -129,7 +129,7 @@ void BluetoothManager::startDiscovery()
 }
 
 void BluetoothManager::stopDiscovery()
-{
+{    
     if (discoveryAgent) {
         discoveryAgent->stop();
         discoveryAgent->deleteLater();
@@ -212,8 +212,9 @@ QVariantList BluetoothManager::getDevices() {
         devices.append(device);
     }
     // start discovery if empty
-    if (foundDevices.isEmpty()) startDiscovery();
-
+    if (foundDevices.isEmpty()) {
+        startDiscovery();
+    }
     return devices;
 }
 
