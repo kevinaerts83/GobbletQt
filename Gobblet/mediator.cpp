@@ -188,16 +188,8 @@ void Mediator::onMessageReceived(const QString &from, const QString &msg)
 
 void Mediator::sendMessage(const QString &msg)
 {
-    if (!m_manager)
-        return;
-
-    if (m_manager->role() == Role::Client) {
-        // client → server (RX write)
-        m_manager->sendToServer(msg);
-    } else if (m_manager->role() == Role::Server) {
-        // server → client (TX notify)
-        m_manager->sendToClient(msg);
-    }
+    if (m_manager)
+        m_manager->sendMessage(msg);
 }
 
 bool Mediator::isValidMove(int oldTile, int newTile) {

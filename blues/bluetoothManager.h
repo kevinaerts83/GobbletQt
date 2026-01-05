@@ -20,6 +20,7 @@ class BluetoothManager : public QObject
     Q_OBJECT
     Q_PROPERTY(QString clientName READ clientName WRITE setClientName NOTIFY clientNameChanged)
     Q_PROPERTY(QString serverName READ serverName WRITE setServerName NOTIFY serverNameChanged)
+
 public:
     explicit BluetoothManager(QObject *parent = nullptr);
     ~BluetoothManager();
@@ -53,6 +54,8 @@ public:
     }
 
     Role role() const { return m_role; }
+
+    void sendMessage(const QString &msg);
 
 signals:
     void sendToServer(const QString &message);   // client RX

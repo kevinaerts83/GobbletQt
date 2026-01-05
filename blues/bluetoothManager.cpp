@@ -88,7 +88,7 @@ void BluetoothManager::startServer()
     connect(server, &ChatServer::clientConnected, this, [](const QString &){ qDebug() << "Client connected"; });
     connect(server, &ChatServer::clientDisconnected, this, [](const QString &){ qDebug() << "Client disconnected"; });
     connect(server, &ChatServer::serverError, this, &BluetoothManager::onServerError);
-    connect(this, &BluetoothManager::sendToClient, server, &ChatServer::sendMessage);
+    //connect(this, &BluetoothManager::sendToClient, server, &ChatServer::sendMessage);
 
     server->startServer(serviceUuid, rxCharUuid, txCharUuid);
     m_role = Role::Server;
@@ -194,7 +194,7 @@ void BluetoothManager::connectToDevice(const QBluetoothDeviceInfo &device)
     connect(client, &ChatClient::connected, this, [](){ qDebug() << "Client connected to remote"; });
     connect(client, &ChatClient::disconnected, this, [](){ qDebug() << "Client disconnected"; });
     connect(client, &ChatClient::messageReceived, this, &BluetoothManager::clientMessage);
-    connect(this, &BluetoothManager::sendToServer, client, &ChatClient::sendMessage);
+    //connect(this, &BluetoothManager::sendToServer, client, &ChatClient::sendMessage);
 
     // Start BLE connection
     client->startClient(device, serviceUuid, rxCharUuid, txCharUuid);
@@ -216,6 +216,16 @@ QVariantList BluetoothManager::getDevices() {
         startDiscovery();
     }
     return devices;
+}
+
+void BluetoothManager::sendMessage(const QString &msg)
+{
+    if (m_role == Role::Client && client) {
+        client->sendMessage(msg);     // RX write
+    }
+    else if (m_role == Role::Server && server) {
+        server->sendMessage(msg);     // TX notify
+    }
 }
 
 void BluetoothManager::onServerError(const QString &message)
