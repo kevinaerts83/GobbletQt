@@ -4,6 +4,50 @@
 #include <QBluetoothPermission>
 
 /*
+┌────────────────────────────────────────────────────────────┐
+│ Primary Service                                            │
+│ UUID: 12345678-6398-4c4c-80cb-2cc15d4734d7                 │
+└────────────────────────────────────────────────────────────┘
+        │
+        ├── Characteristic: RX  (Client → Server)
+        │
+        │   UUID: beefbbbb-6398-4c4c-80cb-2cc15d4734d7
+        │
+        │   Properties:
+        │     • Write
+        │     • Write Without Response
+        │
+        │   Permissions:
+        │     • Writeable
+        │
+        │   Descriptors:
+        │     • (none)
+        │
+        │   Data Flow:
+        │     Client  ── write() ──▶  Server
+        │
+        │   Qt signal:
+        │     QLowEnergyService::characteristicWritten()
+        │
+        └── Characteristic: TX  (Server → Client)
+            │
+            │   UUID: feedaaaa-6398-4c4c-80cb-2cc15d4734d7
+            │
+            │   Properties:
+            │     • Notify
+            │
+            │   Permissions:
+            │     • Readable (implicit)
+            │
+            │   Descriptors:
+            │     • Client Characteristic Configuration (CCC)
+            │       UUID: 00002902-0000-1000-8000-00805f9b34fb
+            │
+            │   Data Flow:
+            │     Server ── notify() ──▶ Client
+            │
+            │   Qt signal:
+            │     QLowEnergyService::characteristicChanged()
 
 createCentral()
    ↓
@@ -29,14 +73,6 @@ Qt → asks device for services
 Device → responds
 Qt → emits serviceDiscovered(uuid)
 You → react
-
-RX (client → server)
-- WriteWithoutResponse
-- WriteNoResponse property
-
-TX (server → client)
-- Notify
-- CCC auto-added by system
  */
 
 BluetoothManager::BluetoothManager(QObject *parent)
