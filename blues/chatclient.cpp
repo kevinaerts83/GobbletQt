@@ -108,6 +108,12 @@ void ChatClient::serviceDiscovered(const QBluetoothUuid &uuid)
     connect(service, &QLowEnergyService::characteristicChanged,
             this, &ChatClient::updateNotification);
 
+    connect(service, &QLowEnergyService::characteristicChanged,
+            this, [](const QLowEnergyCharacteristic &c, const QByteArray &v) {
+                qDebug() << "[ChatClient] Write confirmed:"
+                         << c.uuid() << v;
+            });
+
     connect(service, &QLowEnergyService::errorOccurred,
             this, [this](QLowEnergyService::ServiceError error) {
                 emit socketErrorOccurred(
@@ -217,7 +223,12 @@ void ChatClient::sendMessage(const QString &message)
         return;
     }
 
-    qDebug() << "[ChatClient] Sending to RX:" << message;
+    qDebug() << "[ChatClient] Sending to RX:"
+             << message
+             << "uuid:" << rxChar.uuid()
+             << "props:" << rxChar.properties()
+             << "valid:" << rxChar.isValid()
+             << "len:" << message.toUtf8().size();
 
     // Choose WriteWithoutResponse if supported (and required on iOS)
     /*QLowEnergyService::WriteMode mode =
@@ -225,7 +236,7 @@ void ChatClient::sendMessage(const QString &message)
             ? QLowEnergyService::WriteWithoutResponse
             : QLowEnergyService::WriteWithResponse;*/
 
-    service->writeCharacteristic(rxChar, message.toUtf8(), QLowEnergyService::WriteWithoutResponse);
+    service->writeCharacteristic(rxChar, message.toUtf8(), QLowEnergyService::WriteWithResponse);
     //service->writeCharacteristic(rxChar, message.toUtf8(), mode);
 }
 

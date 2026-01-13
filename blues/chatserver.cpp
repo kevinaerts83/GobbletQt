@@ -69,6 +69,13 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
         return;
     }
 
+    qDebug() << "[Server] GATT table:";
+    for (const auto &c : service->characteristics()) {
+        qDebug() << " -" << c.uuid()
+        << "props:" << c.properties()
+        << "valid:" << c.isValid();
+    }
+
     // 🔑 CACHE CHARACTERISTICS (CRITICAL)
     for (const auto &c : service->characteristics()) {
         if (c.uuid() == rxUuid)
@@ -85,6 +92,13 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
 
     connect(service, &QLowEnergyService::characteristicWritten,
             this, &ChatServer::onCharacteristicWritten);
+
+    connect(service, &QLowEnergyService::characteristicWritten,
+            this, [](const QLowEnergyCharacteristic &c, const QByteArray &v) {
+                qDebug() << "[ChatClient] Write CONFIRMED by stack:"
+                         << c.uuid()
+                         << "value:" << v;
+            });
 
     // Advertising
     QLowEnergyAdvertisingParameters params;
@@ -127,9 +141,19 @@ void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &c,
         return;
     }
 
-    const QString msg = QString::fromUtf8(value);
-    qDebug() << "[Server] Received from client:" << msg;
-    emit messageReceived("Client", msg);
+    qDebug() << "[Server] WRITE EVENT"
+             << "uuid:" << c.uuid()
+             << "valid:" << c.isValid()
+             << "props:" << c.properties()
+             << "len:" << value.size()
+             << "value:" << value;
+
+    if (c.uuid() == rxUuid) {
+        qDebug() << "[Server] RX RECEIVED";
+        emit messageReceived("Client", QString::fromUtf8(value));
+    } else {
+        qDebug() << "[Server] NOT RX";
+    }
 }
 
 void ChatServer::sendMessage(const QString &message)
