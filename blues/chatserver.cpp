@@ -44,7 +44,7 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
     // RX (client -> server)
     QLowEnergyCharacteristicData rxData;
     rxData.setUuid(rxUuid);
-    rxData.setProperties(QLowEnergyCharacteristic::Write | QLowEnergyCharacteristic::WriteNoResponse);
+    rxData.setProperties(QLowEnergyCharacteristic::Write);
     rxData.setValue(QByteArray());
 
     // TX (server -> client)
@@ -76,7 +76,7 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
         << "valid:" << c.isValid();
     }
 
-    // 🔑 CACHE CHARACTERISTICS (CRITICAL)
+    // CACHE CHARACTERISTICS (CRITICAL)
     for (const auto &c : service->characteristics()) {
         if (c.uuid() == rxUuid)
             rxChar = c;
@@ -95,7 +95,7 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
 
     connect(service, &QLowEnergyService::characteristicWritten,
             this, [](const QLowEnergyCharacteristic &c, const QByteArray &v) {
-                qDebug() << "[ChatClient] Write CONFIRMED by stack:"
+                qDebug() << "[ChatServer] Write CONFIRMED by stack:"
                          << c.uuid()
                          << "value:" << v;
             });
@@ -137,7 +137,9 @@ void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &c,
                                          const QByteArray &value)
 {
     if (c.uuid() != rxUuid) {
-        // This is OUR OWN TX write — ignore it
+        qDebug() << "This is OUR OWN TX write — ignore it"
+                 << "uuid:" << c.uuid()
+                 << "expected rxUuid:" << rxUuid;
         return;
     }
 
@@ -165,7 +167,7 @@ void ChatServer::sendMessage(const QString &message)
 
     qDebug() << "Sending BLE notification:" << message;
 
-    // 🔑 THIS IS THE ONLY CORRECT WAY (iOS/macOS compatible)
+    // THIS IS THE ONLY CORRECT WAY (iOS/macOS compatible)
     service->writeCharacteristic(
         txChar,
         message.toUtf8(),
