@@ -172,20 +172,17 @@ void ChatClient::serviceStateChanged(QLowEnergyService::ServiceState newState)
     qDebug() << "[ChatClient] TX UUID expected:" << txUuid.toString()
              << "found:" << txChar.uuid().toString();
 
-    if (!rxChar.isValid() || !txChar.isValid()) {
-        emit socketErrorOccurred("RX or TX characteristic missing");
-        return;
-    }
+    // After discovering characteristics
+    if (rxChar.isValid()) {
+        QLowEnergyDescriptor rxCcc = rxChar.descriptor(
+            QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration);
 
-    // Enable notifications on TX
-    QLowEnergyDescriptor ccc =
-        txChar.descriptor(QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration);
-
-    if (ccc.isValid()) {
-        service->writeDescriptor(ccc, QByteArray::fromHex("0100"));
-        qDebug() << "[ChatClient] TX notifications enabled";
-    } else {
-        qWarning() << "[ChatClient] TX CCC descriptor missing (notifications may fail)";
+        if (rxCcc.isValid()) {
+            qDebug() << "[ChatClient] Enabling notifications on RX too (for write path)";
+            service->writeDescriptor(rxCcc, QByteArray::fromHex("0100"));
+        } else {
+            qWarning() << "[ChatClient] TX CCC descriptor missing (notifications may fail)";
+        }
     }
 
     qDebug() << "[ChatClient] BLE ChatClient ready";
@@ -230,13 +227,16 @@ void ChatClient::sendMessage(const QString &message)
              << "valid:" << rxChar.isValid()
              << "len:" << message.toUtf8().size();
 
-    // Choose WriteWithoutResponse if supported (and required on iOS)
-    /*QLowEnergyService::WriteMode mode =
-        (props & QLowEnergyCharacteristic::WriteNoResponse)
-            ? QLowEnergyService::WriteWithoutResponse
-            : QLowEnergyService::WriteWithResponse;*/
+    //service->writeCharacteristic(rxChar, message.toUtf8(), QLowEnergyService::WriteWithResponse);
 
-    service->writeCharacteristic(rxChar, message.toUtf8(), QLowEnergyService::WriteWithResponse);
-    //service->writeCharacteristic(rxChar, message.toUtf8(), mode);
+    // Choose WriteWithoutResponse if allowed
+    QLowEnergyService::WriteMode mode = QLowEnergyService::WriteWithoutResponse;
+
+    if (!(rxChar.properties() & QLowEnergyCharacteristic::WriteNoResponse)) {
+        mode = QLowEnergyService::WriteWithResponse;
+    }
+    qDebug() << "[ChatClient] Using write mode:" << (mode == QLowEnergyService::WriteWithoutResponse ? "NoResponse" : "WithResponse");
+    service->writeCharacteristic(rxChar, message.toUtf8(), mode);
+
 }
 

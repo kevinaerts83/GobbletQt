@@ -147,8 +147,8 @@ void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &c,
              << "uuid:" << c.uuid()
              << "valid:" << c.isValid()
              << "props:" << c.properties()
-             << "len:" << value.size()
-             << "value:" << value;
+             << "value Hex:" << value.toHex()
+             << "value ascii:" << QString::fromUtf8(value);
 
     if (c.uuid() == rxUuid) {
         qDebug() << "[Server] RX RECEIVED";
