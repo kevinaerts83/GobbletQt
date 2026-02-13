@@ -2,6 +2,9 @@
 
 #include <QLowEnergyDescriptor>
 #include <QDebug>
+#include <QtBluetooth/qlowenergyadvertisingparameters.h>
+#include <QtBluetooth/qlowenergycharacteristicdata.h>
+#include <QtBluetooth/qlowenergyservicedata.h>
 
 ChatClient::ChatClient(QObject *parent)
     : QObject(parent)
@@ -15,17 +18,30 @@ ChatClient::~ChatClient()
 
 void ChatClient::cleanupController()
 {
-    if (service) {
-        service->disconnect(this);
-        service->deleteLater();
-        service = nullptr;
+    if (centralService) {
+        centralService->disconnect(this);
+        centralService->deleteLater();
+        centralService = nullptr;
     }
 
-    if (controller) {
-        controller->disconnect(this);
-        controller->disconnectFromDevice();
-        controller->deleteLater();
-        controller = nullptr;
+    if (central) {
+        central->disconnect(this);
+        central->disconnectFromDevice();
+        central->deleteLater();
+        central = nullptr;
+    }
+
+    if (peripheralService) {
+        peripheralService->disconnect(this);
+        peripheralService->deleteLater();
+        peripheralService = nullptr;
+    }
+
+    if (peripheral) {
+        peripheral->disconnect(this);
+        peripheral->disconnectFromDevice();
+        peripheral->deleteLater();
+        peripheral = nullptr;
     }
 
     rxChar = QLowEnergyCharacteristic();
@@ -46,29 +62,62 @@ void ChatClient::startClient(const QBluetoothDeviceInfo &deviceInfo,
     qDebug() << "[ChatClient] Connecting to:" << deviceInfo.name()
              << deviceInfo.address().toString();
 
-    controller = QLowEnergyController::createCentral(deviceInfo, this);
+    central = QLowEnergyController::createCentral(deviceInfo, this);
 
-    connect(controller, &QLowEnergyController::stateChanged,
+    connect(central, &QLowEnergyController::stateChanged,
             this, &ChatClient::controllerStateChanged);
 
-    connect(controller, &QLowEnergyController::serviceDiscovered,
+    connect(central, &QLowEnergyController::serviceDiscovered,
             this, &ChatClient::serviceDiscovered);
 
-    connect(controller, &QLowEnergyController::errorOccurred,
+    connect(central, &QLowEnergyController::errorOccurred,
             this, [this](QLowEnergyController::Error error) {
                 emit socketErrorOccurred(
                     QStringLiteral("Controller error: %1").arg(error));
             });
 
-    controller->connectToDevice();
+    central->connectToDevice();
 }
+
+void ChatClient::startClientPeripheral()
+{
+    if (peripheral)
+        return;
+
+    qDebug() << "[ChatClient] Starting client-side peripheral";
+
+    peripheral = QLowEnergyController::createPeripheral(this);
+
+    QLowEnergyCharacteristicData txData;
+    txData.setUuid(rxUuid); // IMPORTANT: reuse RX UUID (server listens here)
+    txData.setProperties(QLowEnergyCharacteristic::Notify);
+    txData.setValue(QByteArray());
+
+    QLowEnergyServiceData serviceData;
+    serviceData.setType(QLowEnergyServiceData::ServiceTypePrimary);
+    serviceData.setUuid(serviceUuid);
+    serviceData.addCharacteristic(txData);
+
+    peripheralService = peripheral->addService(serviceData);
+
+    txChar = peripheralService->characteristic(rxUuid);
+
+    QLowEnergyAdvertisingData adv;
+    adv.setLocalName("Gobblet Client");
+    adv.setServices({ serviceUuid });
+
+    peripheral->startAdvertising(QLowEnergyAdvertisingParameters(), adv, adv);
+
+    qDebug() << "[ChatClient] Client peripheral advertising";
+}
+
 
 void ChatClient::controllerStateChanged(QLowEnergyController::ControllerState state)
 {
     switch (state) {
     case QLowEnergyController::ConnectedState:
         qDebug() << "[ChatClient] Connected. Discovering services...";
-        controller->discoverServices();
+        central->discoverServices();
         break;
 
     case QLowEnergyController::UnconnectedState:
@@ -96,32 +145,32 @@ void ChatClient::serviceDiscovered(const QBluetoothUuid &uuid)
 
     serviceObjectCreated = true;
 
-    service = controller->createServiceObject(uuid, this);
-    if (!service) {
+    centralService = central->createServiceObject(uuid, this);
+    if (!centralService) {
         emit socketErrorOccurred("Failed to create service object");
         return;
     }
 
-    connect(service, &QLowEnergyService::stateChanged,
+    connect(centralService, &QLowEnergyService::stateChanged,
             this, &ChatClient::serviceStateChanged);
 
-    connect(service, &QLowEnergyService::characteristicChanged,
+    connect(centralService, &QLowEnergyService::characteristicChanged,
             this, &ChatClient::updateNotification);
 
-    connect(service, &QLowEnergyService::characteristicChanged,
+    connect(centralService, &QLowEnergyService::characteristicChanged,
             this, [](const QLowEnergyCharacteristic &c, const QByteArray &v) {
                 qDebug() << "[ChatClient] Write confirmed:"
                          << c.uuid() << v;
             });
 
-    connect(service, &QLowEnergyService::errorOccurred,
+    connect(centralService, &QLowEnergyService::errorOccurred,
             this, [this](QLowEnergyService::ServiceError error) {
                 emit socketErrorOccurred(
                     QStringLiteral("Service error: %1").arg(error));
             });
 
     qDebug() << "[ChatClient] Discovering service details...";
-    service->discoverDetails();
+    centralService->discoverDetails();
 }
 
 void ChatClient::serviceScanFinished()
@@ -150,22 +199,24 @@ void ChatClient::serviceScanFinished()
 #endif
 }
 
-
 void ChatClient::serviceStateChanged(QLowEnergyService::ServiceState newState)
 {
-    if (newState != QLowEnergyService::RemoteServiceDiscovered)
+    if (newState != QLowEnergyService::RemoteServiceDiscovered) {
         return;
+    }
+
+    startClientPeripheral();
 
     qDebug() << "[ChatClient] Service details discovered";
     qDebug() << "[ChatClient] Available characteristics:";
 
-    for (const auto &c : service->characteristics()) {
+    for (const auto &c : centralService->characteristics()) {
         qDebug() << "  -" << c.uuid().toString()
         << "props:" << c.properties();
     }
 
-    rxChar = service->characteristic(rxUuid); // client → server
-    txChar = service->characteristic(txUuid); // server → client
+    rxChar = centralService->characteristic(rxUuid); // client → server
+    txChar = centralService->characteristic(txUuid); // server → client
 
     qDebug() << "[ChatClient] RX UUID expected:" << rxUuid.toString()
              << "found:" << rxChar.uuid().toString();
@@ -179,7 +230,7 @@ void ChatClient::serviceStateChanged(QLowEnergyService::ServiceState newState)
 
         if (rxCcc.isValid()) {
             qDebug() << "[ChatClient] Enabling notifications on RX too (for write path)";
-            service->writeDescriptor(rxCcc, QByteArray::fromHex("0100"));
+            centralService->writeDescriptor(rxCcc, QByteArray::fromHex("0100"));
         } else {
             qWarning() << "[ChatClient] TX CCC descriptor missing (notifications may fail)";
         }
@@ -207,36 +258,23 @@ void ChatClient::updateNotification(const QLowEnergyCharacteristic &characterist
 
 void ChatClient::sendMessage(const QString &message)
 {
-    if (!service || !rxChar.isValid()) {
-        qWarning() << "[ChatClient] Cannot send message: RX invalid";
+    if (!peripheralService || !txChar.isValid()) {
+        qWarning() << "[ChatClient] Client TX not ready";
         return;
     }
 
     // Check if RX supports write or write without response
-    auto props = rxChar.properties();
-    if (!(props & QLowEnergyCharacteristic::Write) &&
-        !(props & QLowEnergyCharacteristic::WriteNoResponse)) {
-        qWarning() << "[ChatClient] RX characteristic does not support write!";
-        return;
-    }
+    auto props = txChar.properties();
 
-    qDebug() << "[ChatClient] Sending to RX:"
+    qDebug() << "[ChatClient] Notifying to TX:"
              << message
-             << "uuid:" << rxChar.uuid()
-             << "props:" << rxChar.properties()
-             << "valid:" << rxChar.isValid()
+             << "uuid:" << txChar.uuid()
+             << "props:" << props
+             << "valid:" << txChar.isValid()
              << "len:" << message.toUtf8().size();
 
-    //service->writeCharacteristic(rxChar, message.toUtf8(), QLowEnergyService::WriteWithResponse);
+    qDebug() << "[ChatClient] Notify → server:" << message;
 
-    // Choose WriteWithoutResponse if allowed
-    QLowEnergyService::WriteMode mode = QLowEnergyService::WriteWithoutResponse;
-
-    if (!(rxChar.properties() & QLowEnergyCharacteristic::WriteNoResponse)) {
-        mode = QLowEnergyService::WriteWithResponse;
-    }
-    qDebug() << "[ChatClient] Using write mode:" << (mode == QLowEnergyService::WriteWithoutResponse ? "NoResponse" : "WithResponse");
-    service->writeCharacteristic(rxChar, message.toUtf8(), mode);
-
+    peripheralService->writeCharacteristic(txChar, message.toUtf8(), QLowEnergyService::WriteWithoutResponse);
 }
 

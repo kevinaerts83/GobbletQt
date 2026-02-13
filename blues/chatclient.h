@@ -34,6 +34,7 @@ private slots:
     // Controller lifecycle
     void controllerStateChanged(QLowEnergyController::ControllerState state);
     void serviceDiscovered(const QBluetoothUuid &uuid);
+    void startClientPeripheral();
     void serviceScanFinished();
 
     // Service lifecycle
@@ -46,8 +47,11 @@ private:
     bool serviceFound = false;
     bool serviceObjectCreated = false;
 
-    QLowEnergyController *controller = nullptr;
-    QLowEnergyService *service = nullptr;
+    QLowEnergyController *central = nullptr;
+    QLowEnergyController *peripheral = nullptr;
+
+    QLowEnergyService *centralService = nullptr;
+    QLowEnergyService *peripheralService = nullptr;
 
     // GATT characteristics
     QLowEnergyCharacteristic rxChar; // client -> server (Write)

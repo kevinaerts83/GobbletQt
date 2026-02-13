@@ -6,6 +6,7 @@
 #include <QLowEnergyServiceData>
 #include <QDebug>
 #include <qlowenergydescriptordata.h>
+#include <QBluetoothDeviceDiscoveryAgent>
 
 ChatServer::ChatServer(QObject *parent)
     : QObject(parent)
@@ -137,13 +138,13 @@ void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &c,
                                          const QByteArray &value)
 {
     if (c.uuid() != rxUuid) {
-        qDebug() << "This is OUR OWN TX write — ignore it"
+        qDebug() << "This is OUR OWN TX Notify — ignore it"
                  << "uuid:" << c.uuid()
                  << "expected rxUuid:" << rxUuid;
         return;
     }
 
-    qDebug() << "[Server] WRITE EVENT"
+    qDebug() << "[Server] NOTIFY EVENT"
              << "uuid:" << c.uuid()
              << "valid:" << c.isValid()
              << "props:" << c.properties()
@@ -179,16 +180,92 @@ void ChatServer::onConnectionStateChanged(QLowEnergyController::ControllerState 
 {
     switch (state) {
     case QLowEnergyController::ConnectedState:
-        qDebug() << "BLE central connected";
+        qDebug() << "BLE central connected to our peripheral";
         emit clientConnected("BLE Central");
-        break;
+
+        // Start scanning to connect BACK to the client peripheral
+        if (!discoveryAgent) {
+            discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
+
+        connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
+            this, [this](const QBluetoothDeviceInfo &info) {
+
+        if (!(info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration))
+            return;
+
+        if (!info.name().contains("Gobblet", Qt::CaseInsensitive))
+            return;
+
+        qDebug() << "[Server-Central] Found peer peripheral:" << info.name();
+
+        discoveryAgent->stop();
+
+        // Connect as CENTRAL to the client peripheral
+        centralController = QLowEnergyController::createCentral(info, this);
+
+        connect(centralController, &QLowEnergyController::connected, this, [this]() {
+            qDebug() << "[Server-Central] Connected → discovering services";
+            centralController->discoverServices();
+        });
+
+        connect(centralController, &QLowEnergyController::serviceDiscovered,
+            this, [this](const QBluetoothUuid &uuid) {
+
+        if (uuid != service->serviceUuid())
+            return;
+
+        qDebug() << "[Server-Central] Target service found";
+
+        centralService = centralController->createServiceObject(uuid, this);
+        if (!centralService)
+            return;
+
+        connect(centralService, &QLowEnergyService::stateChanged,
+            this, [this](QLowEnergyService::ServiceState s) {
+
+        if (s != QLowEnergyService::RemoteServiceDiscovered)
+            return;
+
+        qDebug() << "[Server-Central] Service discovered → subscribing";
+
+        // Subscribe to client TX notify
+        centralTxChar = centralService->characteristic(txUuid);
+
+        auto ccc = centralTxChar.descriptor(
+            QBluetoothUuid(QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration));
+
+        if (ccc.isValid())
+            centralService->writeDescriptor(ccc, QByteArray::fromHex("0100"));
+
+        connect(centralService, &QLowEnergyService::characteristicChanged,
+            this, [this](const QLowEnergyCharacteristic &c, const QByteArray &v) {
+
+                if (c.uuid() != txUuid)
+                    return;
+
+                const QString msg = QString::fromUtf8(v);
+                    qDebug() << "[Server] Received from client (notify):" << msg;
+
+                emit messageReceived("Client", msg);
+            });
+        });
+
+        centralService->discoverDetails();
+        });
+
+        centralController->connectToDevice();
+        });
+
+        discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
+        }
+    break;
 
     case QLowEnergyController::UnconnectedState:
         qDebug() << "BLE central disconnected";
         emit clientDisconnected("BLE Central");
-        break;
+    break;
 
     default:
-        break;
+    break;
     }
 }

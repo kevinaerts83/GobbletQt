@@ -7,6 +7,7 @@
 #include <QLowEnergyCharacteristic>
 #include <QLowEnergyAdvertisingData>
 #include <QLowEnergyAdvertisingParameters>
+#include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothUuid>
 #include <QDebug>
 
@@ -36,6 +37,11 @@ private slots:
     void onConnectionStateChanged(QLowEnergyController::ControllerState state);
 
 private:
+    QBluetoothDeviceDiscoveryAgent *discoveryAgent = nullptr;
+    QLowEnergyController *centralController = nullptr;
+    QLowEnergyService *centralService = nullptr;
+    QLowEnergyCharacteristic centralTxChar;
+
     QLowEnergyController *controller = nullptr;
     QLowEnergyService *service = nullptr;
 
