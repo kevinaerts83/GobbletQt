@@ -92,9 +92,16 @@ private:
     const QBluetoothUuid serviceUuid =
         QBluetoothUuid(QStringLiteral("{12345678-6398-4c4c-80cb-2cc15d4734d7}"));
     const QBluetoothUuid rxCharUuid =
-        QBluetoothUuid(QStringLiteral("{beefbbbb-6398-4c4c-80cb-2cc15d4734d7}"));  // client → server (Write)
+        QBluetoothUuid(QStringLiteral("{beefbbbb-6398-4c4c-80cb-2cc15d4734d7}")); // client → server (Write)
     const QBluetoothUuid txCharUuid =
         QBluetoothUuid(QStringLiteral("{feedaaaa-6398-4c4c-80cb-2cc15d4734d7}")); // server → client (Notify)
+
+    const QBluetoothUuid reverseServiceUuid =
+        QBluetoothUuid(QStringLiteral("{87654321-6398-4c4c-80cb-2cc15d4734d7}"));
+    const QBluetoothUuid reverseRxCharUuid =
+        QBluetoothUuid(QStringLiteral("{bac2beef-6398-4c4c-80cb-2cc15d4734d7}")); // client → server (Write)
+    const QBluetoothUuid reverseTxCharUuid =
+        QBluetoothUuid(QStringLiteral("{bac2feed-6398-4c4c-80cb-2cc15d4734d7}")); // server → client (Notify)
 };
 
 #endif // BLUETOOTHMANAGER_H

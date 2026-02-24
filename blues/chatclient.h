@@ -18,7 +18,11 @@ public:
     void startClient(const QBluetoothDeviceInfo &deviceInfo,
                      const QBluetoothUuid &serviceUuid,
                      const QBluetoothUuid &rxCharUuid,
-                     const QBluetoothUuid &txCharUuid);
+                     const QBluetoothUuid &txCharUuid,
+                     const QBluetoothUuid &reverseServiceUuid,
+                     const QBluetoothUuid &reverseRxCharUuid,
+                     const QBluetoothUuid &reverseTxCharUuid
+                     );
 
 signals:
     void connected();
@@ -47,20 +51,30 @@ private:
     bool serviceFound = false;
     bool serviceObjectCreated = false;
 
+    /*
+     * Central
+     */
     QLowEnergyController *central = nullptr;
-    QLowEnergyController *peripheral = nullptr;
-
     QLowEnergyService *centralService = nullptr;
-    QLowEnergyService *peripheralService = nullptr;
-
-    // GATT characteristics
+    // - GATT characteristics
     QLowEnergyCharacteristic rxChar; // client -> server (Write)
     QLowEnergyCharacteristic txChar; // server -> client (Notify)
-
-    // UUIDs
+    // - UUIDs
     QBluetoothUuid serviceUuid;
     QBluetoothUuid rxUuid;
     QBluetoothUuid txUuid;
+
+    /*
+     * Peripheral (reverse communication)
+     */
+    QLowEnergyController *peripheral = nullptr;
+    QLowEnergyService *peripheralService = nullptr;
+
+    QLowEnergyCharacteristic reverseTxChar;
+
+    QBluetoothUuid reverseServiceUuid;
+    QBluetoothUuid reverseRxUuid;
+    QBluetoothUuid reverseTxUuid;
 };
 
 #endif // CHATCLIENT_H

@@ -51,13 +51,20 @@ void ChatClient::cleanupController()
 void ChatClient::startClient(const QBluetoothDeviceInfo &deviceInfo,
                              const QBluetoothUuid &serviceUuid,
                              const QBluetoothUuid &rxCharUuid,
-                             const QBluetoothUuid &txCharUuid)
+                             const QBluetoothUuid &txCharUuid,
+                             const QBluetoothUuid &reverseServiceUuid,
+                             const QBluetoothUuid &reverseRxCharUuid,
+                             const QBluetoothUuid &reverseTxCharUuid)
 {
     cleanupController();
 
     this->serviceUuid = serviceUuid;
     this->rxUuid = rxCharUuid;
     this->txUuid = txCharUuid;
+
+    this->reverseServiceUuid = reverseServiceUuid;
+    this->reverseRxUuid = reverseRxCharUuid;
+    this->reverseTxUuid = reverseTxCharUuid;
 
     qDebug() << "[ChatClient] Connecting to:" << deviceInfo.name()
              << deviceInfo.address().toString();
@@ -89,26 +96,33 @@ void ChatClient::startClientPeripheral()
     peripheral = QLowEnergyController::createPeripheral(this);
 
     QLowEnergyCharacteristicData txData;
-    txData.setUuid(rxUuid); // IMPORTANT: reuse RX UUID (server listens here)
+    txData.setUuid(reverseTxUuid);
     txData.setProperties(QLowEnergyCharacteristic::Notify);
     txData.setValue(QByteArray());
 
     QLowEnergyServiceData serviceData;
     serviceData.setType(QLowEnergyServiceData::ServiceTypePrimary);
-    serviceData.setUuid(serviceUuid);
+    serviceData.setUuid(reverseServiceUuid);
     serviceData.addCharacteristic(txData);
 
     peripheralService = peripheral->addService(serviceData);
 
-    txChar = peripheralService->characteristic(rxUuid);
+    reverseTxChar = peripheralService->characteristic(reverseTxUuid);
 
-    QLowEnergyAdvertisingData adv;
-    adv.setLocalName("Gobblet Client");
-    adv.setServices({ serviceUuid });
+    // Advertising
+    QLowEnergyAdvertisingData advertisingData;
+    advertisingData.setDiscoverability(
+        QLowEnergyAdvertisingData::DiscoverabilityGeneral
+        );
+    advertisingData.setServices({ serviceUuid });
 
-    peripheral->startAdvertising(QLowEnergyAdvertisingParameters(), adv, adv);
+    // Keep advertising packet small!
+    QLowEnergyAdvertisingData scanResponseData;
+    scanResponseData.setLocalName("Gobblet C");
 
-    qDebug() << "[ChatClient] Client peripheral advertising";
+    peripheral->startAdvertising(QLowEnergyAdvertisingParameters(), advertisingData, scanResponseData);
+
+    qDebug() << "[ChatClient] Client peripheral advertising" << serviceUuid.toString();
 }
 
 
@@ -224,16 +238,20 @@ void ChatClient::serviceStateChanged(QLowEnergyService::ServiceState newState)
              << "found:" << txChar.uuid().toString();
 
     // After discovering characteristics
-    if (rxChar.isValid()) {
-        QLowEnergyDescriptor rxCcc = rxChar.descriptor(
-            QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration);
+    if (!rxChar.isValid() || !txChar.isValid()) {
+        emit socketErrorOccurred("RX or TX characteristic missing");
+        return;
+    }
 
-        if (rxCcc.isValid()) {
-            qDebug() << "[ChatClient] Enabling notifications on RX too (for write path)";
-            centralService->writeDescriptor(rxCcc, QByteArray::fromHex("0100"));
-        } else {
-            qWarning() << "[ChatClient] TX CCC descriptor missing (notifications may fail)";
-        }
+    // Enable notifications on TX
+    QLowEnergyDescriptor ccc =
+        txChar.descriptor(QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration);
+
+    if (ccc.isValid()) {
+        centralService->writeDescriptor(ccc, QByteArray::fromHex("0100"));
+        qDebug() << "[ChatClient] TX notifications enabled";
+    } else {
+        qWarning() << "[ChatClient] TX CCC descriptor missing (notifications may fail)";
     }
 
     qDebug() << "[ChatClient] BLE ChatClient ready";
@@ -258,6 +276,16 @@ void ChatClient::updateNotification(const QLowEnergyCharacteristic &characterist
 
 void ChatClient::sendMessage(const QString &message)
 {
+    if (!peripheralService || !reverseTxChar.isValid()) {
+        qWarning() << "Cannot send message: TX characteristic invalid";
+        return;
+    }
+
+    qDebug() << "Sending BLE notification:" << message;
+
+    // THIS IS THE ONLY CORRECT WAY (iOS/macOS compatible)
+    peripheralService->writeCharacteristic(reverseTxChar, message.toUtf8(), QLowEnergyService::WriteWithoutResponse);
+    /*
     if (!peripheralService || !txChar.isValid()) {
         qWarning() << "[ChatClient] Client TX not ready";
         return;
@@ -276,5 +304,6 @@ void ChatClient::sendMessage(const QString &message)
     qDebug() << "[ChatClient] Notify → server:" << message;
 
     peripheralService->writeCharacteristic(txChar, message.toUtf8(), QLowEnergyService::WriteWithoutResponse);
+    */
 }
 

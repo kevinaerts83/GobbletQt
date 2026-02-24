@@ -126,7 +126,7 @@ void BluetoothManager::startServer()
     connect(server, &ChatServer::serverError, this, &BluetoothManager::onServerError);
     //connect(this, &BluetoothManager::sendToClient, server, &ChatServer::sendMessage);
 
-    server->startServer(serviceUuid, rxCharUuid, txCharUuid);
+    server->startServer(serviceUuid, rxCharUuid, txCharUuid, reverseServiceUuid, reverseRxCharUuid, reverseTxCharUuid);
     m_role = Role::Server;
 
     setServerName("Gobblet Online");
@@ -222,6 +222,27 @@ void BluetoothManager::stopClient() {
 
 void BluetoothManager::connectToDevice(const QBluetoothDeviceInfo &device)
 {
+#if QT_CONFIG(permissions)
+    QBluetoothPermission btPerm;
+
+    auto status = qApp->checkPermission(btPerm);
+
+    if (status == Qt::PermissionStatus::Undetermined) {
+
+        qApp->requestPermission(btPerm, this, [this](const QPermission &p) {
+            if (p.status() != Qt::PermissionStatus::Granted) {
+                emit serverError("Bluetooth permission denied");
+            }
+        });
+        return;
+    }
+
+    if (status == Qt::PermissionStatus::Denied) {
+        emit serverError("Bluetooth permission denied");
+        return;
+    }
+#endif
+
     qDebug() << "Connecting to device:" << device.name();
 
     stopClient();
@@ -233,7 +254,7 @@ void BluetoothManager::connectToDevice(const QBluetoothDeviceInfo &device)
     //connect(this, &BluetoothManager::sendToServer, client, &ChatClient::sendMessage);
 
     // Start BLE connection
-    client->startClient(device, serviceUuid, rxCharUuid, txCharUuid);
+    client->startClient(device, serviceUuid, rxCharUuid, txCharUuid, reverseServiceUuid, reverseRxCharUuid, reverseTxCharUuid);
     m_role = Role::Client;
 
     setClientName(device.name());

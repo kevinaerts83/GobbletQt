@@ -5,7 +5,6 @@
 #include <QLowEnergyController>
 #include <QLowEnergyService>
 #include <QLowEnergyCharacteristic>
-#include <QLowEnergyAdvertisingData>
 #include <QLowEnergyAdvertisingParameters>
 #include <QBluetoothDeviceDiscoveryAgent>
 #include <QBluetoothUuid>
@@ -20,7 +19,11 @@ public:
 
     void startServer(const QBluetoothUuid &serviceUuid,
                      const QBluetoothUuid &rxCharUuid,
-                     const QBluetoothUuid &txCharUuid);
+                     const QBluetoothUuid &txCharUuid,
+                     const QBluetoothUuid &reverseServiceUuid,
+                     const QBluetoothUuid &reverseRxCharUuid,
+                     const QBluetoothUuid &reverseTxCharUuid);
+
     void stopServer();
 
 signals:
@@ -31,17 +34,20 @@ signals:
 
 public slots:
     void sendMessage(const QString &message);
+    void onDeviceDiscovered(const QBluetoothDeviceInfo &info);
 
 private slots:
     void onCharacteristicWritten(const QLowEnergyCharacteristic &ch, const QByteArray &value);
     void onConnectionStateChanged(QLowEnergyController::ControllerState state);
+    void serviceStateChanged(QLowEnergyService::ServiceState newState);
+    void updateNotification(const QLowEnergyCharacteristic &characteristic, const QByteArray &value);
+    void serviceDiscovered(const QBluetoothUuid &uuid);
+    void startCentral();
 
 private:
-    QBluetoothDeviceDiscoveryAgent *discoveryAgent = nullptr;
-    QLowEnergyController *centralController = nullptr;
-    QLowEnergyService *centralService = nullptr;
-    QLowEnergyCharacteristic centralTxChar;
-
+    /*
+     * Peripheral
+     */
     QLowEnergyController *controller = nullptr;
     QLowEnergyService *service = nullptr;
 
@@ -50,6 +56,20 @@ private:
 
     QBluetoothUuid rxUuid;
     QBluetoothUuid txUuid;
+
+    /*
+     * Central (reverse communication)
+     */
+    QBluetoothDeviceDiscoveryAgent *discoveryAgent = nullptr;
+
+    QLowEnergyController *centralController = nullptr;
+    QLowEnergyService *centralService = nullptr;
+
+    QLowEnergyCharacteristic centralTxChar;
+
+    QBluetoothUuid reverseServiceUuid;
+    QBluetoothUuid reverseRxUuid;
+    QBluetoothUuid reverseTxUuid;
 };
 
 #endif // CHATSERVER_H

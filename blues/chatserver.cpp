@@ -4,8 +4,10 @@
 #include <QLowEnergyAdvertisingParameters>
 #include <QLowEnergyCharacteristicData>
 #include <QLowEnergyServiceData>
-#include <QDebug>
 #include <qlowenergydescriptordata.h>
+
+#include <QDebug>
+#include <QCoreApplication>
 #include <QBluetoothDeviceDiscoveryAgent>
 
 ChatServer::ChatServer(QObject *parent)
@@ -20,7 +22,10 @@ ChatServer::~ChatServer()
 
 void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
                              const QBluetoothUuid &rxCharUuid,
-                             const QBluetoothUuid &txCharUuid)
+                             const QBluetoothUuid &txCharUuid,
+                             const QBluetoothUuid &reverseServiceUuid,
+                             const QBluetoothUuid &reverseRxCharUuid,
+                             const QBluetoothUuid &reverseTxCharUuid)
 {
     if (controller) {
         qWarning() << "BLE ChatServer already running";
@@ -29,13 +34,20 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
 
     qDebug() << "Starting BLE ChatServer (peripheral)...";
 
-    rxUuid = rxCharUuid;
-    txUuid = txCharUuid;
+    this->rxUuid = rxCharUuid;
+    this->txUuid = txCharUuid;
+
+    this->reverseServiceUuid = reverseServiceUuid;
+    this->reverseRxUuid = reverseRxCharUuid;
+    this->reverseTxUuid = reverseTxCharUuid;
 
     controller = QLowEnergyController::createPeripheral(this);
 
     connect(controller, &QLowEnergyController::stateChanged,
             this, &ChatServer::onConnectionStateChanged);
+
+    connect(controller, &QLowEnergyController::connected,
+            this, &ChatServer::startCentral);
 
     connect(controller, &QLowEnergyController::errorOccurred,
             this, [this](QLowEnergyController::Error error) {
@@ -96,24 +108,23 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
 
     connect(service, &QLowEnergyService::characteristicWritten,
             this, [](const QLowEnergyCharacteristic &c, const QByteArray &v) {
-                qDebug() << "[ChatServer] Write CONFIRMED by stack:"
+                qDebug() << "[ChatServer] Notify CONFIRMED by stack:"
                          << c.uuid()
                          << "value:" << v;
             });
 
     // Advertising
-    QLowEnergyAdvertisingParameters params;
-    params.setMode(QLowEnergyAdvertisingParameters::AdvInd);
-    params.setInterval(100, 200);
+    QLowEnergyAdvertisingData advertisingData;
+    advertisingData.setDiscoverability(
+        QLowEnergyAdvertisingData::DiscoverabilityGeneral
+        );
+    advertisingData.setServices({ serviceUuid });
 
-    QLowEnergyAdvertisingData adv;
-    adv.setLocalName("Gobblet server");
-    adv.setDiscoverability(QLowEnergyAdvertisingData::DiscoverabilityGeneral);
+    // Keep advertising packet small!
+    QLowEnergyAdvertisingData scanResponseData;
+    scanResponseData.setLocalName("Gobblet S");
 
-    QLowEnergyAdvertisingData scanResp;
-    scanResp.setServices({ serviceUuid });
-
-    controller->startAdvertising(params, adv, scanResp);
+    controller->startAdvertising(QLowEnergyAdvertisingParameters(), advertisingData, scanResponseData);
 
     qDebug() << "Advertising BLE service:" << serviceUuid.toString();
 }
@@ -125,13 +136,37 @@ void ChatServer::stopServer()
 
     qDebug() << "Stopping BLE ChatServer";
 
-    controller->stopAdvertising();
-    controller->deleteLater();
+    if (service) {
+        service->disconnect(this);
+        service->deleteLater();
+        service = nullptr;
+    }
 
-    controller = nullptr;
-    service = nullptr;
+    if (controller) {
+        controller->disconnect(this);
+        controller->disconnectFromDevice();
+        controller->stopAdvertising();
+        controller->deleteLater();
+        controller = nullptr;
+    }
+
     rxChar = QLowEnergyCharacteristic();
     txChar = QLowEnergyCharacteristic();
+
+    if (centralService) {
+        centralService->disconnect(this);
+        centralService->deleteLater();
+        centralService = nullptr;
+    }
+
+    if (centralController) {
+        centralController->disconnect(this);
+        centralController->disconnectFromDevice();
+        centralController->deleteLater();
+        centralController = nullptr;
+    }
+
+    centralTxChar = QLowEnergyCharacteristic();
 }
 
 void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &c,
@@ -179,93 +214,118 @@ void ChatServer::sendMessage(const QString &message)
 void ChatServer::onConnectionStateChanged(QLowEnergyController::ControllerState state)
 {
     switch (state) {
-    case QLowEnergyController::ConnectedState:
-        qDebug() << "BLE central connected to our peripheral";
-        emit clientConnected("BLE Central");
+        case QLowEnergyController::ConnectedState:
+            qDebug() << "BLE central connected to our peripheral";
+            emit clientConnected("BLE Central");
+            startCentral();
+            break;
 
-        // Start scanning to connect BACK to the client peripheral
-        if (!discoveryAgent) {
-            discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
+        case QLowEnergyController::UnconnectedState:
+            qDebug() << "BLE central disconnected";
+            emit clientDisconnected("BLE Central");
+            break;
+
+        default:
+            break;
+    }
+}
+
+void ChatServer::startCentral() {
+    qDebug() << "Start reverse Central";
+    // Start scanning to connect BACK to the client peripheral
+    if (!discoveryAgent) {
+        discoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
 
         connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
-            this, [this](const QBluetoothDeviceInfo &info) {
-
-        if (!(info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration))
-            return;
-
-        if (!info.name().contains("Gobblet", Qt::CaseInsensitive))
-            return;
-
-        qDebug() << "[Server-Central] Found peer peripheral:" << info.name();
-
-        discoveryAgent->stop();
-
-        // Connect as CENTRAL to the client peripheral
-        centralController = QLowEnergyController::createCentral(info, this);
-
-        connect(centralController, &QLowEnergyController::connected, this, [this]() {
-            qDebug() << "[Server-Central] Connected → discovering services";
-            centralController->discoverServices();
-        });
-
-        connect(centralController, &QLowEnergyController::serviceDiscovered,
-            this, [this](const QBluetoothUuid &uuid) {
-
-        if (uuid != service->serviceUuid())
-            return;
-
-        qDebug() << "[Server-Central] Target service found";
-
-        centralService = centralController->createServiceObject(uuid, this);
-        if (!centralService)
-            return;
-
-        connect(centralService, &QLowEnergyService::stateChanged,
-            this, [this](QLowEnergyService::ServiceState s) {
-
-        if (s != QLowEnergyService::RemoteServiceDiscovered)
-            return;
-
-        qDebug() << "[Server-Central] Service discovered → subscribing";
-
-        // Subscribe to client TX notify
-        centralTxChar = centralService->characteristic(txUuid);
-
-        auto ccc = centralTxChar.descriptor(
-            QBluetoothUuid(QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration));
-
-        if (ccc.isValid())
-            centralService->writeDescriptor(ccc, QByteArray::fromHex("0100"));
-
-        connect(centralService, &QLowEnergyService::characteristicChanged,
-            this, [this](const QLowEnergyCharacteristic &c, const QByteArray &v) {
-
-                if (c.uuid() != txUuid)
-                    return;
-
-                const QString msg = QString::fromUtf8(v);
-                    qDebug() << "[Server] Received from client (notify):" << msg;
-
-                emit messageReceived("Client", msg);
-            });
-        });
-
-        centralService->discoverDetails();
-        });
-
-        centralController->connectToDevice();
-        });
+                this, &ChatServer::onDeviceDiscovered);
 
         discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
-        }
-    break;
-
-    case QLowEnergyController::UnconnectedState:
-        qDebug() << "BLE central disconnected";
-        emit clientDisconnected("BLE Central");
-    break;
-
-    default:
-    break;
     }
+}
+
+void ChatServer::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
+{
+    if (!(info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration)) {
+        return;
+    }
+
+    if (!info.name().contains("Gobblet", Qt::CaseInsensitive)) {
+        qDebug() << "Ignore device:" << info.name();
+        return;
+    } else {
+        qDebug() << "[Server-Central] Found peer peripheral:" << info.name();
+    }
+
+    discoveryAgent->stop();
+
+    // Connect as CENTRAL to the client peripheral
+    centralController = QLowEnergyController::createCentral(info, this);
+
+    connect(centralController, &QLowEnergyController::connected, this, [this]() {
+        qDebug() << "[Server-Central] Connected → discovering services";
+        centralController->discoverServices();
+    });
+
+    connect(centralController, &QLowEnergyController::serviceDiscovered,
+            this, &ChatServer::serviceDiscovered);
+
+    centralController->connectToDevice();
+}
+
+void ChatServer::serviceDiscovered(const QBluetoothUuid &uuid)
+{
+    if (uuid != reverseServiceUuid) {
+        qDebug() << "Not the correct service " << uuid;
+        return;
+    } else {
+        qDebug() << "[Server-Central] Target service found";
+    }
+
+    centralService = centralController->createServiceObject(uuid, this);
+    if (!centralService) {
+        return;
+    }
+
+    connect(centralService, &QLowEnergyService::stateChanged,
+            this, &ChatServer::serviceStateChanged);
+
+    connect(centralService, &QLowEnergyService::characteristicChanged,
+            this, &ChatServer::updateNotification);
+
+    centralService->discoverDetails();
+}
+
+void ChatServer::serviceStateChanged(QLowEnergyService::ServiceState newState)
+{
+    if(newState != QLowEnergyService::RemoteServiceDiscovered) {
+        return;
+    }
+
+    qDebug() << "[Server-Central] Service discovered → subscribing";
+
+    // Subscribe to client TX notify
+    centralTxChar = centralService->characteristic(reverseTxUuid);
+
+    QLowEnergyDescriptor ccc =
+        centralTxChar.descriptor(QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration);
+
+    if (ccc.isValid()) {
+        centralService->writeDescriptor(ccc, QByteArray::fromHex("0100"));
+    }
+}
+
+void ChatServer::updateNotification(const QLowEnergyCharacteristic &characteristic, const QByteArray &value)
+{
+    qDebug() << "[ChatServer] Notification:"
+             << characteristic.uuid().toString()
+             << "value:" << value.toHex();
+
+    if (characteristic.uuid() != reverseTxUuid) {
+        return;
+    }
+
+    const QString message = QString::fromUtf8(value);
+    qDebug() << "[ChatServer] Message received:" << message;
+
+    emit messageReceived("Remote", message);
 }
