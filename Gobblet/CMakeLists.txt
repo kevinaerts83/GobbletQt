@@ -73,12 +73,12 @@ elseif(IOS)
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_GUI_IDENTIFIER be.kevinaerts.gobblet
         XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER be.kevinaerts.gobblet
-        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/Info.plist"
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/ios/Info.plist"
     )
 elseif(APPLE)
     set_target_properties(Gobblet PROPERTIES
         MACOSX_BUNDLE TRUE
-        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/Info.plist"
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/macos/Info.plist"
     )
 else()
     install(TARGETS Gobblet
