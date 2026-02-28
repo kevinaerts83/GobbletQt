@@ -61,9 +61,10 @@ qt_add_qml_module(Gobblet
 if(ANDROID)
     message(STATUS "*************** ANDROID SETTINGS ******************")
     set_target_properties(Gobblet PROPERTIES
-        QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/android"
+        QT_ANDROID_PACKAGE_SOURCE_DIR
+        ${CMAKE_SOURCE_DIR}/android
         QT_ANDROID_ABIS "arm64-v8a;x86_64"
-        QT_ANDROID_MIN_SDK_VERSION 28
+        QT_ANDROID_MIN_SDK_VERSION 30
         QT_ANDROID_TARGET_SDK_VERSION 35
     )
     #qt_android_generate_deployment_settings(Gobblet)

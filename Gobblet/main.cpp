@@ -10,6 +10,15 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
+#ifdef Q_OS_ANDROID
+    QNativeInterface::QAndroidApplication::runOnAndroidMainThread([] {
+        QJniObject activity = QNativeInterface::QAndroidApplication::context();
+        QJniObject window = activity.callObjectMethod(
+            "getWindow", "()Landroid/view/Window;");
+        window.callMethod<void>("setDecorFitsSystemWindows", "(Z)V", false);
+    });
+#endif
+
     QQmlApplicationEngine engine;
 
     qmlRegisterSingletonInstance("Gobblet", 1, 0, "GameState", State::instance());

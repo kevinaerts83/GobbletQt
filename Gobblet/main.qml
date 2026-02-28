@@ -4,9 +4,8 @@ import Gobblet 1.0
 
 ApplicationWindow {
     visible: true
-    width: 1500
-    height: 800
     title: "Gobblet"
+    visibility: Window.FullScreen
 
     StackView {
         id: stackView
