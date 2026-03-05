@@ -219,7 +219,8 @@ bool Mediator::isValidMove(int oldTile, int newTile) {
     return false;
 }
 
-void Mediator::updateDepthOfGobblers(int x, int z) {
+
+void Mediator::updateDepthOfGobblersOldState() {
     for (const auto &item : std::as_const(m_list)) {
         if (item->depth() > getSelection()->depth() &&
             item->x3d() == getSelection()->x3d() &&
@@ -227,12 +228,20 @@ void Mediator::updateDepthOfGobblers(int x, int z) {
 
             item->setDepth(item->depth() - 1);
         }
+    }
+}
 
-        if (item->x3d() == x && item->z3d() == z) {
+void Mediator::updateDepthOfGobblersNewState() {
+    for (const auto &item : std::as_const(m_list)) {
+        if (item != getSelection() &&
+            item->x3d() == getSelection()->x3d() &&
+            item->z3d() == getSelection()->z3d()) {
+
             item->setDepth(item->depth() + 1);
         }
     }
 }
+
 void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
     if (getSelection() == nullptr) {
         std::cout << "An error occurred: " << oldTile << " - " << newTile
@@ -245,7 +254,7 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
         m_state[getSelection()->isWhite()][getSelection()->size()] ^= (1 << oldTile);
     }
 
-    updateDepthOfGobblers(x, z);
+    updateDepthOfGobblersOldState();
 
     if (oldTile == -1 || oldTile > MAX_TILE_INDEX) {
         double a = static_cast<double>(x);
@@ -267,6 +276,51 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
 
     myNewTile = newTile;
     timer->start(TIMER_VALUE);
+}
+
+void Mediator::updateGobbler() {
+    m_comm->setLock(true);
+
+    int x = getSelection()->x3d();
+    int y = getSelection()->y3d();
+    int z = getSelection()->z3d();
+
+    if (newX != x) {
+        if (newX < x) {
+            x -= (x < (newX + SPEED)) ? (x - newX) : SPEED;
+        } else {
+            x += (x > (newX - SPEED)) ? (newX - x) : SPEED;
+        }
+    }
+
+    if (newZ != z) {
+        if (newZ < z) {
+            z -= (z < (newZ + SPEED)) ? (z - newZ) : SPEED;
+        } else {
+            z += (z > (newZ - SPEED)) ? (newZ - z) : SPEED;
+        }
+    }
+
+
+    if (x == newX && z == newZ) {
+        y += (y > (newY - SPEED)) ? (newY - y) : SPEED;
+    } else {
+        if (y > -200) {
+            y -= SPEED * 2;
+        }
+    }
+
+    getSelection()->setX3d(x);
+    getSelection()->setY3d(y);
+    getSelection()->setZ3d(z);
+
+    repaint();
+
+    if (x == newX && y == newY && z == newZ) {
+        timer->stop();
+        updateDepthOfGobblersNewState();
+        afterAnimation();
+    }
 }
 
 void Mediator::afterAnimation() {
@@ -332,50 +386,6 @@ void Mediator::resetItems(double width, double height) {
     for (const auto &item : std::as_const(m_list)) {
         item->setWidth(width);
         item->setHeight(height);
-    }
-}
-
-void Mediator::updateGobbler() {
-    m_comm->setLock(true);
-
-    int x = getSelection()->x3d();
-    int y = getSelection()->y3d();
-    int z = getSelection()->z3d();
-
-    if (newX != x) {
-        if (newX < x) {
-            x -= (x < (newX + SPEED)) ? (x - newX) : SPEED;
-        } else {
-            x += (x > (newX - SPEED)) ? (newX - x) : SPEED;
-        }
-    }
-
-    if (newZ != z) {
-        if (newZ < z) {
-            z -= (z < (newZ + SPEED)) ? (z - newZ) : SPEED;
-        } else {
-            z += (z > (newZ - SPEED)) ? (newZ - z) : SPEED;
-        }
-    }
-
-
-    if (x == newX && z == newZ) {
-        y += (y > (newY - SPEED)) ? (newY - y) : SPEED;
-    } else {
-        if (y > -200) {
-            y -= SPEED * 2;
-        }
-    }
-
-    getSelection()->setX3d(x);
-    getSelection()->setY3d(y);
-    getSelection()->setZ3d(z);
-
-    repaint();
-
-    if (x == newX && y == newY && z == newZ) {
-        timer->stop();
-        afterAnimation();
     }
 }
 

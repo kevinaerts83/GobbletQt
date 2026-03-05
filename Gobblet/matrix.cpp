@@ -101,6 +101,16 @@ void Matrix::getScalingMatrix(double result [4][4])
     }
 }
 
+void Matrix::getInverseScalingMatrix(double result [4][4])
+{
+    double init [4][4] = {{m_inverseZoom, 0, 0, 0}, {0, m_inverseZoom, 0, 0}, {0, 0, m_inverseZoom, 0}, {0, 0, 0, 1.0}};
+    for(int i = 0; i < 4; i += 1) {
+        for(int j = 0; j < 4; j += 1) {
+            result[i][j] = init[i][j];
+        }
+    }
+}
+
 void Matrix::getRotationMatrix(double result [4][4])
 {
     double angleX = m_xangle * M_PI / 180,
@@ -152,12 +162,9 @@ void Matrix::get3dPoint(double result [4], const double x, const double y, bool 
     QVector<double> point = {rtx, rty, rtz, 1};
 
     // reverse zoom
-    double zoom = m_zoom;
-    m_zoom = 1 / zoom;
     double scalingMatrix [4][4];
-    this->getScalingMatrix(scalingMatrix);
+    this->getInverseScalingMatrix(scalingMatrix);
     point = this->MultiplyPointAndMatrix(point, scalingMatrix);
-    m_zoom = zoom;
 
     // reverse rotation
     double rotationMatrix [4][4];
@@ -200,6 +207,7 @@ void Matrix::setYangle(const double &yangle)
 void Matrix::setZoom(const double &zoom)
 {
     m_zoom = zoom;
+    m_inverseZoom = 1 / zoom;
 }
 
 void Matrix::setVertical(const bool &vertical)

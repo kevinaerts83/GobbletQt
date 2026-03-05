@@ -25,6 +25,7 @@ public:
     void getTranslationMatrix(double x, double y, double z, double result [4][4]);
     void getInverseTranslationMatrix(double result [4][4]);
     void getScalingMatrix(double result [4][4]);
+    void getInverseScalingMatrix(double result [4][4]);
     void getRotationMatrix(double result [4][4]);
     void getRotateXMatrix(double result [4][4]);
     void getTransposedMatrix(double matrix [4][4], double result [4][4]);
@@ -51,6 +52,7 @@ private:
     double m_xangle = 50;
     double m_yangle = 0;
     double m_zoom = 1;
+    double m_inverseZoom = 1;
     bool m_vertical = true;
 
 signals:

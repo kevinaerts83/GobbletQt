@@ -54,70 +54,64 @@ Page {
         anchors.fill: parent
         color: "transparent"
 
-        property real scaleValue: 1.0
-        property int lastCrossedThresholdX: 0
-        property int lastCrossedThresholdY: 0
+        QtObject {
+            id: camera
 
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
+            property real zoom: matrix.zoom
+            property real xAngle: matrix.xangle
+            property real yAngle: matrix.yangle
 
-            }
-            onPressed: (mouse)=> {
-                if (!Mediator.onClick(mouse.x, mouse.y)) {
-                    errorLabel.text = "Place on an empty square or block a possible win!"
-                } else {
-                    errorLabel.text = ""
-                }
-            }
-        }
-
-        PinchHandler {
-            id: pinchHandler
-
-            // Update the scale value based on pinch
-            onScaleChanged: {
-                gameArea.scaleValue = scale
-                gameArea.scaleValue = gameArea.scaleValue > 1.3 ? 1.3 : gameArea.scaleValue < 0.5 ? 0.5 : gameArea.scaleValue
-                matrix.zoom = gameArea.scaleValue
+            function apply() {
+                matrix.zoom = zoom
+                matrix.xangle = xAngle
+                matrix.yangle = yAngle
                 Mediator.repaint()
             }
         }
 
-        DragHandler {
-            id: dragHandler
+        MouseArea {
+            anchors.fill: parent
+
+            onPressed: (mouse)=> {
+                if (!Mediator.onClick(mouse.x, mouse.y))
+                    errorLabel.text = "Place on an empty square or block a possible win!"
+                else
+                    errorLabel.text = ""
+            }
+        }
+
+        PinchHandler {
+            id: pinch
             target: null
 
+            property real startZoom: 1.0
+
             onActiveChanged: {
-                if (!dragHandler.active) {
-                    gameArea.lastCrossedThresholdX = 0
-                    gameArea.lastCrossedThresholdY = 0
-                }
+                if (active)
+                    startZoom = camera.zoom
             }
 
+            onScaleChanged: {
+                let newZoom = startZoom * scale
+                camera.zoom = Math.max(0.5, Math.min(1.3, newZoom))
+                camera.apply()
+            }
+        }
+
+        DragHandler {
+            id: drag
+            target: null
+
+            property real sensitivity: 0.3
+
             onTranslationChanged: {
-                const oldX = Math.floor(dragHandler.centroid.position.x / 30)
-                if (oldX != gameArea.lastCrossedThresholdX) {
-                    matrix.yangle += (oldX < gameArea.lastCrossedThresholdX) ? 10 : -10
-                    Mediator.repaint()
-                    gameArea.lastCrossedThresholdX = oldX
-                }
 
-                const oldY = Math.floor(dragHandler.centroid.position.y / 30)
-                if (oldY != gameArea.lastCrossedThresholdY) {
+                camera.yAngle -= translation.x * sensitivity
 
-                    const newAngle = (oldY > gameArea.lastCrossedThresholdY) ? 10 : -10
-                    if ((matrix.xangle + newAngle) < 5) {
-                        matrix.xangle += 3
-                    } else if ((matrix.xangle + newAngle) > 90) {
-                        matrix.xangle -= 10
-                    } else {
-                        matrix.xangle += newAngle
-                    }
+                let newAngle = camera.xAngle + translation.y * sensitivity
+                camera.xAngle = Math.max(5, Math.min(90, newAngle))
 
-                    Mediator.repaint()
-                    gameArea.lastCrossedThresholdY = oldY
-                }
+                camera.apply()
             }
         }
     }
