@@ -1,9 +1,11 @@
 #include "chatclient.h"
 
 #include <QLowEnergyDescriptor>
+#include <QTimer>
 #include <QDebug>
 #include <QtBluetooth/qlowenergyadvertisingparameters.h>
 #include <QtBluetooth/qlowenergycharacteristicdata.h>
+#include <QtBluetooth/qlowenergydescriptordata.h>
 #include <QtBluetooth/qlowenergyservicedata.h>
 
 ChatClient::ChatClient(QObject *parent)
@@ -44,6 +46,7 @@ void ChatClient::cleanupController()
         peripheral = nullptr;
     }
 
+    serviceObjectCreated = false;
     rxChar = QLowEnergyCharacteristic();
     txChar = QLowEnergyCharacteristic();
 }
@@ -83,6 +86,9 @@ void ChatClient::startClient(const QBluetoothDeviceInfo &deviceInfo,
                     QStringLiteral("Controller error: %1").arg(error));
             });
 
+    connect(central, &QLowEnergyController::discoveryFinished,
+            this, &ChatClient::serviceScanFinished);
+
     central->connectToDevice();
 }
 
@@ -100,6 +106,13 @@ void ChatClient::startClientPeripheral()
     txData.setProperties(QLowEnergyCharacteristic::Notify);
     txData.setValue(QByteArray());
 
+    QLowEnergyDescriptorData ccc(
+        QBluetoothUuid::DescriptorType::ClientCharacteristicConfiguration,
+        QByteArray(2, 0x00)
+        );
+
+    txData.addDescriptor(ccc);
+
     QLowEnergyServiceData serviceData;
     serviceData.setType(QLowEnergyServiceData::ServiceTypePrimary);
     serviceData.setUuid(reverseServiceUuid);
@@ -114,7 +127,7 @@ void ChatClient::startClientPeripheral()
     advertisingData.setDiscoverability(
         QLowEnergyAdvertisingData::DiscoverabilityGeneral
         );
-    advertisingData.setServices({ serviceUuid });
+    advertisingData.setServices({ reverseServiceUuid });
 
     // Keep advertising packet small!
     QLowEnergyAdvertisingData scanResponseData;
@@ -122,7 +135,7 @@ void ChatClient::startClientPeripheral()
 
     peripheral->startAdvertising(QLowEnergyAdvertisingParameters(), advertisingData, scanResponseData);
 
-    qDebug() << "[ChatClient] Client peripheral advertising" << serviceUuid.toString();
+    qDebug() << "[ChatClient] Client peripheral advertising" << reverseServiceUuid.toString();
 }
 
 
@@ -173,8 +186,7 @@ void ChatClient::serviceDiscovered(const QBluetoothUuid &uuid)
 
     connect(centralService, &QLowEnergyService::characteristicChanged,
             this, [](const QLowEnergyCharacteristic &c, const QByteArray &v) {
-                qDebug() << "[ChatClient] Write confirmed:"
-                         << c.uuid() << v;
+                qDebug() << "[ChatClient] Notification received:" << c.uuid() << v;
             });
 
     connect(centralService, &QLowEnergyService::errorOccurred,
@@ -219,7 +231,7 @@ void ChatClient::serviceStateChanged(QLowEnergyService::ServiceState newState)
         return;
     }
 
-    startClientPeripheral();
+    QTimer::singleShot(500, this, &ChatClient::startClientPeripheral);
 
     qDebug() << "[ChatClient] Service details discovered";
     qDebug() << "[ChatClient] Available characteristics:";

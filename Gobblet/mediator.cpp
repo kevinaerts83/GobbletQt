@@ -233,7 +233,7 @@ void Mediator::updateDepthOfGobblersOldState() {
 
 void Mediator::updateDepthOfGobblersNewState() {
     for (const auto &item : std::as_const(m_list)) {
-        if (item != getSelection() &&
+        if (item->size() != getSelection()->size() &&
             item->x3d() == getSelection()->x3d() &&
             item->z3d() == getSelection()->z3d()) {
 

@@ -4,14 +4,13 @@
 #include <vector>
 #include <algorithm>
 #include <random>
-// include <bitset>
-#include <chrono>
 
 AI::AI(int level) {
     m_level = level;
     std::vector<int> sequence { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::shuffle(sequence.begin(), sequence.end(), std::default_random_engine(seed));
+
+    std::mt19937 rng(std::random_device{}());
+    std::shuffle(sequence.begin(), sequence.end(), rng);
 
     for (int i = 0; i < 10; i++) {
         m_randomMaskSequence[i] = sequence[i];

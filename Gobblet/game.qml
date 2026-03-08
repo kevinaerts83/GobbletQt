@@ -57,9 +57,15 @@ Page {
         QtObject {
             id: camera
 
-            property real zoom: matrix.zoom
-            property real xAngle: matrix.xangle
-            property real yAngle: matrix.yangle
+            property real zoom: 1
+            property real xAngle: 0
+            property real yAngle: 0
+
+            Component.onCompleted: {
+                zoom = matrix.zoom
+                xAngle = matrix.xangle
+                yAngle = matrix.yangle
+            }
 
             function apply() {
                 matrix.zoom = zoom
@@ -102,7 +108,7 @@ Page {
             id: drag
             target: null
 
-            property real sensitivity: 0.3
+            property real sensitivity: 0.05
 
             onTranslationChanged: {
 

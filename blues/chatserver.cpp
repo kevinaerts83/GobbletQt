@@ -6,6 +6,7 @@
 #include <QLowEnergyServiceData>
 #include <qlowenergydescriptordata.h>
 
+#include <QTimer>
 #include <QDebug>
 #include <QCoreApplication>
 #include <QBluetoothDeviceDiscoveryAgent>
@@ -46,8 +47,8 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
     connect(controller, &QLowEnergyController::stateChanged,
             this, &ChatServer::onConnectionStateChanged);
 
-    connect(controller, &QLowEnergyController::connected,
-            this, &ChatServer::startCentral);
+    // connect(controller, &QLowEnergyController::connected,
+    //        this, &ChatServer::startCentral);
 
     connect(controller, &QLowEnergyController::errorOccurred,
             this, [this](QLowEnergyController::Error error) {
@@ -239,7 +240,9 @@ void ChatServer::startCentral() {
         connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
                 this, &ChatServer::onDeviceDiscovered);
 
-        discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
+        QTimer::singleShot(500, this, [this]() {
+            discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
+        });
     }
 }
 
@@ -249,16 +252,17 @@ void ChatServer::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
         return;
     }
 
-    if (!info.name().contains("Gobblet", Qt::CaseInsensitive)) {
+    if (info.name().contains("Gobblet", Qt::CaseInsensitive) || info.serviceUuids().contains(reverseServiceUuid)) {
+        qDebug() << "[Server-Central] Found peer peripheral:" << info.name();
+    } else {
         qDebug() << "Ignore device:" << info.name();
         return;
-    } else {
-        qDebug() << "[Server-Central] Found peer peripheral:" << info.name();
     }
 
-    discoveryAgent->stop();
-
     // Connect as CENTRAL to the client peripheral
+    discoveryAgent->stop();
+    discoveryAgent->deleteLater();
+    discoveryAgent = nullptr;
     centralController = QLowEnergyController::createCentral(info, this);
 
     connect(centralController, &QLowEnergyController::connected, this, [this]() {
