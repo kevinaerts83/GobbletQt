@@ -231,12 +231,9 @@ void Mediator::updateDepthOfGobblersOldState() {
     }
 }
 
-void Mediator::updateDepthOfGobblersNewState() {
+void Mediator::updateDepthOfGobblersNewState(int x, int z) {
     for (const auto &item : std::as_const(m_list)) {
-        if (item->size() != getSelection()->size() &&
-            item->x3d() == getSelection()->x3d() &&
-            item->z3d() == getSelection()->z3d()) {
-
+        if (item->size() != getSelection()->size() && item->x3d() == x && item->z3d() == z) {
             item->setDepth(item->depth() + 1);
         }
     }
@@ -244,8 +241,7 @@ void Mediator::updateDepthOfGobblersNewState() {
 
 void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
     if (getSelection() == nullptr) {
-        std::cout << "An error occurred: " << oldTile << " - " << newTile
-                  << std::endl;
+        // std::cout << "An error occurred: " << oldTile << " - " << newTile << std::endl;
         // writeLog();
         return;
     }
@@ -314,13 +310,13 @@ void Mediator::updateGobbler() {
     getSelection()->setY3d(y);
     getSelection()->setZ3d(z);
 
-    repaint();
-
     if (x == newX && y == newY && z == newZ) {
         timer->stop();
-        updateDepthOfGobblersNewState();
+        updateDepthOfGobblersNewState(boardX, boardZ);
         afterAnimation();
     }
+
+    repaint();
 }
 
 void Mediator::afterAnimation() {
