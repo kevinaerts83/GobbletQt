@@ -3,5 +3,6 @@
         <file>main.qml</file>
         <file>menu.qml</file>
         <file>game.qml</file>
+        <file>HumanIcon.qml</file>
     </qresource>
 </RCC>

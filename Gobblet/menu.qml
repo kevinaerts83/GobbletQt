@@ -31,52 +31,14 @@ Page {
 
             Rectangle {
                 Layout.preferredWidth: menu.width * 0.45
-                Layout.preferredHeight: 250
+                Layout.preferredHeight: menu.height * 0.5
                 color: "transparent"
 
-                // Canvas for additional details
-                Canvas {
-                    anchors.fill: parent
-
-                    onPaint: {
-                        var ctx = getContext("2d");
-                        ctx.clearRect(0, 0, width, height);
-                        // Draw additional body and head shape details
-                        drawFigure(ctx, "#9F9F9F", width / 2 - 30, height / 2 - 68, 1.3 + width / 4000);
-                    }
-
-                    // Simplified drawFigure function focusing on details
-                    function drawFigure(ctx, color, ox, oy, zoom) {
-                        var gradient1 = ctx.createRadialGradient(37.7 * zoom + ox, 55.6 * zoom + oy, 0.0, 37.7 * zoom + ox, 55.6 * zoom + oy, 46.1);
-                        gradient1.addColorStop(0.00, "white");
-                        gradient1.addColorStop(1.00, color);
-
-                        var gradient2 = ctx.createRadialGradient(37.7 * zoom + ox, 15.3 * zoom + oy, 0.0, 37.6 * zoom + ox, 15.3 * zoom + oy, 31.1);
-                        gradient2.addColorStop(0.00, "white");
-                        gradient2.addColorStop(1.00, color);
-
-                        // Draw the main body shape
-                        ctx.beginPath();
-                        ctx.moveTo(73.1 * zoom + ox, 83.6 * zoom + oy);
-                        ctx.bezierCurveTo(71.7 * zoom + ox, 102.1 * zoom + oy, 52.2 * zoom + ox, 105.2 * zoom + oy, 37.4 * zoom + ox, 105.2 * zoom + oy);
-                        ctx.bezierCurveTo(22.5 * zoom + ox, 105.2 * zoom + oy, 3.0 * zoom + ox, 102.1 * zoom + oy, 1.6 * zoom + ox, 83.6 * zoom + oy);
-                        ctx.bezierCurveTo(0.1 * zoom + ox, 62.7 * zoom + oy, 14.0 * zoom + ox, 35.3 * zoom + oy, 37.4 * zoom + ox, 35.3 * zoom + oy);
-                        ctx.bezierCurveTo(60.8 * zoom + ox, 35.3 * zoom + oy, 74.7 * zoom + ox, 62.7 * zoom + oy, 73.1 * zoom + ox, 83.6 * zoom + oy);
-                        ctx.closePath();
-                        ctx.fillStyle = gradient1;
-                        ctx.fill();
-
-                        // Draw the head shape
-                        ctx.beginPath();
-                        ctx.moveTo(61.2 * zoom + ox, 25.3 * zoom + oy);
-                        ctx.bezierCurveTo(61.2 * zoom + ox, 38.4 * zoom + oy, 50.5 * zoom + ox, 49.1 * zoom + oy, 37.4 * zoom + ox, 49.1 * zoom + oy);
-                        ctx.bezierCurveTo(24.2 * zoom + ox, 49.1 * zoom + oy, 13.6 * zoom + ox, 38.4 * zoom + oy, 13.6 * zoom + ox, 25.3 * zoom + oy);
-                        ctx.bezierCurveTo(13.6 * zoom + ox, 12.1 * zoom + oy, 24.2 * zoom + ox, 1.5 * zoom + oy, 37.4 * zoom + ox, 1.5 * zoom + oy);
-                        ctx.bezierCurveTo(50.5 * zoom + ox, 1.5 * zoom + oy, 61.2 * zoom + ox, 12.1 * zoom + oy, 61.2 * zoom + ox, 25.3 * zoom + oy);
-                        ctx.closePath();
-                        ctx.fillStyle = gradient2;
-                        ctx.fill();
-                    }
+                HumanIcon {
+                    anchors.centerIn: parent
+                    width: parent.width
+                    height: parent.height
+                    figureColor: "#0A64D6"
                 }
             }
 

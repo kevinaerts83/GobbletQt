@@ -1,73 +1,78 @@
 import QtQuick
+import QtQuick.Shapes
 
-/*
-Reusable BluetoothIcon component
-*/
 Item {
     id: root
-    // Public properties
     property color btColor: "#0A64D6"
 
-    // Canvas draws the icon
-    Canvas {
-        id: canvas
+    property real minSide: Math.min(width, height)
+    property real symScale: ((minSide / 2) - minSide * 0.08) * 1.05
+    property real barWidth: Math.max(2, symScale * 0.18)
+    property real symHeight: symScale * 1.6
+
+    property real cx: width / 2
+    property real cy: height / 2
+
+    Shape {
         anchors.fill: parent
-        onPaint: {
-            var ctx = getContext("2d");
-            var w = width;
-            var h = height;
+        preferredRendererType: Shape.CurveRenderer
 
-            // Clear canvas
-            ctx.reset();
-            ctx.clearRect(0, 0, w, h);
-            ctx.imageSmoothingEnabled = true;
+        // Vertical bar
+        ShapePath {
+            strokeWidth: 0
+            fillColor: root.btColor
 
-            // Center and sizing
-            var cx = w / 2;
-            var cy = h / 2;
-            var minSide = Math.min(w, h);
-            // Draw bluetooth symbol in blue.
-            // Coordinates defined relative to radius to scale nicely.
-            var symScale = ((minSide / 2) - minSide * 0.08) * 1.05;        // overall symbol scale
-            var barWidth = Math.max(2, symScale * 0.18);   // vertical bar thickness
-            var symHeight = symScale * 1.6;      // vertical extent of symbol
+            startX: root.cx - root.barWidth/2
+            startY: root.cy - root.symHeight/2
 
-            // central vertical bar
-            ctx.beginPath();
-            ctx.rect(cx - (barWidth/2), cy - (symHeight/2), barWidth, symHeight);
-            ctx.fillStyle = btColor;
-            ctx.fill();
-
-            // Function to draw a "rune" triangle shape (upper and lower) that creates the Bluetooth rune look
-            function drawRune(yOffsetSign) {
-                // yOffsetSign: -1 for upper rune, +1 for lower rune
-                var top = cy + (yOffsetSign * -symHeight * 0.47);
-                var mid = cy + (yOffsetSign * symHeight * 0.25);
-                var outerX = cx + symScale * 0.42 * (yOffsetSign === -1 ? 1 : 1); // sticks to the right
-                var innerX = cx - symScale * 0.42;
-
-                ctx.beginPath();
-                ctx.moveTo(cx, top - (2 * yOffsetSign));
-                ctx.lineTo(outerX, cy + (yOffsetSign * -symHeight * 0.25));
-                ctx.lineTo(innerX, mid);
-                ctx.strokeStyle = btColor;
-                ctx.lineWidth = barWidth - 1;
-                ctx.stroke();
-            }
-
-            // Upper rune
-            drawRune(-1);
-
-            // Lower rune
-            drawRune(1);
+            PathLine { x: root.cx + root.barWidth/2; y: root.cy - root.symHeight/2 }
+            PathLine { x: root.cx + root.barWidth/2; y: root.cy + root.symHeight/2 }
+            PathLine { x: root.cx - root.barWidth/2; y: root.cy + root.symHeight/2 }
+            PathLine { x: root.cx - root.barWidth/2; y: root.cy - root.symHeight/2 }
         }
 
-        // Request paint on resize
-        onWidthChanged: requestPaint()
-        onHeightChanged: requestPaint()
-        Component.onCompleted: requestPaint()
-    }
+        // Upper rune
+        ShapePath {
+            strokeColor: root.btColor
+            strokeWidth: root.barWidth - 1
+            fillColor: "transparent"
+            capStyle: ShapePath.RoundCap
+            joinStyle: ShapePath.RoundJoin
 
-    // Ensure the Canvas repaints when properties change
-    onBtColorChanged: canvas.requestPaint()
+            startX: root.cx
+            startY: root.cy - root.symHeight * 0.47 - 2
+
+            PathLine {
+                x: root.cx + root.symScale * 0.42
+                y: root.cy - root.symHeight * 0.25
+            }
+
+            PathLine {
+                x: root.cx - root.symScale * 0.42
+                y: root.cy + root.symHeight * 0.25
+            }
+        }
+
+        // Lower rune
+        ShapePath {
+            strokeColor: root.btColor
+            strokeWidth: root.barWidth - 1
+            fillColor: "transparent"
+            capStyle: ShapePath.RoundCap
+            joinStyle: ShapePath.RoundJoin
+
+            startX: root.cx
+            startY: root.cy + root.symHeight * 0.47 + 2
+
+            PathLine {
+                x: root.cx + root.symScale * 0.42
+                y: root.cy + root.symHeight * 0.25
+            }
+
+            PathLine {
+                x: root.cx - root.symScale * 0.42
+                y: root.cy - root.symHeight * 0.25
+            }
+        }
+    }
 }
