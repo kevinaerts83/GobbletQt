@@ -55,6 +55,9 @@ qt_add_qml_module(Gobblet
         scanblues.qml
         BluetoothIcon.qml
         HumanIcon.qml
+        ComputerIcon.qml
+        PlayIcon.qml
+        EyesIcon.qml
     RESOURCES qml.qrc
     NO_RESOURCE_TARGET_PATH
 )

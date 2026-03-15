@@ -4,5 +4,8 @@
         <file>menu.qml</file>
         <file>game.qml</file>
         <file>HumanIcon.qml</file>
+        <file>ComputerIcon.qml</file>
+        <file>PlayIcon.qml</file>
+        <file>EyesIcon.qml</file>
     </qresource>
 </RCC>
