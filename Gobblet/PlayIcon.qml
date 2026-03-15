@@ -3,31 +3,37 @@ import QtQuick.Shapes
 
 Item {
     id: root
-    property real s: Math.min(width, height)
 
-    Shape {
-        anchors.fill: parent
+    Item {
+        id: designLayer
+        anchors.centerIn: parent
+        scale: Math.min(parent.width, parent.height) / 150
 
-        ShapePath {
-            fillColor: "white"
-            strokeWidth: 0
+        Shape {
+            anchors.fill: parent
+            preferredRendererType: Shape.CurveRenderer
 
-            startX: root.s/3 + 5
-            startY: root.s/4
+            ShapePath {
+                fillColor: "white"
+                strokeWidth: 0
 
-            PathLine {
-                x: root.s/3 + 5
-                y: root.s*3/4
-            }
+                startX: -27
+                startY: 45
 
-            PathLine {
-                x: root.s*2/3 + 5
-                y: root.s/2
-            }
+                PathLine {
+                    x: 43
+                    y: 0
+                }
 
-            PathLine {
-                x: root.s/3 + 5
-                y: root.s/4
+                PathLine {
+                    x: -27
+                    y: -45
+                }
+
+                PathLine {
+                    x: -27
+                    y: 45
+                }
             }
         }
     }

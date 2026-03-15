@@ -2,43 +2,48 @@ import QtQuick
 
 Item {
     id: root
-    property real s: Math.min(width, height)
 
-    // Left eye
-    Rectangle {
-        width: root.s/5
-        height: root.s/5
-        radius: width/2
-        color: "black"
-        x: root.s/3 - width/2
-        y: root.s/3 - height/2
-    }
+    Item {
+        id: designLayer
+        anchors.centerIn: parent
+        scale: Math.min(parent.width, parent.height) / 100
 
-    Rectangle {
-        width: root.s/10
-        height: root.s/10
-        radius: width/2
-        color: "white"
-        x: root.s/3 + 3 - width/2
-        y: root.s/3 + 3 - height/2
-    }
+        // Left eye
+        Rectangle {
+            width: 30
+            height: 30
+            radius: 15
+            color: "black"
+            x: -40
+            y: -30
+        }
 
-    // Right eye
-    Rectangle {
-        width: root.s/5
-        height: root.s/5
-        radius: width/2
-        color: "black"
-        x: root.s*2/3 - width/2
-        y: root.s/3 - height/2
-    }
+        Rectangle {
+            width: 12
+            height: 12
+            radius: 6
+            color: "white"
+            x: -27
+            y: -17
+        }
 
-    Rectangle {
-        width: root.s/10
-        height: root.s/10
-        radius: width/2
-        color: "white"
-        x: root.s*2/3 + 3 - width/2
-        y: root.s/3 + 3 - height/2
+        // Right eye
+        Rectangle {
+            width: 30
+            height: 30
+            radius: 15
+            color: "black"
+            x: 5
+            y: -30
+        }
+
+        Rectangle {
+            width: 12
+            height: 12
+            radius: 6
+            color: "white"
+            x: 18
+            y: -17
+        }
     }
 }

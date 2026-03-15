@@ -63,32 +63,16 @@ Page {
             Layout.preferredWidth: menu.width * 0.1
 
             Rectangle {
-                Layout.preferredWidth: Math.max(Math.min(menu.width, menu.height) / 8, 50)
-                Layout.preferredHeight: Math.max(Math.min(menu.width, menu.height) / 8, 50)
-                radius: Math.min(menu.width, menu.height) / 16  // Make it circular
+                id: playButton
+                Layout.preferredWidth: Math.min(menu.width * 0.1, menu.height * 0.14)
+                Layout.preferredHeight: width
+                radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
 
                 PlayIcon {
-                    width: 80
-                    height: 80
-                }
-                // Play Icon (Triangle) in the middle
-                Canvas {
-                    anchors.fill: parent
-                    onPaint: {
-                        var ctx = getContext("2d");
-                        ctx.clearRect(0, 0, height, height);
-
-                        // Draw triangle (white play symbol)
-                        ctx.beginPath();
-                        ctx.moveTo(height / 3 + 5, height / 4);
-                        ctx.lineTo(height / 3 + 5, height * 3 / 4);
-                        ctx.lineTo(height * 2 / 3 + 5, height / 2);
-                        ctx.closePath();
-
-                        ctx.fillStyle = "white";
-                        ctx.fill();
-                    }
+                    anchors.centerIn: parent
+                    width: parent.width
+                    height: parent.height
                 }
 
                 MouseArea {
@@ -104,39 +88,16 @@ Page {
             }
 
             Rectangle {
-                Layout.preferredWidth: Math.max(Math.min(menu.width, menu.height) / 8, 50)
-                Layout.preferredHeight: Math.max(Math.min(menu.width, menu.height) / 8, 50)
-                radius: Math.min(menu.width, menu.height) / 16  // Make it circular
+                Layout.preferredWidth: Math.min(menu.width * 0.1, menu.height * 0.14)
+                Layout.preferredHeight: width
+                radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
-                //visible: { stackView.depth > 1 }
+                visible: { stackView.depth > 1 }
 
                 EyesIcon {
-                    width: 80
-                    height: 80
-                }
-
-                // Eyes
-                Canvas {
-                    anchors.fill: parent
-                    onPaint: {
-                        var ctx = getContext("2d");
-                        ctx.clearRect(0, 0, height, height);
-
-                        var eyeLeft = [height / 3, height / 3 + 3, height * 2 / 3, height * 2 / 3 + 3];
-                        var eyeTop = [height / 3, height / 3 + 3, height / 3, height / 3 + 3];
-                        var eyeRadius = [height / 10, height / 20, height / 10, height / 20];
-
-                        for (var i = 0; i < 4; i++) {
-                            ctx.beginPath();
-                            ctx.arc(eyeLeft[i], eyeTop[i], eyeRadius[i], 0, 2 * Math.PI);
-                            ctx.fillStyle = i % 2 === 0 ? 'black' : 'white';
-                            ctx.fill();
-                            ctx.closePath();
-                        }
-
-                        ctx.fillStyle = "white";
-                        ctx.fill();
-                    }
+                    anchors.centerIn: parent
+                    width: parent.width
+                    height: parent.height
                 }
 
                 MouseArea {
@@ -148,17 +109,17 @@ Page {
             }
 
             Rectangle {
-                Layout.preferredWidth: Math.max(Math.min(menu.width, menu.height) / 8, 50)
-                Layout.preferredHeight: Math.max(Math.min(menu.width, menu.height) / 8, 50)
-                radius: Math.min(menu.width, menu.height) / 16  // Make it circular
+                Layout.preferredWidth: Math.min(menu.width * 0.1, menu.height * 0.14)
+                Layout.preferredHeight: width
+                radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
                 visible: GameState.mode === 0
                 id: serverBt
 
                 BluetoothIcon {
                     Layout.alignment: Qt.AlignCenter
-                    width: Math.max(Math.min(menu.width, menu.height) / 8, 50)
-                    height: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                    width: parent.width
+                    height: parent.height
                     btColor: "white"
                 }
 
@@ -176,17 +137,17 @@ Page {
             }
 
             Rectangle {
-                Layout.preferredWidth: Math.max(Math.min(menu.width, menu.height) / 8, 50)
-                Layout.preferredHeight: Math.max(Math.min(menu.width, menu.height) / 8, 50)
-                radius: Math.min(menu.width, menu.height) / 16  // Make it circular
+                Layout.preferredWidth: Math.min(menu.width * 0.1, menu.height * 0.14)
+                Layout.preferredHeight: width
+                radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
                 visible: GameState.mode === 0
                 id: clientBt
 
                 BluetoothIcon {
                     Layout.alignment: Qt.AlignCenter
-                    width: Math.max(Math.min(menu.width, menu.height) / 8, 50)
-                    height: Math.max(Math.min(menu.width, menu.height) / 8, 50)
+                    width: parent.width
+                    height: parent.height
                     btColor: "black"
                 }
 
@@ -204,9 +165,9 @@ Page {
             }
 
             Rectangle {
-                Layout.preferredWidth: Math.max(Math.min(menu.width, menu.height) / 8, 50)
-                Layout.preferredHeight: Math.max(Math.min(menu.width, menu.height) / 8, 50)
-                radius: Math.min(menu.width, menu.height) / 16  // Make it circular
+                Layout.preferredWidth: Math.min(menu.width * 0.1, menu.height * 0.14)
+                Layout.preferredHeight: width
+                radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
                 id: helpButton
                 // Eyes
@@ -263,7 +224,6 @@ Page {
                         onClicked: {
                             GameState.mode = GameState.mode + 1;
                             if (GameState.mode === 3) GameState.mode = 0;
-                            rightButton.requestPaint();
                             blackScore.text = GameState.blackCounter;
                             whiteScore.text = GameState.whiteCounter;
                         }
