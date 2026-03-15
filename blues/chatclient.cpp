@@ -209,19 +209,19 @@ void ChatClient::serviceScanFinished()
 
     serviceObjectCreated = true;
 
-    service = controller->createServiceObject(serviceUuid, this);
-    if (!service) {
+    centralService = central->createServiceObject(serviceUuid, this);
+    if (!centralService) {
         emit socketErrorOccurred("Failed to create service object");
         return;
     }
 
-    connect(service, &QLowEnergyService::stateChanged,
+    connect(centralService, &QLowEnergyService::stateChanged,
             this, &ChatClient::serviceStateChanged);
 
-    connect(service, &QLowEnergyService::characteristicChanged,
+    connect(centralService, &QLowEnergyService::characteristicChanged,
             this, &ChatClient::updateNotification);
 
-    service->discoverDetails();
+    centralService->discoverDetails();
 #endif
 }
 
