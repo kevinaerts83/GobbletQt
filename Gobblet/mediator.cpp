@@ -115,15 +115,15 @@ void Mediator::repaint() {
 
     for (int i = 0; i < m_list.size(); i++) {
         m_list[i]->setZ(i);
-    }
-    for (const auto& item : std::as_const(m_list)) {
-        if (item->depth() == 0 || item->isVisible()) {
-            if (!item->isVisible()) {
-                item->setVisible(true);
+
+        if (m_list[i]->depth() == 0 || m_list[i]->isVisible()) {
+            if (!m_list[i]->isVisible()) {
+                m_list[i]->setVisible(true);
             }
-            item->update();
+            m_list[i]->update();
         }
     }
+
 }
 
 bool Mediator::onClick(const double x, const double y) {

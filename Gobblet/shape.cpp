@@ -16,6 +16,12 @@ void Shape::paint(Matrix *matrix, Shape3d model, QPainter *painter)
     double translation [4][4];
     matrix->getInverseTranslationMatrix(translation);
 
+    double rotationMatrix [4][4];
+    matrix->getRotationMatrix(rotationMatrix);
+
+    double transposedMatrix [4][4];
+    matrix->getTransposedMatrix(rotationMatrix, transposedMatrix);
+
     bool board = model.faces.size() == 26;
     int shadePoints = board ? 0 : 8;
     QPolygon shadow;
@@ -25,12 +31,6 @@ void Shape::paint(Matrix *matrix, Shape3d model, QPainter *painter)
         points2d.append(matrix->ProjectPoint(matrix->MultiplyPointAndMatrix(model.cache[i], translation)));
         if (shadePoints > 0 && model.isSelected() && model.cache[0][2] > 0) {
             QVector<double> point ({model.cache[i][0], model.cache[i][1], model.cache[i][2], 1});
-
-            double rotationMatrix [4][4];
-            matrix->getRotationMatrix(rotationMatrix);
-
-            double transposedMatrix [4][4];
-            matrix->getTransposedMatrix(rotationMatrix, transposedMatrix);
 
             QVector<double> basePoint = matrix->MultiplyPointAndMatrix(point, transposedMatrix);
             QVector<double> newPoint ({basePoint[0], 0, basePoint[2], 1});

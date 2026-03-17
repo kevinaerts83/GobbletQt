@@ -4,13 +4,13 @@
 
 void Shape3d::Rotate(Matrix* matrix, double x, double y, double z) {
 
-    this->cache.clear();
+    this->cache.resize(points.size());
 
     double translation [4][4];
     matrix->getTranslationMatrix(x, y, z, translation);
 
     for (int i = 0; i < this->points.size(); i++) {
-        this->cache.append(matrix->MultiplyPointAndMatrix(this->points[i], translation));
+        this->cache[i] = matrix->MultiplyPointAndMatrix(this->points[i], translation);
     }
 
     // fill cache
