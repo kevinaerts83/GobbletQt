@@ -98,28 +98,17 @@ Page {
         color: "transparent"
         objectName: "meuButton"
 
-        // Canvas for additional details
-        Canvas {
-            anchors.fill: parent
+        Column {
+            anchors.centerIn: parent
+            spacing: 4
 
-            onPaint: {
-                // Draw additional body and head shape details
-                var ctx = getContext("2d");
-                ctx.clearRect(0, 0, width, height); // Clear previous drawings
-
-                ctx.fillStyle = "white";
-
-                // Define circle properties
-                var circleRadius = 3;
-                var centerX = width / 2;
-                var circleSpacing = 7; // Space between circles
-
-                // Draw three circles
-                for (var i = 0; i < 3; i++) {
-                    var centerY = 10 + i * circleSpacing;
-                    ctx.beginPath();
-                    ctx.arc(centerX, centerY, circleRadius, 0, 2 * Math.PI);
-                    ctx.fill();
+            Repeater {
+                model: 3
+                delegate: Rectangle {
+                    width: 6
+                    height: 6
+                    radius: 3
+                    color: "white"
                 }
             }
         }

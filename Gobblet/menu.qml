@@ -24,13 +24,12 @@ Page {
 
     RowLayout {
         anchors.centerIn: parent
-        spacing: menu.width / 10
 
         ColumnLayout {
             Layout.alignment: Qt.AlignCenter
 
             Rectangle {
-                Layout.preferredWidth: menu.width * 0.45
+                Layout.preferredWidth: menu.width * 0.40
                 Layout.preferredHeight: menu.height * 0.5
                 color: "transparent"
 
@@ -38,7 +37,8 @@ Page {
                     anchors.centerIn: parent
                     width: parent.width
                     height: parent.height
-                    figureColor: "#0A64D6"
+                    startColor: "white"
+                    stopColor: "#939393"
                 }
             }
 
@@ -60,11 +60,15 @@ Page {
 
         ColumnLayout {
             Layout.alignment: Qt.AlignCenter
-            Layout.preferredWidth: menu.width * 0.1
+
+            Rectangle {
+                Layout.preferredHeight: (2 * menu.height - 60) / 13
+                visible: { stackView.depth > 1 && GameState.mode === 0 }
+            }
 
             Rectangle {
                 id: playButton
-                Layout.preferredWidth: Math.min(menu.width * 0.1, menu.height * 0.14)
+                Layout.preferredWidth: (2 * menu.height - 60) / 13
                 Layout.preferredHeight: width
                 radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
@@ -88,7 +92,7 @@ Page {
             }
 
             Rectangle {
-                Layout.preferredWidth: Math.min(menu.width * 0.1, menu.height * 0.14)
+                Layout.preferredWidth: (2 * menu.height - 60) / 13
                 Layout.preferredHeight: width
                 radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
@@ -109,7 +113,7 @@ Page {
             }
 
             Rectangle {
-                Layout.preferredWidth: Math.min(menu.width * 0.1, menu.height * 0.14)
+                Layout.preferredWidth: (2 * menu.height - 60) / 13
                 Layout.preferredHeight: width
                 radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
@@ -137,7 +141,7 @@ Page {
             }
 
             Rectangle {
-                Layout.preferredWidth: Math.min(menu.width * 0.1, menu.height * 0.14)
+                Layout.preferredWidth: (2 * menu.height - 60) / 13
                 Layout.preferredHeight: width
                 radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
@@ -165,7 +169,7 @@ Page {
             }
 
             Rectangle {
-                Layout.preferredWidth: Math.min(menu.width * 0.1, menu.height * 0.14)
+                Layout.preferredWidth: (2 * menu.height - 60) / 13
                 Layout.preferredHeight: width
                 radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
@@ -196,7 +200,7 @@ Page {
             Layout.alignment: Qt.AlignCenter
 
             Rectangle {
-                Layout.preferredWidth: menu.width * 0.45
+                Layout.preferredWidth: menu.width * 0.40
                 Layout.preferredHeight: menu.height * 0.5
                 color: "transparent"
 
@@ -204,7 +208,8 @@ Page {
                     anchors.centerIn: parent
                     width: parent.width
                     height: parent.height
-                    figureColor: "#ACAFA0"
+                    startColor: "black"
+                    stopColor: "#ACAFA0"
                     visible: GameState.mode === 0
                 }
 

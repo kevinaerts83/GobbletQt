@@ -10,7 +10,7 @@ Item {
     Item {
         id: designLayer
         anchors.centerIn: parent
-        scale: Math.min(parent.width, parent.height) / 1100
+        scale: Math.min(parent.width, parent.height) / 600
 
         Shape {
             anchors.fill: parent
