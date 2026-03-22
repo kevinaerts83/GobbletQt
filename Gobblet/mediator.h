@@ -42,7 +42,7 @@ public slots:
     bool onClick(const double x, const double y);
 
     void onMessageReceived(const QString &from, const QString &msg);
-    void sendMessage(const QString &msg);
+    void sendMessage(const int oldTile, const int newTile);
 
 private slots:
     bool checkWinner(bool player);

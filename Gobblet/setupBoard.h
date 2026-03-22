@@ -59,6 +59,11 @@ public:
         if (state->isBlackTurn()) {
             m_mediator->startAi(true);
         }
+        if (state->mode() == 0 && state->user() > 0) {
+            bool inverse = ((state->whiteCounter() + state->blackCounter()) % 2) == 1;
+            bool serverWhite = state->user() == 1 && !(state->isBlackTurn());
+            m_mediator->m_comm->setLock(!(serverWhite ^ inverse));
+        }
     }
 
 private:

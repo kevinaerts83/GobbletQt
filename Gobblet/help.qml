@@ -83,7 +83,15 @@ Page {
             }
 
             Text {
-                text: "You’re playing White!\nGive the right-side player a click to pick your challenger:\ngreen for a relaxed game, red for a real brain-burner, or black for a human rival.\nGo back to the menu by clicking the 3 dots in the left corner."
+                text: "You’re playing White!\nGive the right-side player a click to pick your challenger:\ngreen for a relaxed game, red for a real brain-burner,\nor black for a human rival.\nIn human vs human, optionally use Bluetooth:\n- White taps the white icon to become discoverable,\n- Black taps the black icon to connect.\n- Once connected, both press play to start."
+                font.pixelSize: 18
+                wrapMode: Text.WordWrap
+                width: parent.width
+                color: "white"
+            }
+
+            Text {
+                text: "Go back to the menu by clicking the 3 dots in the left corner."
                 font.pixelSize: 18
                 wrapMode: Text.WordWrap
                 width: parent.width

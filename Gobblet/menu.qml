@@ -83,6 +83,7 @@ Page {
                     anchors.fill: parent
                     onClicked: {
                         GameState.lock = false;
+                        GameState.user = BluetoothManager.serverName ? 1 : (BluetoothManager.clientName ? 2 : 0);
                         while (stackView.depth > 1) {
                             stackView.pop();
                         }

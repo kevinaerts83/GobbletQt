@@ -11,6 +11,7 @@ class State : public QObject {
     Q_PROPERTY(int blackCounter READ blackCounter WRITE setBlackCounter NOTIFY blackCounterChanged)
     Q_PROPERTY(int mode READ mode WRITE setMode NOTIFY modeChanged)
     Q_PROPERTY(bool lock READ lock WRITE setLock NOTIFY lockChanged)
+    Q_PROPERTY(int user READ user WRITE setUser NOTIFY userChanged)
 
 public:
     static QObject* instance(QQmlEngine *engine = nullptr, QJSEngine *scriptEngine = nullptr);
@@ -57,11 +58,21 @@ public:
         }
     }
 
+    int user() const { return m_user; }
+
+    void setUser(int user) {
+        if (m_user != user) {
+            m_user = user;
+            emit userChanged(m_user);
+        }
+    }
+
 signals:
     void whiteCounterChanged(int);
     void blackCounterChanged(int);
     void modeChanged(int);
     void lockChanged(bool);
+    void userChanged(int);
 
 public slots:
     void whiteWon() {
@@ -78,6 +89,7 @@ private:
     explicit State(QObject *parent = nullptr);
 
     int m_mode = 0;
+    int m_user = 0;
     int m_whiteCounters[3] = {0, 0, 0};
     int m_blackCounters[3] = {0, 0, 0};
     bool m_lock = false;

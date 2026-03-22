@@ -162,8 +162,7 @@ bool Mediator::onClick(const double x, const double y) {
 
         updateState(roundX, coord[1], roundZ, oldTile, newTile);
         if (m_comm->mode() == 0) {
-            //bool isBlack = !m_comm->lock() && isBlackTurn();
-            sendMessage(QString("%1 %2").arg(oldTile < 0 ? (MAX_TILE_INDEX + 1) : oldTile).arg(newTile));
+            sendMessage(oldTile, newTile);
         }
     } else {
         int borderZ = getBorderZ(roundX, coord[2], roundZ);
@@ -186,10 +185,12 @@ void Mediator::onMessageReceived(const QString &from, const QString &msg)
     //}
 }
 
-void Mediator::sendMessage(const QString &msg)
+void Mediator::sendMessage(const int oldTile, const int newTile)
 {
-    if (m_manager)
+    if (m_manager) {
+        const QString &msg = QString("%1 %2").arg(oldTile < 0 ? (MAX_TILE_INDEX + getSelection()->size() + 1) : oldTile).arg(newTile);
         m_manager->sendMessage(msg);
+    }
 }
 
 bool Mediator::isValidMove(int oldTile, int newTile) {
@@ -357,11 +358,17 @@ void Mediator::afterAnimation() {
         }
     }
     if (!winner) {
-        bool aiTurn = getSelection()->isWhite();
+        bool blacksTurn = getSelection()->isWhite();
         setSelection(nullptr);
-        startAi(aiTurn);
+        startAi(blacksTurn);
 
-        m_comm->setLock(false);
+        if (m_comm->mode() == 0 && m_comm->user() > 0) { // BlueTooth
+            bool userIsWhite = m_comm->user() == 1;
+            m_comm->setLock(!(userIsWhite ^ blacksTurn));
+        }
+        else {
+            m_comm->setLock(false);
+        }
     }
 }
 

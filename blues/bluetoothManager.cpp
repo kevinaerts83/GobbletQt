@@ -129,7 +129,7 @@ void BluetoothManager::startServer()
     server->startServer(serviceUuid, rxCharUuid, txCharUuid, reverseServiceUuid, reverseRxCharUuid, reverseTxCharUuid);
     m_role = Role::Server;
 
-    setServerName("Gobblet Online");
+    setServerName("Bluetooth");
 }
 
 void BluetoothManager::stopServer()
