@@ -206,6 +206,8 @@ void Matrix::setYangle(const double &yangle)
 {
     if (!(yangle == m_yangle)) {
         m_yangle = yangle;
+        m_yangleSin = std::sin(qDegreesToRadians(m_yangle));
+        m_yangleCos = std::cos(qDegreesToRadians(m_yangle));
         emit yangleChanged(m_yangle);
     }
 }
@@ -226,3 +228,6 @@ void Matrix::setVertical(const bool &vertical)
         emit verticalChanged(m_vertical);
     }
 }
+
+double Matrix::yangleSin() const { return m_yangleSin; }
+double Matrix::yangleCos() const { return m_yangleCos; }

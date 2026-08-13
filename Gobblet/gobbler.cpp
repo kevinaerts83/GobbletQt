@@ -99,10 +99,7 @@ void Gobbler::calculateZIndex() {
     if (!model.isOnBoard() && y3d() == 0) {
         m_zIndex = m_matrix->isVertical() ? x3d() * -3 : z3d();
     } else {
-        double sinus = sin(qDegreesToRadians(m_matrix->yangle()));
-        double cosinus = cos(qDegreesToRadians(m_matrix->yangle()));
-
-        m_zIndex = x3d() * sinus + z3d() * cosinus;
+        m_zIndex = x3d() * m_matrix->yangleSin() + z3d() * m_matrix->yangleCos();
     }
 }
 

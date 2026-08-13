@@ -42,6 +42,9 @@ public:
     bool isVertical() const;
     void setVertical(const bool &vertical);
 
+    double yangleSin() const;
+    double yangleCos() const;
+
 private:
     double m_centerX;
     double m_centerY;
@@ -54,6 +57,9 @@ private:
     double m_zoom = 1;
     double m_inverseZoom = 1;
     bool m_vertical = true;
+
+    double m_yangleSin = 0.0;
+    double m_yangleCos = 1.0;
 
 signals:
     void xangleChanged(double xangle);
