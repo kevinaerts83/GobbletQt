@@ -7,7 +7,6 @@
 #include "gobbler.h"
 #include "board.h"
 #include "state.h"
-#include <limits>
 
 class Mediator : public QObject
 {
@@ -62,7 +61,7 @@ private slots:
     bool isValidMove(int oldTile, int newTile);
 
     void writeLog();
-    void ensureTrigForAngle(double angleRadians);
+    void updateTrigCache();
 
 signals:
     void listChanged();
@@ -89,7 +88,6 @@ private:
     int myNewTile;
 
     // Per-instance cache for angle trigonometry
-    double m_cachedAngle = std::numeric_limits<double>::quiet_NaN();
     double m_cachedSin = 0.0;
     double m_cachedCos = 1.0;
 

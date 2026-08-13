@@ -221,5 +221,8 @@ void Matrix::setZoom(const double &zoom)
 
 void Matrix::setVertical(const bool &vertical)
 {
-    m_vertical = vertical;
+    if (vertical != m_vertical) {
+        m_vertical = vertical;
+        emit verticalChanged(m_vertical);
+    }
 }

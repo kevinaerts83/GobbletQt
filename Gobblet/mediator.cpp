@@ -4,7 +4,6 @@
 #include <iostream>
 #include <bitset>
 #include <string>
-#include <limits>
 #include <cmath>
 
 #include <QQmlComponent>
@@ -31,10 +30,6 @@ void Mediator::reset()
     m_blackTurn = false;
     m_selection = nullptr;
     m_lock = false;
-
-    m_cachedAngle = std::numeric_limits<double>::quiet_NaN();
-    m_cachedSin = 0.0;
-    m_cachedCos = 1.0;
 
     m_boardDirty = true;
 }
@@ -111,16 +106,21 @@ void Mediator::setBoard(Board* board) {
 void Mediator::setMatrix(Matrix* matrix) {
     m_matrix = matrix;
     m_boardDirty = true;
+    updateTrigCache();
     connect(m_matrix, &Matrix::zoomChanged, this, [this]() { m_boardDirty = true; });
     connect(m_matrix, &Matrix::xangleChanged, this, [this]() { m_boardDirty = true; });
-    connect(m_matrix, &Matrix::yangleChanged, this, [this]() { m_boardDirty = true; });
+    connect(m_matrix, &Matrix::yangleChanged, this, [this]() {
+        m_boardDirty = true;
+        updateTrigCache();
+    });
+    connect(m_matrix, &Matrix::verticalChanged, this, [this]() { updateTrigCache(); });
 }
 
-void Mediator::ensureTrigForAngle(double angleRadians) {
-    if (!(angleRadians == m_cachedAngle)) {
-        m_cachedAngle = angleRadians;
-        m_cachedSin = std::sin(angleRadians);
-        m_cachedCos = std::cos(angleRadians);
+void Mediator::updateTrigCache() {
+    if (m_matrix) {
+        double angle = (m_matrix->yangle() + (m_matrix->isVertical() ? 90 : 0)) * M_PI / 180;
+        m_cachedSin = std::sin(angle);
+        m_cachedCos = std::cos(angle);
     }
 }
 
@@ -279,9 +279,6 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
     if (oldTile == -1 || oldTile > MAX_TILE_INDEX) {
         double a = static_cast<double>(x);
         double b = static_cast<double>(z);
-        double angle = (m_matrix->yangle() + (m_matrix->isVertical() ? 90 : 0)) * M_PI / 180;
-
-        ensureTrigForAngle(angle);
 
         newX = a * m_cachedCos - b * m_cachedSin;
         newY = 0;
