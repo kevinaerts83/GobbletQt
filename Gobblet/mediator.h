@@ -95,9 +95,6 @@ private:
 
     // Board redraw cache control
     bool m_boardDirty = true;
-    double m_lastZoom = std::numeric_limits<double>::quiet_NaN();
-    double m_lastXAngle = std::numeric_limits<double>::quiet_NaN();
-    double m_lastYAngle = std::numeric_limits<double>::quiet_NaN();
 
     int m_state [2][4] = {{ 0, 0, 0, 0}, {0, 0, 0, 0}};
 

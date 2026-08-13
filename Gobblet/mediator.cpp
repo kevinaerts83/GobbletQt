@@ -37,9 +37,6 @@ void Mediator::reset()
     m_cachedCos = 1.0;
 
     m_boardDirty = true;
-    m_lastZoom = std::numeric_limits<double>::quiet_NaN();
-    m_lastXAngle = std::numeric_limits<double>::quiet_NaN();
-    m_lastYAngle = std::numeric_limits<double>::quiet_NaN();
 }
 
 const QList<Gobbler*> Mediator::getList() const
@@ -114,6 +111,9 @@ void Mediator::setBoard(Board* board) {
 void Mediator::setMatrix(Matrix* matrix) {
     m_matrix = matrix;
     m_boardDirty = true;
+    connect(m_matrix, &Matrix::zoomChanged, this, [this]() { m_boardDirty = true; });
+    connect(m_matrix, &Matrix::xangleChanged, this, [this]() { m_boardDirty = true; });
+    connect(m_matrix, &Matrix::yangleChanged, this, [this]() { m_boardDirty = true; });
 }
 
 void Mediator::ensureTrigForAngle(double angleRadians) {
@@ -125,18 +125,6 @@ void Mediator::ensureTrigForAngle(double angleRadians) {
 }
 
 void Mediator::repaint() {
-    if (m_matrix) {
-        double curZoom = m_matrix->zoom();
-        double curX = m_matrix->xangle();
-        double curY = m_matrix->yangle();
-        if (!(curZoom == m_lastZoom) || !(curX == m_lastXAngle) || !(curY == m_lastYAngle)) {
-            m_lastZoom = curZoom;
-            m_lastXAngle = curX;
-            m_lastYAngle = curY;
-            m_boardDirty = true;
-        }
-    }
-
     if (m_boardDirty && getBoard()) {
         getBoard()->update();
         m_boardDirty = false;

@@ -196,18 +196,27 @@ bool Matrix::isVertical() const { return m_vertical; }
 
 void Matrix::setXangle(const double &xangle)
 {
-    m_xangle = xangle;
+    if (!(xangle == m_xangle)) {
+        m_xangle = xangle;
+        emit xangleChanged(m_xangle);
+    }
 }
 
 void Matrix::setYangle(const double &yangle)
 {
-    m_yangle = yangle;
+    if (!(yangle == m_yangle)) {
+        m_yangle = yangle;
+        emit yangleChanged(m_yangle);
+    }
 }
 
 void Matrix::setZoom(const double &zoom)
 {
-    m_zoom = zoom;
-    m_inverseZoom = 1 / zoom;
+    if (!(zoom == m_zoom)) {
+        m_zoom = zoom;
+        m_inverseZoom = 1 / zoom;
+        emit zoomChanged(m_zoom);
+    }
 }
 
 void Matrix::setVertical(const bool &vertical)
