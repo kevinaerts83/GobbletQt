@@ -32,6 +32,7 @@ void Mediator::reset()
     m_lock = false;
 
     m_boardDirty = true;
+    m_zOrderDirty = true;
 }
 
 const QList<Gobbler*> Mediator::getList() const
@@ -43,6 +44,7 @@ void Mediator::addItem(Gobbler *gobbler)
 {
     if (gobbler) {
         m_list.append(gobbler);
+        m_zOrderDirty = true;
         emit listChanged();
     }
 }
@@ -106,14 +108,19 @@ void Mediator::setBoard(Board* board) {
 void Mediator::setMatrix(Matrix* matrix) {
     m_matrix = matrix;
     m_boardDirty = true;
+    m_zOrderDirty = true;
     updateTrigCache();
     connect(m_matrix, &Matrix::zoomChanged, this, [this]() { m_boardDirty = true; });
     connect(m_matrix, &Matrix::xangleChanged, this, [this]() { m_boardDirty = true; });
     connect(m_matrix, &Matrix::yangleChanged, this, [this]() {
         m_boardDirty = true;
+        m_zOrderDirty = true;
         updateTrigCache();
     });
-    connect(m_matrix, &Matrix::verticalChanged, this, [this]() { updateTrigCache(); });
+    connect(m_matrix, &Matrix::verticalChanged, this, [this]() {
+        m_zOrderDirty = true;
+        updateTrigCache();
+    });
 }
 
 void Mediator::updateTrigCache() {
@@ -130,15 +137,20 @@ void Mediator::repaint() {
         m_boardDirty = false;
     }
 
-    for (int i = 0; i < m_list.size(); i++) {
-        m_list[i]->calculateZIndex();
+    if (m_zOrderDirty) {
+        for (int i = 0; i < m_list.size(); i++) {
+            m_list[i]->calculateZIndex();
+        }
+
+        std::sort(m_list.begin(), m_list.end(), Gobbler::compareByZindex);
+
+        for (int i = 0; i < m_list.size(); i++) {
+            m_list[i]->setZ(i);
+        }
+        m_zOrderDirty = false;
     }
 
-    std::sort(m_list.begin(), m_list.end(), Gobbler::compareByZindex);
-
     for (int i = 0; i < m_list.size(); i++) {
-        m_list[i]->setZ(i);
-
         if (m_list[i]->depth() == 0 || m_list[i]->isVisible()) {
             if (!m_list[i]->isVisible()) {
                 m_list[i]->setVisible(true);
@@ -251,6 +263,7 @@ void Mediator::updateDepthOfGobblersOldState() {
             item->z3d() == getSelection()->z3d()) {
 
             item->setDepth(item->depth() - 1);
+            m_zOrderDirty = true;
         }
     }
 }
@@ -259,6 +272,7 @@ void Mediator::updateDepthOfGobblersNewState(int x, int z) {
     for (const auto &item : std::as_const(m_list)) {
         if (item->size() != getSelection()->size() && item->x3d() == x && item->z3d() == z) {
             item->setDepth(item->depth() + 1);
+            m_zOrderDirty = true;
         }
     }
 }
@@ -332,6 +346,7 @@ void Mediator::updateGobbler() {
     getSelection()->setX3d(x);
     getSelection()->setY3d(y);
     getSelection()->setZ3d(z);
+    m_zOrderDirty = true;
 
     if (x == newX && y == newY && z == newZ) {
         timer->stop();

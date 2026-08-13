@@ -93,6 +93,7 @@ private:
 
     // Board redraw cache control
     bool m_boardDirty = true;
+    bool m_zOrderDirty = true;
 
     int m_state [2][4] = {{ 0, 0, 0, 0}, {0, 0, 0, 0}};
 
