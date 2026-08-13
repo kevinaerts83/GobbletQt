@@ -57,7 +57,7 @@ Page {
         QtObject {
             id: camera
 
-            property real zoom: 1
+            property real zoom: 0.8
             property real xAngle: 0
             property real yAngle: 0
 

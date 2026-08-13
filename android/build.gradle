@@ -79,9 +79,9 @@ android {
 
     defaultConfig {
         resConfig "en"
-        minSdkVersion 30
+        minSdkVersion 36
         /* targetSdkVersion qtTargetSdkVersion */
-        targetSdkVersion 35
+        targetSdkVersion 36
         ndk.abiFilters = qtTargetAbiList.split(",")
     }
 }

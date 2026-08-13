@@ -62,13 +62,13 @@ Page {
             Layout.alignment: Qt.AlignCenter
 
             Rectangle {
-                Layout.preferredHeight: (2 * menu.height - 60) / 13
+                Layout.preferredHeight: (2 * menu.height - 60) / 15
                 visible: { stackView.depth > 1 && GameState.mode === 0 }
             }
 
             Rectangle {
                 id: playButton
-                Layout.preferredWidth: (2 * menu.height - 60) / 13
+                Layout.preferredWidth: (2 * menu.height - 60) / 15
                 Layout.preferredHeight: width
                 radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
@@ -93,7 +93,7 @@ Page {
             }
 
             Rectangle {
-                Layout.preferredWidth: (2 * menu.height - 60) / 13
+                Layout.preferredWidth: (2 * menu.height - 60) / 15
                 Layout.preferredHeight: width
                 radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
@@ -114,7 +114,7 @@ Page {
             }
 
             Rectangle {
-                Layout.preferredWidth: (2 * menu.height - 60) / 13
+                Layout.preferredWidth: (2 * menu.height - 60) / 15
                 Layout.preferredHeight: width
                 radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
@@ -142,7 +142,7 @@ Page {
             }
 
             Rectangle {
-                Layout.preferredWidth: (2 * menu.height - 60) / 13
+                Layout.preferredWidth: (2 * menu.height - 60) / 15
                 Layout.preferredHeight: width
                 radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
@@ -170,7 +170,7 @@ Page {
             }
 
             Rectangle {
-                Layout.preferredWidth: (2 * menu.height - 60) / 13
+                Layout.preferredWidth: (2 * menu.height - 60) / 15
                 Layout.preferredHeight: width
                 radius: width / 2  // Make it circular
                 color: "#4CAF50"  // Green background color
@@ -201,7 +201,7 @@ Page {
             Layout.alignment: Qt.AlignCenter
 
             Rectangle {
-                Layout.preferredWidth: menu.width * 0.40
+                Layout.preferredWidth: menu.width * 0.4
                 Layout.preferredHeight: menu.height * 0.5
                 color: "transparent"
 

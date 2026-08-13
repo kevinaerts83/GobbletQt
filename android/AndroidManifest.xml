@@ -1,12 +1,12 @@
 <?xml version='1.0'?>
-<manifest android:installLocation="auto" android:versionCode="27" android:versionName="0.27" package="org.gobblet.mr" xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest android:installLocation="auto" android:versionCode="29" android:versionName="0.29" package="org.gobblet.mr" xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- %%INSERT_PERMISSIONS -->
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"/>
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation"/>
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
-    <uses-sdk android:minSdkVersion="30"/>
+    <uses-sdk android:minSdkVersion="36"/>
     <supports-screens android:anyDensity="true" android:largeScreens="true" android:normalScreens="true" android:smallScreens="true"/>
     <application android:allowBackup="true" android:fullBackupOnly="false" android:hardwareAccelerated="true" android:icon="@drawable/icon" android:label="GobbletMR" android:name="org.qtproject.qt.android.bindings.QtApplication" android:requestLegacyExternalStorage="true">
         <activity android:configChanges="orientation|keyboardHidden|screenSize|screenLayout|smallestScreenSize|density|locale|fontScale|uiMode" android:exported="true" android:label="Gobblet MR" android:launchMode="singleTop" android:name="org.qtproject.qt.android.bindings.QtActivity" android:screenOrientation="sensor" android:theme="@style/QtAppTheme">
