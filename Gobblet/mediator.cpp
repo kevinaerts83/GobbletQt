@@ -4,6 +4,8 @@
 #include <iostream>
 #include <bitset>
 #include <string>
+#include <limits>
+#include <cmath>
 
 #include <QQmlComponent>
 #include <QQmlContext>
@@ -29,6 +31,15 @@ void Mediator::reset()
     m_blackTurn = false;
     m_selection = nullptr;
     m_lock = false;
+
+    m_cachedAngle = std::numeric_limits<double>::quiet_NaN();
+    m_cachedSin = 0.0;
+    m_cachedCos = 1.0;
+
+    m_boardDirty = true;
+    m_lastZoom = std::numeric_limits<double>::quiet_NaN();
+    m_lastXAngle = std::numeric_limits<double>::quiet_NaN();
+    m_lastYAngle = std::numeric_limits<double>::quiet_NaN();
 }
 
 const QList<Gobbler*> Mediator::getList() const
@@ -102,10 +113,34 @@ void Mediator::setBoard(Board* board) {
 
 void Mediator::setMatrix(Matrix* matrix) {
     m_matrix = matrix;
+    m_boardDirty = true;
+}
+
+void Mediator::ensureTrigForAngle(double angleRadians) {
+    if (!(angleRadians == m_cachedAngle)) {
+        m_cachedAngle = angleRadians;
+        m_cachedSin = std::sin(angleRadians);
+        m_cachedCos = std::cos(angleRadians);
+    }
 }
 
 void Mediator::repaint() {
-    getBoard()->update();
+    if (m_matrix) {
+        double curZoom = m_matrix->zoom();
+        double curX = m_matrix->xangle();
+        double curY = m_matrix->yangle();
+        if (!(curZoom == m_lastZoom) || !(curX == m_lastXAngle) || !(curY == m_lastYAngle)) {
+            m_lastZoom = curZoom;
+            m_lastXAngle = curX;
+            m_lastYAngle = curY;
+            m_boardDirty = true;
+        }
+    }
+
+    if (m_boardDirty && getBoard()) {
+        getBoard()->update();
+        m_boardDirty = false;
+    }
 
     for (int i = 0; i < m_list.size(); i++) {
         m_list[i]->calculateZIndex();
@@ -258,9 +293,11 @@ void Mediator::updateState(int x, int y, int z, int oldTile, int newTile) {
         double b = static_cast<double>(z);
         double angle = (m_matrix->yangle() + (m_matrix->isVertical() ? 90 : 0)) * M_PI / 180;
 
-        newX = a * cos(angle) - b * sin(angle);
+        ensureTrigForAngle(angle);
+
+        newX = a * m_cachedCos - b * m_cachedSin;
         newY = 0;
-        newZ = a * sin(angle) + b * cos(angle);
+        newZ = a * m_cachedSin + b * m_cachedCos;
     } else {
         newX = x;
         newY = y;
@@ -390,6 +427,7 @@ void Mediator::resetItems(double width, double height) {
         item->setWidth(width);
         item->setHeight(height);
     }
+    m_boardDirty = true;
 }
 
 int Mediator::getTileFromCoord(int x, int z) {
