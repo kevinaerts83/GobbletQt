@@ -1,5 +1,18 @@
 #include "gobbler3d.h"
 
+std::unordered_map<int, std::shared_ptr<Gobbler3d>> Gobbler3d::s_models;
+
+std::shared_ptr<Gobbler3d> Gobbler3d::sharedModel(double size) {
+    int key = static_cast<int>(size);
+    auto it = s_models.find(key);
+    if (it != s_models.end()) {
+        return it->second;
+    }
+    auto model = std::make_shared<Gobbler3d>(size);
+    s_models[key] = model;
+    return model;
+}
+
 Gobbler3d::Gobbler3d(double size) : Shape3d()
 {
     double tileSize = size;

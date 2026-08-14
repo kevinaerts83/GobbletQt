@@ -33,7 +33,9 @@ public:
                 int j = isBlack ? i - (GOBBLERS / 2) : i;
                 int zPosition = ((j / 4) - 1) * SIZE_TILE; // divide 12 into 3 piles
 
-                Gobbler *gobblerItem = new Gobbler(parentPage, new Shape(), *new Gobbler3d(SIZE_TILE - PADDING - (gobblerSize * SIZE_DIFF)));
+                double modelSize = SIZE_TILE - PADDING - (gobblerSize * SIZE_DIFF);
+                auto sharedModel = Gobbler3d::sharedModel(modelSize);
+                Gobbler *gobblerItem = new Gobbler(parentPage, sharedModel);
 
                 if (gobblerItem) {
                     gobblerItem->m_matrix = theMatrix;
@@ -46,8 +48,6 @@ public:
                     gobblerItem->setZ3d(zPosition);
 
                     gobblerItem->setWhite(!isBlack);
-                    //gobblerItem->setProperty("id", i);
-                    //gobblerItem->setProperty("name", i);
 
                     gobblerItem->setWidth(parentPage->width());
                     gobblerItem->setHeight(parentPage->height());

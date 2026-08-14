@@ -53,3 +53,38 @@ bool Shape3d::isOnBoard() const {
 void Shape3d::setOnBoard() {
     m_onBoard = true;
 }
+
+// --- Shape3dInstance ---
+
+void Shape3dInstance::Rotate(Matrix* matrix, double x, double y, double z) {
+    const auto& points = m_model->points;
+    m_cache.resize(points.size());
+
+    double translation [4][4];
+    matrix->getTranslationMatrix(x, y, z, translation);
+
+    for (int i = 0; i < points.size(); i++) {
+        m_cache[i] = matrix->MultiplyPointAndMatrix(points[i], translation);
+    }
+
+    Zoom(matrix);
+
+    double rotationMatrix [4][4];
+    if (isOnBoard()) {
+        matrix->getRotationMatrix(rotationMatrix);
+    } else {
+        matrix->getRotateXMatrix(rotationMatrix);
+    }
+
+    for (int i = 0; i < m_cache.size(); i++) {
+        m_cache[i] = matrix->MultiplyPointAndMatrix(m_cache[i], rotationMatrix);
+    }
+}
+
+void Shape3dInstance::Zoom(Matrix* matrix) {
+    double scalingMatrix [4][4];
+    matrix->getScalingMatrix(scalingMatrix);
+    for (int i = 0; i < m_cache.size(); i++) {
+        m_cache[i] = matrix->MultiplyPointAndMatrix(m_cache[i], scalingMatrix);
+    }
+}
