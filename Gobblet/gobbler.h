@@ -1,17 +1,13 @@
 #ifndef GOBBLER_H
 #define GOBBLER_H
 
-#include <QtQuick/QQuickItem>
-#include <QSGGeometryNode>
-#include <QSGFlatColorMaterial>
+#include "shape_item.h"
 #include "shape3d.h"
 #include "gobbler3d.h"
 #include <memory>
 
-class Gobbler : public QQuickItem
+class Gobbler : public ShapeItem
 {
-    // Q_PROPERTY only work for Q_OBJECT classes, you can only inherit from ONE Q_Object class
-    // (QQuickItem already does) so the properties can't be moved to Shape
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(Matrix* matrix MEMBER m_matrix)
@@ -56,6 +52,7 @@ public:
 
 protected:
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) override;
+    void computeGeometry(QVector<TriangleVertex> &vertices) override;
 
 signals:
     void depthChanged();
@@ -72,15 +69,6 @@ private:
     double m_y3d;
     double m_z3d;
     double m_zIndex;
-
-    struct TriangleVertex {
-        float x, y, x1, y1, x2, y2;
-        QColor faceColor;
-        bool top, selected;
-    };
-
-    /// Computes projected 2D triangles from the 3D model for scene graph rendering.
-    void computeGeometry(QVector<TriangleVertex> &vertices);
 };
 
 #endif // GOBBLER_H

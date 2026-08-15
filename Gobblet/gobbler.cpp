@@ -3,8 +3,7 @@
 #include <QSGGeometryNode>
 #include <QSGFlatColorMaterial>
 
-Gobbler::Gobbler(QQuickItem *parent, std::shared_ptr<Gobbler3d> sharedModel) : QQuickItem(parent) {
-    setFlag(ItemHasContents, true);
+Gobbler::Gobbler(QQuickItem *parent, std::shared_ptr<Gobbler3d> sharedModel) : ShapeItem(parent) {
     if (sharedModel) {
         model.setModel(sharedModel);
     }
@@ -199,82 +198,10 @@ void Gobbler::computeGeometry(QVector<TriangleVertex> &vertices) {
     }
 }
 
-QSGNode *Gobbler::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
+QSGNode *Gobbler::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data) {
     if (this->depth() != 0) {
         delete oldNode;
         return nullptr;
     }
-
-    QVector<TriangleVertex> vertices;
-    computeGeometry(vertices);
-
-    if (vertices.isEmpty()) {
-        delete oldNode;
-        return nullptr;
-    }
-
-    // Build a parent node with one child per triangle (each with its own color)
-    QSGNode *rootNode = oldNode;
-    if (!rootNode) {
-        rootNode = new QSGNode;
-    }
-
-    // Remove old children
-    while (rootNode->childCount() > 0) {
-        rootNode->removeChildNode(rootNode->firstChild());
-    }
-
-    for (int i = 0; i < vertices.size(); i++) {
-        QSGGeometryNode *node = new QSGGeometryNode;
-        QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 3);
-        geometry->setDrawingMode(QSGGeometry::DrawTriangles);
-
-        QSGGeometry::Point2D *v = geometry->vertexDataAsPoint2D();
-        v[0].set(vertices[i].x, vertices[i].y);
-        v[1].set(vertices[i].x1, vertices[i].y1);
-        v[2].set(vertices[i].x2, vertices[i].y2);
-
-        node->setGeometry(geometry);
-        node->setFlag(QSGNode::OwnsGeometry);
-
-        QSGFlatColorMaterial *material = new QSGFlatColorMaterial;
-        QColor color = vertices[i].faceColor;
-        material->setColor(color);
-        node->setMaterial(material);
-        node->setFlag(QSGNode::OwnsMaterial);
-
-        rootNode->appendChildNode(node);
-
-        QSGFlatColorMaterial *lineColor = new QSGFlatColorMaterial;
-        lineColor->setColor(vertices[i].selected ? Qt::blue : QColor(0, 0, 0));
-
-        if (!vertices[i].top || vertices[i].selected) {
-            QSGGeometry *line = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 2);
-            line->setDrawingMode(QSGGeometry::DrawLines);
-            line->vertexDataAsPoint2D()[0].set(vertices[i].x, vertices[i].y);
-            line->vertexDataAsPoint2D()[1].set(vertices[i].x1, vertices[i].y1);
-
-            QSGGeometryNode *lineNode = new QSGGeometryNode;
-            lineNode->setGeometry(line);
-            lineNode->setFlag(QSGNode::OwnsGeometry);
-            lineNode->setMaterial(lineColor);
-            lineNode->setFlag(QSGNode::OwnsMaterial);
-
-            rootNode->appendChildNode(lineNode);
-        }
-        QSGGeometry *line2 = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 2);
-        line2->setDrawingMode(QSGGeometry::DrawLines);
-        line2->vertexDataAsPoint2D()[0].set(vertices[i].x1, vertices[i].y1);
-        line2->vertexDataAsPoint2D()[1].set(vertices[i].x2, vertices[i].y2);
-
-        QSGGeometryNode *lineNode2 = new QSGGeometryNode;
-        lineNode2->setGeometry(line2);
-        lineNode2->setFlag(QSGNode::OwnsGeometry);
-        lineNode2->setMaterial(lineColor);
-        lineNode2->setFlag(QSGNode::OwnsMaterial);
-
-        rootNode->appendChildNode(lineNode2);
-    }
-
-    return rootNode;
+    return ShapeItem::updatePaintNode(oldNode, data);
 }

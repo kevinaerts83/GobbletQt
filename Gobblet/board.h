@@ -1,14 +1,11 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include <QtQuick/QQuickPaintedItem>
-#include "shape.h"
+#include "shape_item.h"
 #include "board3d.h"
 
-class Board : public QQuickPaintedItem, public Shape
+class Board : public ShapeItem
 {
-    // Q_PROPERTY only work for Q_OBJECT classes, you can only inherit from ONE Q_Object class
-    // (QQuickPaintedItem already does) so the properties can't be moved to Shape
     Q_OBJECT
 
     Q_PROPERTY(Matrix* matrix MEMBER m_matrix)
@@ -16,11 +13,12 @@ class Board : public QQuickPaintedItem, public Shape
     QML_ELEMENT
 
 public:
-    Board(QQuickItem *parent = 0);
+    Board(QQuickItem *parent = nullptr);
     Board3d model;
     Matrix* m_matrix = nullptr;
 
-    void paint(QPainter *painter);
+protected:
+    void computeGeometry(QVector<TriangleVertex> &vertices) override;
 };
 
 #endif // BOARD_H

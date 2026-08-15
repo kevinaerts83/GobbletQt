@@ -12,7 +12,7 @@ if(ANDROID)
         matrix.cpp matrix.h
         mediator.cpp mediator.h
         setupBoard.h
-        shape.cpp shape.h
+        shape_item.cpp shape_item.h
         shape3d.cpp shape3d.h
     )
 else()
@@ -27,7 +27,7 @@ else()
         matrix.cpp matrix.h
         mediator.cpp mediator.h
         setupBoard.h
-        shape.cpp shape.h
+        shape_item.cpp shape_item.h
         shape3d.cpp shape3d.h
     )
 endif()
