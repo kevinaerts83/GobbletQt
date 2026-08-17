@@ -46,7 +46,7 @@ void Board::computeGeometry(QVector<TriangleVertex> &vertices) {
             float x3 = points2d[faces[i][2]][0];
             float y3 = points2d[faces[i][2]][1];
 
-            vertices.append({x1, y1, x2, y2, x3, y3, color, false, false});
+            vertices.append({x1, y1, x2, y2, x3, y3, color, false});
         }
     }
 }

@@ -22,7 +22,7 @@ protected:
     struct TriangleVertex {
         float x, y, x1, y1, x2, y2;
         QColor faceColor;
-        bool top, selected;
+        bool top;
     };
 
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) override;

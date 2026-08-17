@@ -117,10 +117,6 @@ static bool dotProduct(const QVector<QVector<double>> &points, const QVector<int
 void Gobbler::computeGeometry(QVector<TriangleVertex> &vertices) {
     model.Rotate(m_matrix, m_x3d, m_y3d, m_z3d);
 
-    QColor baseColor = m_isWhite
-        ? QColor(QColorConstants::Svg::linen).darker(120)
-        : QColor(QColorConstants::Svg::peru).darker(140);
-
     const auto& cache = model.getCache();
     const auto& faces = model.getFaces();
     const auto& points = model.getPoints();
@@ -162,9 +158,17 @@ void Gobbler::computeGeometry(QVector<TriangleVertex> &vertices) {
                 static_cast<float>(shadowPoints[i][1]),
                 static_cast<float>(shadowPoints[i+1][0]),
                 static_cast<float>(shadowPoints[i+1][1]),
-                shadowColor, true, false});
+                shadowColor, true});
         }
     }
+
+    QColor baseColor = m_isWhite
+       ? QColor(QColorConstants::Svg::linen).darker(120)
+       : QColor(QColorConstants::Svg::peru).darker(140);
+
+    QColor selectionColor = m_isWhite
+       ? QColor(QColorConstants::Svg::linen).darker(90)
+       : QColor(QColorConstants::Svg::peru).darker(170);
 
     // Render visible faces
     for (int i = 0; i < faces.size(); i++) {
@@ -176,7 +180,7 @@ void Gobbler::computeGeometry(QVector<TriangleVertex> &vertices) {
             float x3 = points2d[faces[i][2]][0];
             float y3 = points2d[faces[i][2]][1];
 
-            vertices.append({x1, y1, x2, y2, x3, y3, baseColor, false, false});
+            vertices.append({x1, y1, x2, y2, x3, y3, baseColor, false});
         }
     }
 
@@ -192,8 +196,8 @@ void Gobbler::computeGeometry(QVector<TriangleVertex> &vertices) {
                 static_cast<float>(points2d[i][1]),
                 static_cast<float>(points2d[next][0]),
                 static_cast<float>(points2d[next][1]),
-                baseColor,
-                true, model.isSelected()});
+                model.isSelected() ? selectionColor : baseColor,
+                true});
         }
     }
 }

@@ -48,9 +48,9 @@ QSGNode *ShapeItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *) {
 
         rootNode->appendChildNode(node);
 
-        QColor lineColorValue = vertices[i].selected ? Qt::blue : QColor(0, 0, 0);
+        QColor lineColorValue = Qt::black;
 
-        if (!vertices[i].top || vertices[i].selected) {
+        if (!vertices[i].top) {
             QSGGeometry *line = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 2);
             line->setDrawingMode(QSGGeometry::DrawLines);
             line->vertexDataAsPoint2D()[0].set(vertices[i].x, vertices[i].y);
