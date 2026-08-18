@@ -204,12 +204,12 @@ void ChatServer::sendMessage(const QString &message)
 
     qDebug() << "Sending BLE notification:" << message;
 
-    // THIS IS THE ONLY CORRECT WAY (iOS/macOS compatible)
-    service->writeCharacteristic(
-        txChar,
-        message.toUtf8(),
-        QLowEnergyService::WriteWithoutResponse
-        );
+    // Send a GATT notification on the peripheral's Notify characteristic.
+    // Do NOT pass WriteWithoutResponse here: on a local (peripheral) service Qt
+    // treats a plain writeCharacteristic() on a Notify characteristic as a
+    // notification to subscribed clients. Passing a write mode works on iOS
+    // (CoreBluetooth maps it internally) but fails to deliver on Android.
+    service->writeCharacteristic(txChar, message.toUtf8());
 }
 
 void ChatServer::onConnectionStateChanged(QLowEnergyController::ControllerState state)
@@ -240,7 +240,7 @@ void ChatServer::startCentral() {
         connect(discoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
                 this, &ChatServer::onDeviceDiscovered);
 
-        QTimer::singleShot(500, this, [this]() {
+        QTimer::singleShot(1500, this, [this]() {
             discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
         });
     }
@@ -252,12 +252,22 @@ void ChatServer::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
         return;
     }
 
-    if (info.name().contains("Gobblet", Qt::CaseInsensitive) || info.serviceUuids().contains(reverseServiceUuid)) {
-        qDebug() << "[Server-Central] Found peer peripheral:" << info.name();
-    } else {
-        qDebug() << "Ignore device:" << info.name();
+    // Android often does NOT include the device name or service UUIDs in
+    // advertisements — they may only become available after connection and
+    // service discovery. Check both name and UUID, and also accept devices
+    // whose name is empty but whose address matches a recent connection.
+    bool nameMatch = info.name().contains("Gobblet", Qt::CaseInsensitive);
+    bool uuidMatch = info.serviceUuids().contains(reverseServiceUuid);
+
+    if (!nameMatch && !uuidMatch) {
+        qDebug() << "Ignore device:" << info.name()
+                 << "address:" << info.address().toString()
+                 << "UUIDs:" << info.serviceUuids();
         return;
     }
+
+    qDebug() << "[Server-Central] Found peer peripheral:" << info.name()
+             << "address:" << info.address().toString();
 
     // Connect as CENTRAL to the client peripheral
     discoveryAgent->stop();

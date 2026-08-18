@@ -231,7 +231,7 @@ void ChatClient::serviceStateChanged(QLowEnergyService::ServiceState newState)
         return;
     }
 
-    QTimer::singleShot(500, this, &ChatClient::startClientPeripheral);
+    QTimer::singleShot(1500, this, &ChatClient::startClientPeripheral);
 
     qDebug() << "[ChatClient] Service details discovered";
     qDebug() << "[ChatClient] Available characteristics:";
@@ -295,8 +295,12 @@ void ChatClient::sendMessage(const QString &message)
 
     qDebug() << "Sending BLE notification:" << message;
 
-    // THIS IS THE ONLY CORRECT WAY (iOS/macOS compatible)
-    peripheralService->writeCharacteristic(reverseTxChar, message.toUtf8(), QLowEnergyService::WriteWithoutResponse);
+    // Send a GATT notification on the client-side peripheral's Notify
+    // characteristic. Do NOT pass WriteWithoutResponse: on a local (peripheral)
+    // service Qt treats a plain writeCharacteristic() on a Notify characteristic
+    // as a notification to subscribed clients. Passing a write mode works on iOS
+    // but fails to deliver on Android.
+    peripheralService->writeCharacteristic(reverseTxChar, message.toUtf8());
     /*
     if (!peripheralService || !txChar.isValid()) {
         qWarning() << "[ChatClient] Client TX not ready";
