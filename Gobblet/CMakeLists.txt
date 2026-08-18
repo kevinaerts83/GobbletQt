@@ -69,7 +69,7 @@ if(ANDROID)
         ${CMAKE_SOURCE_DIR}/android
         QT_ANDROID_ABIS "arm64-v8a;x86_64"
         QT_ANDROID_MIN_SDK_VERSION 30
-        QT_ANDROID_TARGET_SDK_VERSION 35
+        QT_ANDROID_TARGET_SDK_VERSION 36
     )
     #qt_android_generate_deployment_settings(Gobblet)
 elseif(IOS)
