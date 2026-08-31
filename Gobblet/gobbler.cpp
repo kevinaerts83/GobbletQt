@@ -151,26 +151,33 @@ void Gobbler::computeGeometry(QVector<TriangleVertex> &vertices) {
         // Triangulate shadow polygon (fan from first point)
         QColor shadowColor(0, 0, 0, 128);
         for (int i = 1; i < shadowPoints.size() - 1; i++) {
-            vertices.append({
+            vertices.append(flatTriangle(
                 static_cast<float>(shadowPoints[0][0]),
                 static_cast<float>(shadowPoints[0][1]),
                 static_cast<float>(shadowPoints[i][0]),
                 static_cast<float>(shadowPoints[i][1]),
                 static_cast<float>(shadowPoints[i+1][0]),
                 static_cast<float>(shadowPoints[i+1][1]),
-                shadowColor, true});
+                shadowColor, true));
         }
     }
 
-    QColor baseColor = m_isWhite
-       ? QColor(QColorConstants::Svg::linen).darker(120)
-       : QColor(QColorConstants::Svg::peru).darker(140);
+    // Top color is always the same regardless of selection
+    QColor topColor = m_isWhite
+       ? QColor(QColorConstants::Svg::ivory)
+       : QColor(QColorConstants::Svg::peru).darker(160);
 
-    QColor selectionColor = m_isWhite
-       ? QColor(QColorConstants::Svg::linen).darker(90)
-       : QColor(QColorConstants::Svg::peru).darker(170);
+    // Body color shifts noticeably when selected for high contrast
+    QColor bodyColor;
+    if (model.isSelected()) {
+        bodyColor = m_isWhite
+           ? QColor(QColorConstants::Svg::gold).lighter(160)
+           : QColor(QColorConstants::Svg::goldenrod).darker(140);
+    } else {
+        bodyColor = topColor;
+    }
 
-    // Render visible faces
+    // Render visible faces with marble effect
     for (int i = 0; i < faces.size(); i++) {
         if (dotProduct(points2d, faces[i])) {
             float x1 = points2d[faces[i][0]][0];
@@ -180,7 +187,7 @@ void Gobbler::computeGeometry(QVector<TriangleVertex> &vertices) {
             float x3 = points2d[faces[i][2]][0];
             float y3 = points2d[faces[i][2]][1];
 
-            vertices.append({x1, y1, x2, y2, x3, y3, baseColor, false});
+            vertices.append(marbleTriangle(x1, y1, x2, y2, x3, y3, bodyColor, false, i));
         }
     }
 
@@ -189,15 +196,14 @@ void Gobbler::computeGeometry(QVector<TriangleVertex> &vertices) {
         // Triangulate octagonal top as a fan
         for (int i = 9; i < 16; i++) {
             int next = (i < 15) ? i + 1 : 8;
-            vertices.append({
+            vertices.append(flatTriangle(
                 static_cast<float>(points2d[8][0]),
                 static_cast<float>(points2d[8][1]),
                 static_cast<float>(points2d[i][0]),
                 static_cast<float>(points2d[i][1]),
                 static_cast<float>(points2d[next][0]),
                 static_cast<float>(points2d[next][1]),
-                model.isSelected() ? selectionColor : baseColor,
-                true});
+                topColor, true));
         }
     }
 }

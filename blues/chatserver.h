@@ -70,6 +70,10 @@ private:
     QBluetoothUuid reverseServiceUuid;
     QBluetoothUuid reverseRxUuid;
     QBluetoothUuid reverseTxUuid;
+
+    // Stored from the peripheral controller when a client connects
+    QBluetoothAddress connectedClientAddress;
+    QBluetoothUuid connectedClientUuid;
 };
 
 #endif // CHATSERVER_H

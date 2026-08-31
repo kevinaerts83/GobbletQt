@@ -36,7 +36,7 @@ void Board::computeGeometry(QVector<TriangleVertex> &vertices) {
             } else if (i < 10) {
                 color = QColor(QColorConstants::Svg::sienna).darker(190);
             } else {
-                color = QColor(QColorConstants::Svg::oldlace).darker(120);
+                color = QColor(QColorConstants::Svg::oldlace).darker(150);
             }
 
             float x1 = points2d[faces[i][0]][0];
@@ -46,7 +46,7 @@ void Board::computeGeometry(QVector<TriangleVertex> &vertices) {
             float x3 = points2d[faces[i][2]][0];
             float y3 = points2d[faces[i][2]][1];
 
-            vertices.append({x1, y1, x2, y2, x3, y3, color, false});
+            vertices.append(marbleTriangle(x1, y1, x2, y2, x3, y3, color, false, i + 200));
         }
     }
 }

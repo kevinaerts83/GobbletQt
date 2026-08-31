@@ -25,6 +25,9 @@
    <key>NSBluetoothPeripheralUsageDescription</key>
    <string>This app uses Bluetooth to advertise and communicate with BLE devices.</string>
 
+   <key>CFBundleIconName</key>
+   <string>AppIcon</string>
+
    <key>UILaunchStoryboardName</key>
    <string>LaunchScreen</string>
 

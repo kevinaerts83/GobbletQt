@@ -217,6 +217,14 @@ void ChatServer::onConnectionStateChanged(QLowEnergyController::ControllerState 
     switch (state) {
         case QLowEnergyController::ConnectedState:
             qDebug() << "BLE central connected to our peripheral";
+            // Store the connected client's address/UUID so we can find it
+            // during reverse-channel discovery. On Android/Linux remoteAddress()
+            // returns a real MAC; on macOS/iOS it is null but remoteDeviceUuid()
+            // provides a stable CoreBluetooth identifier.
+            connectedClientAddress = controller->remoteAddress();
+            connectedClientUuid   = controller->remoteDeviceUuid();
+            qDebug() << "[Server] Connected client address:" << connectedClientAddress.toString()
+                     << "uuid:" << connectedClientUuid.toString();
             emit clientConnected("BLE Central");
             startCentral();
             break;
@@ -252,22 +260,32 @@ void ChatServer::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
         return;
     }
 
-    // Android often does NOT include the device name or service UUIDs in
-    // advertisements — they may only become available after connection and
-    // service discovery. Check both name and UUID, and also accept devices
-    // whose name is empty but whose address matches a recent connection.
+    // Try multiple matching strategies. Android often does NOT include
+    // the device name or service UUIDs in advertisements — they may
+    // only become available after connection and service discovery.
     bool nameMatch = info.name().contains("Gobblet", Qt::CaseInsensitive);
     bool uuidMatch = info.serviceUuids().contains(reverseServiceUuid);
 
-    if (!nameMatch && !uuidMatch) {
-        qDebug() << "Ignore device:" << info.name()
-                 << "address:" << info.address().toString()
-                 << "UUIDs:" << info.serviceUuids();
+    // Match by address (works on Android/Linux where remoteAddress() returns a real MAC)
+    bool addressMatch = !connectedClientAddress.isNull()
+                        && info.address() == connectedClientAddress;
+
+    // Match by CoreBluetooth device UUID (works on macOS/iOS)
+    bool deviceUuidMatch = !connectedClientUuid.isNull()
+                           && info.deviceUuid() == connectedClientUuid;
+
+    if (!nameMatch && !uuidMatch && !addressMatch && !deviceUuidMatch) {
         return;
     }
 
     qDebug() << "[Server-Central] Found peer peripheral:" << info.name()
-             << "address:" << info.address().toString();
+             << "address:" << info.address().toString()
+             << "(matched by:"
+             << (nameMatch ? "name" : "")
+             << (uuidMatch ? "uuid" : "")
+             << (addressMatch ? "address" : "")
+             << (deviceUuidMatch ? "deviceUuid" : "")
+             << ")";
 
     // Connect as CENTRAL to the client peripheral
     discoveryAgent->stop();

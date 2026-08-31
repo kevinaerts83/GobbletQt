@@ -84,4 +84,12 @@ android {
         targetSdkVersion 36
         ndk.abiFilters = qtTargetAbiList.split(",")
     }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
 }

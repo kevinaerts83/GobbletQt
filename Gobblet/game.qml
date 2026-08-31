@@ -17,13 +17,17 @@ Page {
 
     Component.onCompleted: {
         setupBoard.onGameVisible(game)
-        Screen.orientationChanged.connect(onOrientationChanged)
     }
 
-    function onOrientationChanged(newOrientation) {
-        matrix.setCenter(parent.width, parent.height)
-        Mediator.resetItems(parent.width, parent.height)
-        Mediator.repaint()
+    onWidthChanged: updateLayout()
+    onHeightChanged: updateLayout()
+
+    function updateLayout() {
+        if (width > 0 && height > 0) {
+            matrix.setCenter(width, height)
+            Mediator.resetItems(width, height)
+            Mediator.repaint()
+        }
     }
 
     Matrix {
