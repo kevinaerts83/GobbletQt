@@ -73,11 +73,20 @@ if(ANDROID)
     )
     #qt_android_generate_deployment_settings(Gobblet)
 elseif(IOS)
+    # Add the asset catalog to the app so Xcode compiles the app icon into Assets.car.
+    set(app_assets "${CMAKE_SOURCE_DIR}/ios/Assets.xcassets")
+    target_sources(Gobblet PRIVATE "${app_assets}")
+    set_source_files_properties("${app_assets}" PROPERTIES
+        MACOSX_PACKAGE_LOCATION Resources
+    )
+
     set_target_properties(Gobblet PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_GUI_IDENTIFIER be.kevinaerts.gobblet
         XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER be.kevinaerts.gobblet
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/ios/Info.plist"
+        # Tell the asset compiler which icon set to use as the app icon.
+        XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon"
     )
 elseif(APPLE)
     set_target_properties(Gobblet PROPERTIES
