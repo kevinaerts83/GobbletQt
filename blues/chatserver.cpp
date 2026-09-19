@@ -104,15 +104,16 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
         return;
     }
 
-    connect(service, &QLowEnergyService::characteristicWritten,
+    // IMPORTANT (cross-platform correctness):
+    // In the PERIPHERAL role, an incoming write from the connected central
+    // (our client's move) is delivered via characteristicChanged() — NOT
+    // characteristicWritten(). Per Qt docs, characteristicWritten() "is only
+    // emitted for Central Role related use cases", so connecting it here never
+    // fires for incoming writes. This was why the single-link design received
+    // nothing on macOS. characteristicChanged() fires on both macOS/iOS
+    // (CoreBluetooth) and Android when a GATT client writes our RX.
+    connect(service, &QLowEnergyService::characteristicChanged,
             this, &ChatServer::onCharacteristicWritten);
-
-    connect(service, &QLowEnergyService::characteristicWritten,
-            this, [](const QLowEnergyCharacteristic &c, const QByteArray &v) {
-                qDebug() << "[ChatServer] Notify CONFIRMED by stack:"
-                         << c.uuid()
-                         << "value:" << v;
-            });
 
     // Advertising
     QLowEnergyAdvertisingData advertisingData;
@@ -173,26 +174,25 @@ void ChatServer::stopServer()
 void ChatServer::onCharacteristicWritten(const QLowEnergyCharacteristic &c,
                                          const QByteArray &value)
 {
+    // Driven by QLowEnergyService::characteristicChanged() in peripheral role:
+    // fired whenever a connected central writes one of our characteristics.
+    // We only care about writes to the RX characteristic (client -> server).
     if (c.uuid() != rxUuid) {
-        qDebug() << "This is OUR OWN TX Notify — ignore it"
+        qDebug() << "[Server] Ignoring write to non-RX characteristic"
                  << "uuid:" << c.uuid()
                  << "expected rxUuid:" << rxUuid;
         return;
     }
 
-    qDebug() << "[Server] NOTIFY EVENT"
+    qDebug() << "[Server] RX WRITE EVENT"
              << "uuid:" << c.uuid()
              << "valid:" << c.isValid()
              << "props:" << c.properties()
              << "value Hex:" << value.toHex()
              << "value ascii:" << QString::fromUtf8(value);
 
-    if (c.uuid() == rxUuid) {
-        qDebug() << "[Server] RX RECEIVED";
-        emit messageReceived("Client", QString::fromUtf8(value));
-    } else {
-        qDebug() << "[Server] NOT RX";
-    }
+    qDebug() << "[Server] RX RECEIVED";
+    emit messageReceived("Client", QString::fromUtf8(value));
 }
 
 void ChatServer::sendMessage(const QString &message)
@@ -226,7 +226,13 @@ void ChatServer::onConnectionStateChanged(QLowEnergyController::ControllerState 
             qDebug() << "[Server] Connected client address:" << connectedClientAddress.toString()
                      << "uuid:" << connectedClientUuid.toString();
             emit clientConnected("BLE Central");
-            startCentral();
+            // NOTE: The reverse central (scan + connect back to the client
+            // peripheral) is no longer needed. The client now sends its moves by
+            // writing to our forward RX characteristic over the existing GATT
+            // link (see ChatClient::sendMessage). Starting a scan + second GATT
+            // connection here while acting as a peripheral was unreliable on
+            // Android and is intentionally disabled.
+            // startCentral();
             break;
 
         case QLowEnergyController::UnconnectedState:

@@ -231,7 +231,11 @@ void ChatClient::serviceStateChanged(QLowEnergyService::ServiceState newState)
         return;
     }
 
-    QTimer::singleShot(1500, this, &ChatClient::startClientPeripheral);
+    // The reverse peripheral (client-side GATT server used to notify the server)
+    // is no longer needed: the client now writes moves directly to the server's
+    // forward RX characteristic. Advertising a second peripheral while acting as
+    // a central was unreliable on Android, so it is intentionally disabled.
+    // QTimer::singleShot(1500, this, &ChatClient::startClientPeripheral);
 
     qDebug() << "[ChatClient] Service details discovered";
     qDebug() << "[ChatClient] Available characteristics:";
@@ -288,38 +292,39 @@ void ChatClient::updateNotification(const QLowEnergyCharacteristic &characterist
 
 void ChatClient::sendMessage(const QString &message)
 {
-    if (!peripheralService || !reverseTxChar.isValid()) {
-        qWarning() << "Cannot send message: TX characteristic invalid";
+    // Client → Server uses the FORWARD GATT link that is already established:
+    // the client is a central connected to the server's peripheral, and the
+    // server exposes a writable RX characteristic (Write | WriteNoResponse).
+    //
+    // Writing to that characteristic works reliably on both iOS and Android.
+    // The previous approach (notifying over the client's own peripheral via a
+    // reverse channel) only worked on iOS: on Android the server's reverse
+    // central could not reliably rediscover/reconnect to the client peripheral
+    // (random advertising address, name only in scan response), so client moves
+    // never reached the server.
+    if (!centralService || !rxChar.isValid()) {
+        qWarning() << "[ChatClient] Cannot send: RX characteristic invalid";
         return;
     }
 
-    qDebug() << "Sending BLE notification:" << message;
+    const QByteArray payload = message.toUtf8();
+    const auto props = rxChar.properties();
 
-    // Send a GATT notification on the client-side peripheral's Notify
-    // characteristic. Do NOT pass WriteWithoutResponse: on a local (peripheral)
-    // service Qt treats a plain writeCharacteristic() on a Notify characteristic
-    // as a notification to subscribed clients. Passing a write mode works on iOS
-    // but fails to deliver on Android.
-    peripheralService->writeCharacteristic(reverseTxChar, message.toUtf8());
-    /*
-    if (!peripheralService || !txChar.isValid()) {
-        qWarning() << "[ChatClient] Client TX not ready";
-        return;
-    }
+    // Prefer a reliable, confirmed write (WriteWithResponse). Game moves are
+    // infrequent and small, so latency is irrelevant while delivery guarantees
+    // matter. WriteWithoutResponse gives no confirmation and is capped at ~20
+    // bytes, so only fall back to it if the RX characteristic does NOT support
+    // a plain Write. This behaves consistently on both macOS/iOS and Android.
+    const bool supportsWrite = props & QLowEnergyCharacteristic::Write;
+    const auto mode = supportsWrite
+                          ? QLowEnergyService::WriteWithResponse
+                          : QLowEnergyService::WriteWithoutResponse;
 
-    // Check if RX supports write or write without response
-    auto props = txChar.properties();
+    qDebug() << "[ChatClient] Write → server RX:" << message
+             << "uuid:" << rxChar.uuid().toString()
+             << "mode:" << (mode == QLowEnergyService::WriteWithoutResponse
+                                ? "WriteWithoutResponse" : "WriteWithResponse");
 
-    qDebug() << "[ChatClient] Notifying to TX:"
-             << message
-             << "uuid:" << txChar.uuid()
-             << "props:" << props
-             << "valid:" << txChar.isValid()
-             << "len:" << message.toUtf8().size();
-
-    qDebug() << "[ChatClient] Notify → server:" << message;
-
-    peripheralService->writeCharacteristic(txChar, message.toUtf8(), QLowEnergyService::WriteWithoutResponse);
-    */
+    centralService->writeCharacteristic(rxChar, payload, mode);
 }
 
