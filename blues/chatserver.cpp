@@ -120,11 +120,28 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
     advertisingData.setDiscoverability(
         QLowEnergyAdvertisingData::DiscoverabilityGeneral
         );
+    // IMPORTANT (macOS/iOS discoverability):
+    // CoreBluetooth (macOS/iOS) does NOT honor a separate scan-response packet
+    // for a local peripheral — it only advertises the local name and service
+    // UUIDs from the PRIMARY advertisement. If the name lives solely in the
+    // scan response, macOS advertises with an empty name and peers that filter
+    // on a non-empty name (see BluetoothManager::onDeviceDiscovered) drop it,
+    // so macOS never appears discoverable. Setting the name on the primary
+    // packet fixes macOS while remaining valid for iOS and Android/Linux.
+    // Payload budget: the primary packet must stay within 31 bytes. It carries
+    // Flags (3 bytes) + one 128-bit service UUID (18 bytes) = 21 bytes, leaving
+    // 10 bytes for the name AD (2 bytes header + up to 8 chars). "Gobblet"
+    // (7 chars) fits (2 + 7 = 9 bytes; total 30). The peer's name filter only
+    // requires a non-empty name and matches on contains("Gobblet"), so this
+    // name satisfies discovery on all platforms.
+    advertisingData.setLocalName("Gobblet");
     advertisingData.setServices({ serviceUuid });
 
-    // Keep advertising packet small!
+    // Use the same name in the scan response for consistency across platforms.
+    // Android/Linux (BlueZ) advertises the scan response as provided; macOS/iOS
+    // ignore custom scan-response data, but that is harmless.
     QLowEnergyAdvertisingData scanResponseData;
-    scanResponseData.setLocalName("Gobblet S");
+    scanResponseData.setLocalName("Gobblet");
 
     controller->startAdvertising(QLowEnergyAdvertisingParameters(), advertisingData, scanResponseData);
 
@@ -269,7 +286,8 @@ void ChatServer::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
     // Try multiple matching strategies. Android often does NOT include
     // the device name or service UUIDs in advertisements — they may
     // only become available after connection and service discovery.
-    bool nameMatch = info.name().contains("Gobblet", Qt::CaseInsensitive);
+    // The client peripheral advertises the local name "Telbbog".
+    bool nameMatch = info.name().contains("Telbbog", Qt::CaseInsensitive);
     bool uuidMatch = info.serviceUuids().contains(reverseServiceUuid);
 
     // Match by address (works on Android/Linux where remoteAddress() returns a real MAC)

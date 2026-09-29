@@ -127,11 +127,19 @@ void ChatClient::startClientPeripheral()
     advertisingData.setDiscoverability(
         QLowEnergyAdvertisingData::DiscoverabilityGeneral
         );
+    // Set the local name on the PRIMARY packet: CoreBluetooth (macOS/iOS) does
+    // not honor a separate scan-response packet for a local peripheral, so a
+    // name placed only in the scan response leaves macOS advertising with an
+    // empty name and peers that filter on a non-empty name drop it. "Telbbog"
+    // (7 chars) + one 128-bit service UUID + Flags stays within the 31-byte
+    // primary packet budget.
+    advertisingData.setLocalName("Telbbog");
     advertisingData.setServices({ reverseServiceUuid });
 
-    // Keep advertising packet small!
+    // Same name in the scan response for consistency (used by Android/Linux;
+    // ignored but harmless on macOS/iOS).
     QLowEnergyAdvertisingData scanResponseData;
-    scanResponseData.setLocalName("Gobblet C");
+    scanResponseData.setLocalName("Telbbog");
 
     peripheral->startAdvertising(QLowEnergyAdvertisingParameters(), advertisingData, scanResponseData);
 
