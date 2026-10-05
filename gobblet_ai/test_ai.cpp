@@ -10,6 +10,7 @@ private slots:
     void winWhiteBlocksWithSize0();
     void winWhiteBlocksWithSize1AllSize0OnBoard();
     void winWhiteBlocksWithSize2AllOnBoard();
+    void winFromStackError();
     void dontLoseTakeFromStack();
     void dontLoseTakeFromBoard();
     void dontLoseBlockCross();
@@ -68,8 +69,21 @@ void TestAI::winWhiteBlocksWithSize2AllOnBoard() {
      * 0000 0000 0000 0000  0000 0000 0000 0000         03 02 01 00 */
     int state5 [2][4] = {{49184, 51200, 49280, 0}, {8706, 32, 8, 0}};
     aiMove move = computer.move(state5);
-    QCOMPARE(move.from() == 15 || move.from() == 11 || move.from() == 14, true);
+    QCOMPARE(move.from(), 14);
     QCOMPARE(move.to(), 3);
+}
+
+// There was an error that if only white pawns were on top of each other the ai couldn't see them
+void TestAI::winFromStackError() {
+    AI computer(1);
+    /* 0000 0000 1101 0000  0001 0001 0000 0000         15 14 13 12
+     * 0000 1000 0001 0000  0000 0000 0010 0001         11 10 09 08
+     * 0000 0100 0000 0000  0000 1000 0000 0000         07 06 05 04
+     * 0000 0000 0000 0000  0000 0000 0001 0000         03 02 01 00 */
+    int state17 [2][4] = {{4352, 33, 2048, 16}, {208, 2064, 1024, 0}};
+    aiMove move = computer.move(state17);
+    QCOMPARE(move.from() > 15, true);
+    QCOMPARE(move.to() == 4, false);
 }
 
 /* DONT LOSE */

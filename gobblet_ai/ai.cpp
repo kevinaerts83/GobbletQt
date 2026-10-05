@@ -322,7 +322,9 @@ int AI::getPawnFromBoardEasy(int size, std::vector<int> excludeRows) {
             pawns &= ~MASKS[exc];
         }
         // return: tile
-        return countrZero(pawns);
+        if (pawns > 0) {
+            return countrZero(pawns);
+        }
     }
     return -1;
 }
@@ -423,11 +425,11 @@ void AI::getVisiblePawns(int main, int temp [4]) {
     int other = !main;
 
     temp[Size::Huge] = m_bState[main][Size::Huge];
-    int onTop = m_bState[other][Size::Huge];
+    int onTop = m_bState[other][Size::Huge] | temp[Size::Huge];
     temp[Size::Large] = (m_bState[main][Size::Large] ^ onTop) & m_bState[main][Size::Large];
-    onTop |= m_bState[other][Size::Large];
+    onTop |= m_bState[other][Size::Large] | temp[Size::Large];
     temp[Size::Medium] = (m_bState[main][Size::Medium] ^ onTop) & m_bState[main][Size::Medium];
-    onTop |= m_bState[other][Size::Medium];
+    onTop |= m_bState[other][Size::Medium] | temp[Size::Medium];
     temp[Size::Small] = (m_bState[main][Size::Small] ^ onTop) & m_bState[main][Size::Small];
 }
 
