@@ -18,78 +18,107 @@ apply plugin: qtGradlePluginType
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+
     //noinspection GradleDependency
     implementation 'androidx.core:core:1.13.1'
 }
 
 android {
     /*******************************************************
-     * The following variables:
-     * - androidBuildToolsVersion,
-     * - androidCompileSdkVersion
-     * - qtAndroidDir - holds the path to qt android files
-     *                   needed to build any Qt application
-     *                   on Android.
-     * - qtGradlePluginType - whether to build an app or a library
+     * The following variables are defined in gradle.properties
+     * by Qt Creator / androiddeployqt:
      *
-     * are defined in gradle.properties file. This file is
-     * updated by QtCreator and androiddeployqt tools.
-     * Changing them manually might break the compilation!
+     * - androidCompileSdkVersion
+     * - qtAndroidDir
+     * - qtGradlePluginType
+     * - androidNdkVersion
+     * - qtTargetAbiList
+     *
+     * Do not normally change these values manually.
      *******************************************************/
 
-    namespace androidPackageName
-    /* compileSdkVersion androidCompileSdkVersion */
-    compileSdkVersion 36
-    buildToolsVersion androidBuildToolsVersion
-    ndkVersion androidNdkVersion
+    namespace = androidPackageName
+
+    compileSdk = 36
+
+    ndkVersion = androidNdkVersion
 
     // Extract native libraries from the APK
-    packagingOptions.jniLibs.useLegacyPackaging true
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = [qtAndroidDir + '/src', 'src', 'java']
-            aidl.srcDirs = [qtAndroidDir + '/src', 'src', 'aidl']
-            res.srcDirs = [qtAndroidDir + '/res', 'res']
+
+            java.srcDirs = [
+                qtAndroidDir + '/src',
+                'src',
+                'java'
+            ]
+
+            aidl.srcDirs = [
+                qtAndroidDir + '/src',
+                'src',
+                'aidl'
+            ]
+
+            res.srcDirs = [
+                qtAndroidDir + '/res',
+                'res'
+            ]
+
             resources.srcDirs = ['resources']
-            renderscript.srcDirs = ['src']
+
             assets.srcDirs = ['assets']
+
             jniLibs.srcDirs = ['libs']
-       }
+        }
     }
 
-    tasks.withType(JavaCompile) {
+    tasks.withType(JavaCompile).configureEach {
         options.incremental = true
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
-    lintOptions {
-        abortOnError false
+    lint {
+        abortOnError = false
     }
 
-    // Do not compress Qt binary resources file
-    aaptOptions {
-        noCompress 'rcc'
+    // Do not compress Qt binary resource files
+    androidResources {
+        noCompress += ['rcc']
     }
 
     defaultConfig {
         resConfig "en"
-        minSdkVersion 30
-        /* targetSdkVersion qtTargetSdkVersion */
-        targetSdkVersion 36
-        ndk.abiFilters = qtTargetAbiList.split(",")
-    }
 
-    buildTypes {
-        release {
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        minSdk 30
+        targetSdk 36
+
+        ndk {
+            abiFilters.addAll(qtTargetAbiList.split(","))
         }
     }
+
+    /*buildTypes {
+        release {
+            minifyEnabled = true
+            shrinkResources = true
+
+            proguardFiles(
+                getDefaultProguardFile(
+                    'proguard-android-optimize.txt'
+                ),
+                'proguard-rules.pro'
+            )
+        }
+    }*/
 }
