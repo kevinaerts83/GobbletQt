@@ -178,18 +178,31 @@ void BluetoothManager::onDeviceDiscovered(const QBluetoothDeviceInfo &info)
     if (!(info.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration))
         return;
 
+    // Accept a device if EITHER it exposes our service UUID in its advertisement
+    // OR it carries a non-empty local name. Matching on the service UUID makes
+    // discovery robust on Android, where the peripheral now advertises the
+    // 128-bit service UUID in the PRIMARY packet while the local name arrives
+    // separately in the SCAN RESPONSE (see ChatServer::startServer). Relying on
+    // the name alone could miss the device if the primary packet (no name) is
+    // processed before the scan response.
     const QString name = info.name();
-    if (name.isEmpty())
+    const bool advertisesService = info.serviceUuids().contains(serviceUuid);
+
+    if (name.isEmpty() && !advertisesService)
         return;
 
-    // Exclude devices with the same name
+    // Deduplicate: by address when available, otherwise by name.
     for (const QBluetoothDeviceInfo &d : std::as_const(foundDevices)) {
-        if (d.name() == name) {
+        const bool sameAddress = !info.address().isNull()
+                                 && d.address() == info.address();
+        const bool sameName = !name.isEmpty() && d.name() == name;
+        if (sameAddress || sameName) {
             return; // already known
         }
     }
 
-    qDebug() << "Found BLE device:" << info.name() << info.address().toString();
+    qDebug() << "Found BLE device:" << info.name() << info.address().toString()
+             << "advertisesService:" << advertisesService;
     foundDevices.append(info);
 }
 
@@ -263,6 +276,14 @@ void BluetoothManager::connectToDevice(const QBluetoothDeviceInfo &device)
 QVariantList BluetoothManager::getDevices() {
     QVariantList devices;
     for (const QBluetoothDeviceInfo &d : std::as_const(foundDevices)) {
+        // Only expose devices that already have a resolved name. A device may be
+        // discovered first via its advertised service UUID (empty name) and gain
+        // its name once the scan response is processed; it will appear on the
+        // next refresh. The QML list connects by name (connectWithName), so
+        // hiding nameless entries keeps every listed row connectable.
+        if (d.name().isEmpty())
+            continue;
+
         QVariantMap device;
         device["name"] = d.name();
         device["address"] = d.address().toString();

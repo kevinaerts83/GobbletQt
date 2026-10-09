@@ -134,14 +134,38 @@ void ChatServer::startServer(const QBluetoothUuid &serviceUuid,
     // (7 chars) fits (2 + 7 = 9 bytes; total 30). The peer's name filter only
     // requires a non-empty name and matches on contains("Gobblet"), so this
     // name satisfies discovery on all platforms.
+    QLowEnergyAdvertisingData scanResponseData;
+
+#if defined(Q_OS_ANDROID)
+    // ANDROID PAYLOAD BUDGET (why Android never got discovered):
+    // Android's BluetoothLeAdvertiser automatically injects AD structures into
+    // the PRIMARY advertisement that Qt does not account for — notably the
+    // connectable flags and (when includeTxPowerLevel defaults on) the TX power
+    // level. A 128-bit service UUID already consumes 18 bytes (2 header + 16).
+    // Adding the 8-char name ("Gobblet" -> 9 bytes) on top of flags (3) + the
+    // UUID (18) + Android's injected fields overflows the 31-byte primary
+    // packet. Android then fails startAdvertising() with
+    // ADVERTISE_FAILED_DATA_TOO_LARGE, which Qt does NOT surface as a controller
+    // error, so advertising silently never starts and no peer sees the device.
+    //
+    // Fix: on Android keep ONLY the 128-bit service UUID in the primary packet
+    // (peers connect/filter by service UUID anyway) and move the local name into
+    // the SCAN RESPONSE packet. An actively scanning peer (QBluetoothDevice-
+    // DiscoveryAgent on all platforms performs an active scan) receives the scan
+    // response and still reads the name, so BluetoothManager::onDeviceDiscovered
+    // name filtering keeps working.
+    advertisingData.setServices({ serviceUuid });
+    scanResponseData.setLocalName("Gobblet");
+#else
+    // macOS/iOS (CoreBluetooth): a local peripheral does NOT honor a separate
+    // scan-response packet, so the name must live on the PRIMARY packet or the
+    // device advertises with an empty name and name-filtering peers drop it.
+    // Flags (3) + one 128-bit UUID (18) + name "Gobblet" (9) = 30 bytes, within
+    // the 31-byte budget. CoreBluetooth manages this payload without hard-failing.
     advertisingData.setLocalName("Gobblet");
     advertisingData.setServices({ serviceUuid });
-
-    // Use the same name in the scan response for consistency across platforms.
-    // Android/Linux (BlueZ) advertises the scan response as provided; macOS/iOS
-    // ignore custom scan-response data, but that is harmless.
-    QLowEnergyAdvertisingData scanResponseData;
     scanResponseData.setLocalName("Gobblet");
+#endif
 
     controller->startAdvertising(QLowEnergyAdvertisingParameters(), advertisingData, scanResponseData);
 
