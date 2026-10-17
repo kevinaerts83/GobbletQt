@@ -17,7 +17,7 @@ Page {
 
     Timer {
         id: refreshTimer
-        interval: 10000 // 10 second
+        interval: 2000 // 1 second
         repeat: true
         running: true
         triggeredOnStart: true
@@ -27,11 +27,34 @@ Page {
     }
 
     RowLayout {
-        Button {
-            text: "Cancel"
-            onClicked: {
-                BluetoothManager.stopDiscovery()
-                stackView.pop()
+        Rectangle {
+            width: 40
+            height: 80
+            color: "transparent"
+            objectName: "cancelbutton"
+
+            Column {
+                anchors.centerIn: parent
+                spacing: 4
+
+                Repeater {
+                    model: 3
+                    delegate: Rectangle {
+                        width: 6
+                        height: 6
+                        radius: 3
+                        color: "white"
+                    }
+                }
+            }
+
+            // MouseArea for button clicks
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    BluetoothManager.stopDiscovery()
+                    stackView.pop()
+                }
             }
         }
     }

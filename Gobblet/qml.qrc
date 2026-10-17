@@ -7,5 +7,9 @@
         <file>ComputerIcon.qml</file>
         <file>PlayIcon.qml</file>
         <file>EyesIcon.qml</file>
+        <file>BluetoothIcon.qml</file>
+        <file>gobbler.qml</file>
+        <file>help.qml</file>
+        <file>scanblues.qml</file>
     </qresource>
 </RCC>

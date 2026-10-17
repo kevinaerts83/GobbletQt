@@ -105,6 +105,14 @@ void Mediator::setBoard(Board* board) {
     m_board = board;
 }
 
+Stack* Mediator::getStack() const {
+    return m_stack;
+}
+
+void Mediator::setStack(Stack* stack) {
+    m_stack = stack;
+}
+
 void Mediator::setMatrix(Matrix* matrix) {
     m_matrix = matrix;
     m_boardDirty = true;
@@ -132,11 +140,14 @@ void Mediator::updateTrigCache() {
 }
 
 void Mediator::repaint() {
+    if (getStack() && (m_boardDirty || getStack()->isWhite() == isBlackTurn())) {
+        getStack()->setWhite(!isBlackTurn());
+        getStack()->update();
+    }
     if (m_boardDirty && getBoard()) {
         getBoard()->update();
         m_boardDirty = false;
     }
-
     if (m_zOrderDirty) {
         for (int i = 0; i < m_list.size(); i++) {
             m_list[i]->calculateZIndex();

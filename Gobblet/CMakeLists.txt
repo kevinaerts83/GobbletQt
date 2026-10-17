@@ -14,6 +14,8 @@ if(ANDROID)
         setupBoard.h
         shape_item.cpp shape_item.h
         shape3d.cpp shape3d.h
+        stack.cpp stack.h
+        stack3d.cpp stack3d.h
     )
 else()
     qt_add_executable(Gobblet
@@ -29,6 +31,8 @@ else()
         setupBoard.h
         shape_item.cpp shape_item.h
         shape3d.cpp shape3d.h
+        stack.cpp stack.h
+        stack3d.cpp stack3d.h
     )
 endif()
 

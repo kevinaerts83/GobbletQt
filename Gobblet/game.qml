@@ -35,6 +35,17 @@ Page {
         objectName: "matrix"
     }
 
+    Stack {
+        id: stack
+        matrix: matrix
+        width: parent.width
+        height: parent.height
+
+        Component.onCompleted: {
+            Mediator.setStack(this)
+        }
+    }
+
     Board {
         id: board
         matrix: matrix

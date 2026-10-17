@@ -6,6 +6,7 @@
 #include "bluetoothManager.h"
 #include "gobbler.h"
 #include "board.h"
+#include "stack.h"
 #include "state.h"
 
 class Mediator : public QObject
@@ -15,6 +16,7 @@ class Mediator : public QObject
     Q_PROPERTY(bool blackTurn READ isBlackTurn NOTIFY blackTurnChanged)
     Q_PROPERTY(Gobbler* selection READ getSelection NOTIFY selectionChanged)
     Q_PROPERTY(Board* board READ getBoard CONSTANT)
+    Q_PROPERTY(Stack* stack READ getStack CONSTANT)
     Q_PROPERTY(State* state MEMBER m_comm)
 
 public:
@@ -24,6 +26,7 @@ public:
     bool isBlackTurn() const;
     Gobbler* getSelection() const;
     Board* getBoard() const;
+    Stack* getStack() const;
     State* m_comm;
     QTimer *timer;
 
@@ -38,6 +41,7 @@ public slots:
 
     void resetItems(double width, double height);
     void setBoard(Board* board);
+    void setStack(Stack* stack);
     void repaint();
     bool onClick(const double x, const double y);
 
@@ -74,6 +78,7 @@ private:
     bool m_blackTurn = false;
     Gobbler* m_selection = nullptr;
     Board* m_board = nullptr;
+    Stack* m_stack = nullptr;
     Matrix* m_matrix = nullptr;
     bool m_lock;
 

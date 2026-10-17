@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Gobblet 1.0
-import "."
 
 Page {
     id: menu
@@ -117,8 +116,8 @@ Page {
                 Layout.preferredWidth: (2 * menu.height - 60) / 15
                 Layout.preferredHeight: width
                 radius: width / 2  // Make it circular
-                color: "#4CAF50"  // Green background color
-                visible: GameState.mode === 0
+                color: BluetoothManager.serverName ? "red" : "#4CAF50"  // Green background color
+                visible: GameState.mode === 0 && !(BluetoothManager.clientName)
                 id: serverBt
 
                 BluetoothIcon {
@@ -145,8 +144,8 @@ Page {
                 Layout.preferredWidth: (2 * menu.height - 60) / 15
                 Layout.preferredHeight: width
                 radius: width / 2  // Make it circular
-                color: "#4CAF50"  // Green background color
-                visible: GameState.mode === 0
+                color: BluetoothManager.clientName ? "red" : "#4CAF50"  // Green background color
+                visible: GameState.mode === 0 && !(BluetoothManager.serverName)
                 id: clientBt
 
                 BluetoothIcon {
