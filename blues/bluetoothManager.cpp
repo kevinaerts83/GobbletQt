@@ -121,8 +121,14 @@ void BluetoothManager::startServer()
 
     connect(server, &ChatServer::messageReceived,
             this, &BluetoothManager::serverMessage);
-    connect(server, &ChatServer::clientConnected, this, [](const QString &){ qDebug() << "Client connected"; });
-    connect(server, &ChatServer::clientDisconnected, this, [](const QString &){ qDebug() << "Client disconnected"; });
+    connect(server, &ChatServer::clientConnected, this, [this](const QString &){
+        qDebug() << "Client connected";
+        setConnected(true);
+    });
+    connect(server, &ChatServer::clientDisconnected, this, [this](const QString &){
+        qDebug() << "Client disconnected";
+        setConnected(false);
+    });
     connect(server, &ChatServer::serverError, this, &BluetoothManager::onServerError);
     //connect(this, &BluetoothManager::sendToClient, server, &ChatServer::sendMessage);
 
@@ -140,6 +146,7 @@ void BluetoothManager::stopServer()
         server = nullptr;
     }
     m_role = Role::None;
+    setConnected(false);
 }
 
 void BluetoothManager::startDiscovery()
@@ -231,6 +238,7 @@ void BluetoothManager::stopClient() {
         client = nullptr;
     }
     m_role = Role::None;
+    setConnected(false);
 }
 
 void BluetoothManager::connectToDevice(const QBluetoothDeviceInfo &device)
@@ -261,8 +269,14 @@ void BluetoothManager::connectToDevice(const QBluetoothDeviceInfo &device)
     stopClient();
     client = new ChatClient(this);
 
-    connect(client, &ChatClient::connected, this, [](){ qDebug() << "Client connected to remote"; });
-    connect(client, &ChatClient::disconnected, this, [](){ qDebug() << "Client disconnected"; });
+    connect(client, &ChatClient::connected, this, [this](){
+        qDebug() << "Client connected to remote";
+        setConnected(true);
+    });
+    connect(client, &ChatClient::disconnected, this, [this](){
+        qDebug() << "Client disconnected";
+        setConnected(false);
+    });
     connect(client, &ChatClient::messageReceived, this, &BluetoothManager::clientMessage);
     //connect(this, &BluetoothManager::sendToServer, client, &ChatClient::sendMessage);
 

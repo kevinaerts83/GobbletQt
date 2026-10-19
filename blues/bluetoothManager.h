@@ -20,6 +20,7 @@ class BluetoothManager : public QObject
     Q_OBJECT
     Q_PROPERTY(QString clientName READ clientName WRITE setClientName NOTIFY clientNameChanged)
     Q_PROPERTY(QString serverName READ serverName WRITE setServerName NOTIFY serverNameChanged)
+    Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
 
 public:
     explicit BluetoothManager(QObject *parent = nullptr);
@@ -53,6 +54,17 @@ public:
         emit serverNameChanged();
     }
 
+    bool connected() const {
+        return m_connected;
+    }
+
+    void setConnected(bool value) {
+        if (m_connected != value) {
+            m_connected = value;
+            emit connectedChanged();
+        }
+    }
+
     Role role() const { return m_role; }
 
     void sendMessage(const QString &msg);
@@ -69,6 +81,7 @@ signals:
 
     void clientNameChanged();
     void serverNameChanged();
+    void connectedChanged();
 
 public slots:
     void onDeviceDiscovered(const QBluetoothDeviceInfo &info);
@@ -88,6 +101,7 @@ private:
     QString m_serverName;
     QString m_clientName;
     Role m_role = Role::None;
+    bool m_connected = false;
 
     const QBluetoothUuid serviceUuid =
         QBluetoothUuid(QStringLiteral("{12345678-6398-4c4c-80cb-2cc15d4734d7}"));

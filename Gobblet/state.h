@@ -20,8 +20,13 @@ public:
 
     int mode() const { return m_mode; }
 
+    // 0 = versus; 1 = easy; 2 = hard
     void setMode(int mode) {
         if (m_mode != mode) {
+            if (mode == 0) {
+                m_blackTurn = false;
+                // White starts the game idenpendent of previous played games
+            }
             m_mode = mode;
             emit modeChanged(m_mode);
         }
@@ -60,6 +65,7 @@ public:
 
     int user() const { return m_user; }
 
+    // 0 = no Bluetooth; 1 = BLE white; 2 = BLE black
     void setUser(int user) {
         if (m_user != user) {
             m_user = user;
